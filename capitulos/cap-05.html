@@ -1,0 +1,598 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="estudo-chave" content="ic-copulas/cap-05">
+<title>Cap. 5 — Estimar, escolher e testar</title>
+<script>
+window.MathJax = {
+  tex: { inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath: [['$$', '$$'], ['\\[', '\\]']] },
+  svg: { fontCache: 'global' }
+};
+</script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/3.2.2/es5/tex-svg.min.js" defer></script>
+<link rel="stylesheet" href="../assets/estudo.css">
+</head>
+<body>
+<nav class="trilho" id="trilho" tabindex="0" aria-label="Sumário do capítulo" aria-expanded="false">
+  <div class="trilho-tracos" id="trilho-tracos" aria-hidden="true"></div>
+  <div class="trilho-painel">
+    <p class="trilho-cap" id="trilho-cap"></p>
+    <div class="trilho-lista" id="trilho-lista"></div>
+    <div class="trilho-rodape" id="trilho-rodape">
+      <button class="btn pequeno" id="btn-formulas">Fórmulas até aqui</button>
+      <button class="btn pequeno" id="btn-ir-resumo">Resumo</button>
+      <a class="btn pequeno" id="btn-inicio" href="../index.html" hidden>Início</a>
+    </div>
+  </div>
+</nav>
+
+<div class="wrap">
+
+<h1>Cap. 5 — Estimar, escolher e testar</h1>
+<p class="contexto">Onde isso se encaixa: o <span class="ref" data-ref="f-sklar">teorema de Sklar</span> diz que se pode estimar as marginais e a cópula separadamente. Aqui está como o trabalho fez cada estimação, como escolheu entre as candidatas e como testou se a escolha se sustenta.</p>
+
+<div class="abas" role="tablist">
+  <button role="tab" aria-selected="true" data-aba="trilha">Trilha</button>
+  <button role="tab" aria-selected="false" data-aba="resumo">Resumo</button>
+</div>
+
+<div id="trilha">
+  <nav class="subtopicos" id="subtopicos" aria-label="Passos desta seção"></nav>
+  <div class="retomada" id="retomada" hidden></div>
+
+  <!-- ================= SEÇÃO 5.1 ================= -->
+  <div class="secao" data-numero="5.1" data-titulo="Marginais" data-livro="Akaike (1974); Schwarz (1978); relatório 2.3 e 3.2">
+
+  <section class="passo" data-titulo="Verossimilhança">
+   <div class="texto">
+    <h2>Seis candidatas para cada ativo, ajustadas por máxima verossimilhança</h2>
+    <p>Para o Ibovespa e para o dólar, separadamente, o trabalho ajusta seis famílias: normal, logística e Laplace (2 parâmetros); t de Student (3); Johnson SU e t assimétrica (4). Cada uma é ajustada por máxima verossimilhança:</p>
+    <div class="formula" data-ref-id="f-mv" data-ref-tipo="formula" data-ref-nome="Log-verossimilhança e estimador de máxima verossimilhança">
+      $$\ell(\theta) = \sum_{i=1}^{n} \ln f(x_i; \theta), \qquad \hat\theta = \arg\max_\theta\ \ell(\theta)$$
+    </div>
+    <p>Comparar as famílias pela maior $\ell(\hat\theta)$ seria injusto: uma família com mais parâmetros tem mais liberdade para se moldar aos dados, inclusive ao ruído deles, e quase sempre chega a uma verossimilhança maior. É preciso descontar essa vantagem.</p>
+    <div class="ideia">Máxima verossimilhança ajusta cada família; para comparar famílias com números diferentes de parâmetros, a vantagem de ter mais parâmetros precisa ser descontada.</div>
+   </div>
+   <aside class="apoio">
+    <div class="pare">
+      <p>A t de Student vira a normal quando $\nu \to \infty$. Por que, então, o máximo de $\ell$ na t nunca fica abaixo do máximo na normal?</p>
+      <button class="btn" data-revelar>Ver resposta</button>
+      <div class="resposta" hidden><p>Porque a t contém a normal como caso limite: no pior caso, ela "escolhe" $\nu$ enorme e reproduz o ajuste da normal. Ter mais opções nunca piora o máximo. Por isso a comparação crua sempre favorece o modelo maior, mesmo quando a melhora é ruído.</p></div>
+    </div>
+   </aside>
+  </section>
+
+  <section class="passo" data-titulo="AIC e BIC">
+   <div class="texto">
+    <h2>AIC e BIC: ajuste menos um pedágio por parâmetro</h2>
+    <div class="formula" data-ref-id="f-aic-bic" data-ref-tipo="formula" data-ref-nome="Critérios AIC e BIC">
+      $$\text{AIC} = -2\,\class{s1}{\ell(\hat\theta)} + 2\class{s2}{k}$$ $$\text{BIC} = -2\,\class{s1}{\ell(\hat\theta)} + \class{s2}{k} \ln \class{s3}{n}$$
+      <ul class="legenda">
+        <li><span class="s1">$\ell(\hat\theta)$</span>: log-verossimilhança maximizada</li>
+        <li><span class="s2">$k$</span>: número de parâmetros</li>
+        <li><span class="s3">$n$</span>: tamanho da amostra</li>
+      </ul>
+    </div>
+    <p><strong>Menor é melhor.</strong> O primeiro termo mede o ajuste; o segundo cobra um pedágio por parâmetro: 2 no AIC e $\ln n$ no BIC. Com $n = 1205$, $\ln n \approx 7{,}09$, então o BIC é mais severo com modelos complexos.</p>
+    <p>Regra de bolso: um parâmetro a mais só compensa se aumentar $\ell$ em mais de 1 (pelo AIC) ou em mais de $\tfrac12 \ln n \approx 3{,}5$ (pelo BIC).</p>
+    <p>No Ibovespa, os dois critérios escolhem a t de Student. A t assimétrica ganha só 0,4 de $\ell$ pelo parâmetro extra e fica atrás; a normal fica 441 unidades de AIC atrás.</p>
+   </div>
+   <aside class="apoio">
+    <div class="exemplo" data-ref-id="ex-marginais-dolar" data-ref-tipo="exemplo" data-ref-nome="Marginais do dólar: quatro primeiras">
+      <p>Dólar, as quatro primeiras por AIC ($n = 1205$):</p>
+      <div class="escala"><table class="tab">
+        <tr><th>Família</th><th>$k$</th><th>$\ell$</th><th>AIC</th><th>BIC</th></tr>
+        <tr><td>Johnson SU</td><td>4</td><td>3742,4</td><td>−7476,8</td><td>−7456,4</td></tr>
+        <tr><td>t de Student</td><td>3</td><td>3741,1</td><td>−7476,2</td><td>−7460,9</td></tr>
+        <tr><td>t assimétrica</td><td>4</td><td>3741,7</td><td>−7475,4</td><td>−7455,0</td></tr>
+        <tr><td>Logística</td><td>2</td><td>3738,9</td><td>?</td><td>?</td></tr>
+      </table></div>
+    </div>
+    <div class="lacunas">
+      <p>Complete a linha da logística (1 casa):</p>
+      <p>AIC $=$ <input class="lacuna" data-resp="-7473.8" data-tol="0.15" aria-label="AIC logística"></p>
+      <p>BIC $=$ <input class="lacuna" data-resp="-7463.6" data-tol="0.15" aria-label="BIC logística"></p>
+      <button class="btn" data-conferir>Conferir</button>
+      <p class="dica" hidden>Dica: $-2 \times 3738{,}9 = -7477{,}8$; some $2 \times 2$ no AIC e $2 \times 7{,}094$ no BIC.</p>
+      <div class="resolucao" hidden><p>AIC $= -7477{,}8 + 4 = -7473{,}8$. BIC $= -7477{,}8 + 14{,}19 = -7463{,}6$. Pelo AIC a logística é a 4ª; pelo BIC ela é a <strong>melhor</strong> de todas.</p></div>
+    </div>
+   </aside>
+  </section>
+
+  <section class="passo" data-titulo="Quando discordam">
+   <div class="texto">
+    <h2>No dólar, AIC e BIC escolhem famílias diferentes</h2>
+    <p>Pelo AIC vence a Johnson SU; pelo BIC, a logística. O motivo é aritmético: a Johnson SU tem dois parâmetros a mais e só 3,5 unidades a mais de $\ell$ (3742,4 contra 3738,9). O AIC cobra $2 \times 2 = 4$ pelos dois parâmetros e a Johnson ainda ganha; o BIC cobra $2 \times 7{,}09 \approx 14$ e a ordem se inverte.</p>
+    <p>O trabalho mantém a Johnson SU (o critério declarado era o AIC), mas registra: <strong>a marginal do dólar é a escolha mais frágil do trabalho</strong>. As quatro primeiras por AIC estão a menos de 3 unidades umas das outras. Quando os critérios discordam, a escolha não é inválida, mas é frágil, e isso entra nas limitações (cap. 7).</p>
+    <div class="ideia">Quando AIC e BIC concordam, a escolha é segura; quando discordam, ela é frágil e deve ser registrada como limitação.</div>
+   </div>
+   <aside class="apoio">
+    <div class="quiz" data-correta="c">
+      <p class="enunciado">Um modelo $B$ tem um parâmetro a mais que o modelo $A$ e log-verossimilhança 2 unidades maior, com $n = 1205$. O que dizem os critérios?</p>
+      <div class="alts">
+        <button data-op="a">(a) Os dois preferem $B$, porque o ajuste melhorou.</button>
+        <button data-op="b">(b) Os dois preferem $A$, porque 2 unidades é uma diferença pequena.</button>
+        <button data-op="c">(c) O AIC prefere $B$ e o BIC prefere $A$.</button>
+        <button data-op="d">(d) O AIC prefere $A$ e o BIC prefere $B$.</button>
+      </div>
+      <div class="fb" data-op="a">O BIC cobra $\ln 1205 \approx 7{,}09$ pelo parâmetro extra, mais que os $2 \times 2 = 4$ de ganho em $-2\ell$.</div>
+      <div class="fb" data-op="b">O AIC cobra só 2 pelo parâmetro, e o ganho em $-2\ell$ é 4: o AIC prefere $B$.</div>
+      <div class="fb" data-op="c">Isso. Em $-2\ell$, $B$ ganha 4. O AIC desconta 2 (sobra vantagem para $B$); o BIC desconta 7,09 (vira vantagem de $A$). O ganho de $\ell$ ficou entre 1 e 3,5.</div>
+      <div class="fb" data-op="d">Invertido: o BIC é o mais severo com parâmetros, então nunca prefere o modelo maior quando o AIC prefere o menor.</div>
+    </div>
+   </aside>
+  </section>
+
+  <section class="passo" data-titulo="ν e a curtose">
+   <div class="texto">
+    <h2>O ν da t mede a cauda, e revela que a curtose não existe</h2>
+    <p>Para o Ibovespa na amostra completa, $\hat\nu = 3{,}63$. Na t, o momento de ordem $r$ só existe se $r &lt; \nu$. Com $\hat\nu &lt; 4$, o quarto momento não existe e a <strong>curtose populacional é infinita</strong>.</p>
+    <p>Então o 20,8 de curtose em excesso dos dados é um número sem alvo: ele reflete o maior extremo que apareceu na amostra e cresceria com mais dados. É por isso que o trabalho usa $\nu$, e não a curtose, para comparar caudas entre ativos e entre amostras (sem 2020, $\hat\nu = 6{,}56$ no Ibovespa).</p>
+    <p>Conferência do ajuste: os percentis $F(x_i)$ e $G(y_i)$ têm médias 0,498 e 0,500, e o teste de Kolmogorov-Smirnov não rejeita a uniformidade (valores-p 0,807 e 0,974), como a <span class="ref" data-ref="d-integral">transformada integral</span> exige.</p>
+    <details class="demo">
+      <summary>Por que o momento de ordem r só existe se r &lt; ν</summary>
+      <p>A densidade da t decai como $|x|^{-(\nu + 1)}$ nas caudas. Então $E|T|^r = \int |x|^r f(x)\,dx$ se comporta, para $|x|$ grande, como $\int |x|^{r - \nu - 1}\,dx$, que converge se e só se $r - \nu - 1 &lt; -1$, isto é, $r &lt; \nu$.</p>
+    </details>
+   </div>
+   <aside class="apoio">
+    <div class="quiz" data-correta="b">
+      <p class="enunciado">Uma t de Student ajustada aos retornos de um ativo dá $\hat\nu = 3{,}6$, e a curtose amostral em excesso é 20,8. O que se deve concluir?</p>
+      <div class="alts">
+        <button data-op="a">(a) A curtose populacional é cerca de 20,8, estimada sem viés pela amostra.</button>
+        <button data-op="b">(b) A curtose populacional não é finita, e 20,8 depende de quais extremos entraram na amostra.</button>
+        <button data-op="c">(c) A variância não existe, porque $\hat\nu &lt; 4$.</button>
+        <button data-op="d">(d) O ajuste da t é ruim, porque uma t com $\nu = 3{,}6$ teria curtose 6.</button>
+      </div>
+      <div class="fb" data-op="a">Com $\nu &lt; 4$ o quarto momento é infinito: não há valor populacional finito a estimar.</div>
+      <div class="fb" data-op="b">Isso. A curtose amostral sempre sai finita, mas sem alvo; ela tende a crescer com $n$, à medida que extremos maiores entram.</div>
+      <div class="fb" data-op="c">A variância (momento 2) existe se $\nu &gt; 2$, o que vale aqui. É o quarto momento que falta.</div>
+      <div class="fb" data-op="d">A fórmula $6/(\nu - 4)$ da curtose da t só vale para $\nu &gt; 4$. Aqui ela não se aplica.</div>
+    </div>
+   </aside>
+  </section>
+  </div>
+
+  <!-- ================= SEÇÃO 5.2 ================= -->
+  <div class="secao" data-numero="5.2" data-titulo="Pseudo-observações" data-livro="Genest, Ghoudi e Rivest (1995); relatório 2.4">
+
+  <section class="passo" data-titulo="Duas construções">
+   <div class="texto">
+    <h2>Dois jeitos de levar os dados ao quadrado unitário</h2>
+    <p>A cópula se ajusta aos pares de percentis. Mas $F$ e $G$ verdadeiras são desconhecidas, então os percentis são <strong>estimados</strong>. Há dois jeitos, e o trabalho usa os dois:</p>
+    <div class="formula" data-ref-id="f-pseudo" data-ref-tipo="formula" data-ref-nome="Pseudo-observações">
+      <p><strong>Paramétrica:</strong> $\hat u_i = \hat F(x_i)$, $\hat v_i = \hat G(y_i)$, com as marginais ajustadas.</p>
+      <p><strong>Por postos:</strong> $$u_i = \frac{n}{n + 1} F_n(x_i) = \frac{R_i}{n + 1}$$ $$F_n(x) = \frac{1}{n}\sum_{j=1}^{n} \mathbf{1}\{x_j \le x\}$$</p>
+      <ul class="legenda">
+        <li>$F_n$: distribuição empírica</li>
+        <li>$R_i$: posto de $x_i$ (1 para o menor)</li>
+      </ul>
+    </div>
+    <p>Os pares assim obtidos se chamam <strong>pseudo-observações</strong>: não são observações de verdade, e sim estimativas construídas a partir dos dados. O $n + 1$ no denominador evita o valor 1, onde a densidade de muitas cópulas explode.</p>
+    <div class="ideia">Pseudo-observações são percentis estimados, pela marginal ajustada ou pelos postos divididos por $n + 1$.</div>
+   </div>
+   <aside class="apoio">
+    <div class="lacunas">
+      <p>Com $n = 1205$ dias (4 casas):</p>
+      <p>Dia com o 60º menor retorno: $u =$ <input class="lacuna" data-resp="0.0498" data-tol="0.0002" aria-label="u posto 60"></p>
+      <p>Dia com o maior retorno: $u =$ <input class="lacuna" data-resp="0.9992" data-tol="0.0002" aria-label="u maior"></p>
+      <button class="btn" data-conferir>Conferir</button>
+      <p class="dica" hidden>Dica: $u = R/(n + 1) = R/1206$.</p>
+      <div class="resolucao" hidden><p>$60/1206 = 0{,}0498$ e $1205/1206 = 0{,}9992$. Com $n$ no denominador, o maior retorno daria exatamente 1, fora do interior do quadrado.</p></div>
+    </div>
+   </aside>
+  </section>
+
+  <section class="passo" data-titulo="Cada uma serve a algo">
+   <div class="texto">
+    <h2>Postos para escolher a família; paramétrica para calcular o risco</h2>
+    <div class="compara">
+      <div><h4>Por postos</h4><ul><li>Não supõe família alguma para as marginais.</li><li>Um erro na escolha da marginal não a afeta.</li><li>Só existe nos $n$ dias observados; não tem inversa fora da amostra.</li><li><strong>Usada para selecionar a família da cópula.</strong></li></ul></div>
+      <div><h4>Paramétrica</h4><ul><li>Depende das marginais ajustadas.</li><li>Um erro na marginal passa para os percentis.</li><li>Definida em toda a reta e invertível: $\hat F^{-1}(0{,}01)$ é um número.</li><li><strong>Usada para o VaR</strong>, que vai e volta entre retorno e percentil.</li></ul></div>
+    </div>
+    <p>Comparar as duas já é um diagnóstico. No trabalho, ambas escolhem a <strong>cópula t</strong>, com estimativas quase idênticas: $(\hat\rho, \hat\nu) = (-0{,}291;\ 3{,}60)$ por postos e $(-0{,}293;\ 3{,}93)$ pela paramétrica. A conclusão sobre a dependência não é artefato da marginal escolhida.</p>
+    <div class="ideia">A família da cópula é escolhida sobre os postos, imunes a erro de marginal; o VaR usa a construção paramétrica, que tem inversa.</div>
+   </div>
+   <aside class="apoio">
+    <div class="quiz" data-correta="d">
+      <p class="enunciado">Para calcular o VaR de 1% do Ibovespa, é preciso saber que retorno corresponde ao percentil 1%. Por que a construção por postos não serve para isso?</p>
+      <div class="alts">
+        <button data-op="a">(a) Porque os postos são uniformes, e o VaR precisa da forma da distribuição.</button>
+        <button data-op="b">(b) Porque os postos dependem da família marginal escolhida.</button>
+        <button data-op="c">(c) Porque os postos só valem para a seleção por AIC, não para o BIC.</button>
+        <button data-op="d">(d) Porque os postos só existem nos dias observados e não têm uma inversa única fora deles.</button>
+      </div>
+      <div class="fb" data-op="a">A construção paramétrica também dá percentis uniformes. A diferença está em ir do percentil de volta ao retorno.</div>
+      <div class="fb" data-op="b">É o contrário: os postos não dependem de família nenhuma. Essa é a vantagem deles na seleção.</div>
+      <div class="fb" data-op="c">Os dois critérios podem ser calculados sobre qualquer construção; não é essa a limitação.</div>
+      <div class="fb" data-op="d">Isso. A função empírica só assume $n$ valores; perguntar a ela "que retorno corresponde ao percentil 1%?" não tem resposta única, e um retorno nunca observado não tem percentil.</div>
+    </div>
+   </aside>
+  </section>
+  </div>
+
+  <!-- ================= SEÇÃO 5.3 ================= -->
+  <div class="secao" data-numero="5.3" data-titulo="Ajustar a cópula" data-livro="Genest, Ghoudi e Rivest (1995); relatório 2.6 e 3.3">
+
+  <section class="passo" data-titulo="Pseudo-verossimilhança">
+   <div class="texto">
+    <h2>Máxima pseudo-verossimilhança: a densidade da cópula nos pares de percentis</h2>
+    <p>Com as marginais tratadas, falta só o parâmetro da cópula. Pela <span class="ref" data-ref="f-densidade">densidade conjunta de Sklar</span>, $\ln h = \ln c + \ln f + \ln g$, e só o primeiro termo depende da cópula. Maximiza-se então:</p>
+    <div class="formula" data-ref-id="f-mpv" data-ref-tipo="formula" data-ref-nome="Máxima pseudo-verossimilhança">
+      $$\hat\theta = \arg\max_\theta \sum_{i=1}^{n} \ln c_\theta(u_i, v_i)$$
+    </div>
+    <p>O nome "pseudo" vem de os $(u_i, v_i)$ serem estimativas, não observações. Genest, Ghoudi e Rivest (1995) mostraram que, mesmo assim, o estimador é consistente e assintoticamente normal.</p>
+    <p>Na simulação, a curva é a soma $\sum \ln c$ calculada nos 1205 pares de postos para cada valor de $\rho$, nas cópulas normal e t (com $\nu = 4$).</p>
+   </div>
+   <aside class="apoio">
+    <div class="prever" data-sim="sim-mpv">
+      <p>O máximo da curva da cópula t, nos dados do trabalho, fica perto de qual $\rho$?</p>
+      <div class="alts">
+        <button data-op="a">$-0{,}19$</button>
+        <button data-op="b" data-certa>$-0{,}29$</button>
+        <button data-op="c">$-0{,}50$</button>
+      </div>
+      <div class="explica" hidden><p>Perto de $-0{,}29$, coerente com $\tau = -0{,}185$ pela <span class="ref" data-ref="f-tau-rho">relação entre τ e ρ</span> ($\sin(-0{,}185\pi/2) = -0{,}287$). Repare também que a curva da t fica acima da normal em todo o trecho do máximo: com o mesmo $\rho$, a t explica melhor os pares, e a diferença vem dos cantos.</p></div>
+    </div>
+    <div class="sim" id="sim-mpv">
+      <label>$\rho$ <input type="range" id="mpv-slider" min="-0.6" max="0.1" step="0.01" value="-0.1"> <strong id="mpv-valor">−0,10</strong></label>
+      <svg viewBox="0 0 400 260" id="mpv-svg" role="img" aria-label="Log-pseudo-verossimilhança das cópulas normal e t em função de rho"></svg>
+    </div>
+   </aside>
+  </section>
+
+  <section class="passo" data-titulo="Dez em ordem">
+   <div class="texto">
+    <h2>A cópula t vence por larga margem</h2>
+    <p>As dez candidatas, ajustadas sobre os postos e ordenadas por AIC, estão na tabela. A t vence com AIC $= -171{,}9$, contra $-130{,}2$ da segunda colocada (Gumbel no canto benigno): <strong>41,7 unidades</strong> de vantagem.</p>
+    <p>Aqui AIC e BIC necessariamente concordam entre as nove famílias de um parâmetro, porque o pedágio é o mesmo para todas. Só a t, com dois parâmetros, poderia mudar de posição, e só se a vantagem dela em $\ell$ ficasse entre 1 e 3,5. Ela ganha por 21,9 da segunda: a ordem completa é a mesma pelos dois critérios.</p>
+    <p>A AMH fica em último, pelo <span class="ref" data-ref="d-familias-arq">limite de τ que ela tem</span>.</p>
+    <div class="ideia">A t vence as outras nove com 41,7 unidades de AIC de vantagem, e a ordem completa é a mesma por AIC e BIC.</div>
+   </div>
+   <aside class="apoio">
+    <div class="exemplo" data-ref-id="ex-copulas-aic" data-ref-tipo="exemplo" data-ref-nome="As dez cópulas ajustadas">
+      <div class="escala"><table class="tab">
+        <tr><th>Cópula</th><th>$\ell$</th><th>AIC</th><th>$\lambda$ crise</th><th>$\lambda$ benigno</th></tr>
+        <tr><td>t</td><td>87,96</td><td>−171,9</td><td>0,18</td><td>0,18</td></tr>
+        <tr><td>Gumbel inf-dir</td><td>66,11</td><td>−130,2</td><td>0</td><td>0,25</td></tr>
+        <tr><td>Gumbel sup-esq</td><td>65,15</td><td>−128,3</td><td>0,25</td><td>0</td></tr>
+        <tr><td>Normal</td><td>54,53</td><td>?</td><td>0</td><td>0</td></tr>
+        <tr><td>Joe inf-dir</td><td>54,20</td><td>−106,4</td><td>0</td><td>0,30</td></tr>
+        <tr><td>Joe sup-esq</td><td>52,13</td><td>−102,3</td><td>0,29</td><td>0</td></tr>
+        <tr><td>Clayton inf-dir</td><td>51,49</td><td>−101,0</td><td>0</td><td>0,22</td></tr>
+        <tr><td>Clayton sup-esq</td><td>48,19</td><td>−94,4</td><td>0,22</td><td>0</td></tr>
+        <tr><td>Frank</td><td>48,01</td><td>−94,0</td><td>0</td><td>0</td></tr>
+        <tr><td>AMH</td><td>38,81</td><td>−75,6</td><td>0</td><td>0</td></tr>
+      </table></div>
+      <p>A t tem 2 parâmetros ($\hat\rho = -0{,}291$, $\hat\nu = 3{,}60$); as outras, 1.</p>
+    </div>
+    <div class="lacunas">
+      <p>AIC da normal ($k = 1$): <input class="lacuna" data-resp="-107.06" data-tol="0.02" aria-label="AIC normal"></p>
+      <button class="btn" data-conferir>Conferir</button>
+      <p class="dica" hidden>Dica: $-2 \times 54{,}53 + 2$.</p>
+      <div class="resolucao" hidden><p>$-109{,}06 + 2 = -107{,}06$. A normal fica 64,9 unidades atrás da t: com $\rho$ praticamente igual, o que separa as duas é a dependência de cauda.</p></div>
+    </div>
+   </aside>
+  </section>
+  </div>
+
+  <!-- ================= SEÇÃO 5.4 ================= -->
+  <div class="secao" data-numero="5.4" data-titulo="Teste de Vuong" data-livro="Vuong (1989); relatório 2.7 e 3.3">
+
+  <section class="passo" data-titulo="A vantagem é real?">
+   <div class="texto">
+    <h2>Teste de Vuong: comparar dois modelos dia a dia</h2>
+    <p>Uma diferença de AIC não vem com margem de erro. Se uma família vence por poucas unidades, pode ser só flutuação da amostra. Para famílias que não são casos particulares uma da outra, a ferramenta é o teste de Vuong.</p>
+    <p>Para cada dia, compare as log-densidades das duas cópulas já ajustadas: $d_i = \ln \hat c_1(u_i, v_i) - \ln \hat c_2(u_i, v_i)$. É positivo nos dias que o modelo 1 descreve melhor.</p>
+    <div class="formula" data-ref-id="f-vuong" data-ref-tipo="formula" data-ref-nome="Estatística de Vuong">
+      $$Z = \frac{\sqrt{n}\ \class{s1}{\bar d}}{\class{s2}{s_d}}$$
+      <ul class="legenda">
+        <li><span class="s1">$\bar d$</span>: média dos $d_i$</li>
+        <li><span class="s2">$s_d$</span>: desvio-padrão dos $d_i$</li>
+      </ul>
+    </div>
+    <p>Se os dois modelos são igualmente adequados, $E[d_i] = 0$ e $Z$ é aproximadamente normal padrão. $Z &gt; 0$ favorece o modelo 1; valor-p alto quer dizer que os dados não separam os dois.</p>
+    <div class="ideia">O teste de Vuong transforma a diferença de ajuste entre duas cópulas numa estatística normal, com valor-p.</div>
+   </div>
+   <aside class="apoio">
+    <div class="lacunas">
+      <p>Confronto t contra Gumbel sup-esq: a soma dos $d_i$ nos 1205 dias é 22,82 e $s_d = 0{,}2168$.</p>
+      <p>$\bar d =$ <input class="lacuna" data-resp="0.01894" data-tol="0.0001" aria-label="d barra"> (5 casas)</p>
+      <p>$Z =$ <input class="lacuna" data-resp="3.03" data-tol="0.02" aria-label="Z"> (2 casas)</p>
+      <button class="btn" data-conferir>Conferir</button>
+      <p class="dica" hidden>Dica: $\sqrt{1205} = 34{,}71$.</p>
+      <div class="resolucao" hidden><p>$\bar d = 22{,}82/1205 = 0{,}01894$. $Z = 34{,}71 \times 0{,}01894 / 0{,}2168 = 3{,}03$. Valor-p bilateral $\approx 0{,}0024$: uma vantagem desse tamanho apareceria por acaso, sob modelos equivalentes, em cerca de 2 de cada mil amostras.</p></div>
+    </div>
+   </aside>
+  </section>
+
+  <section class="passo" data-titulo="O canto">
+   <div class="texto">
+    <h2>Os dados não sabem o canto da Gumbel, mas sabem que a t é melhor</h2>
+    <p>O teste foi usado em dois tipos de confronto. Entre as duas orientações da mesma família, o valor-p é alto: os dados não determinam em que canto essas famílias concentram os extremos. Contra a vencedora, o valor-p é baixo: a t supera as duas Gumbel e a normal.</p>
+    <div class="exemplo" data-ref-id="ex-vuong" data-ref-tipo="exemplo" data-ref-nome="Resultados do teste de Vuong">
+      <div class="escala"><table class="tab">
+        <tr><th>Confronto</th><th>$Z$</th><th>valor-p</th></tr>
+        <tr><td>Gumbel sup-esq × inf-dir</td><td>−0,11</td><td>0,912</td></tr>
+        <tr><td>Clayton sup-esq × inf-dir</td><td>−0,25</td><td>0,806</td></tr>
+        <tr><td>t × Gumbel sup-esq</td><td>3,03</td><td>0,0024</td></tr>
+        <tr><td>t × Gumbel inf-dir</td><td>2,90</td><td>0,0038</td></tr>
+        <tr><td>t × normal</td><td>3,67</td><td>0,0002</td></tr>
+      </table></div>
+    </div>
+    <p>O contraste mostra que o empate das orientações não é falta de poder do teste: o mesmo teste, nos mesmos dados, separa bem a t das outras. É ausência de informação sobre o canto. Como a t tem cauda nos quatro cantos, nenhum resultado adiante depende dessa questão.</p>
+   </div>
+   <aside class="apoio">
+    <div class="quiz" data-correta="a">
+      <p class="enunciado">No confronto entre as duas orientações da Gumbel, o teste de Vuong deu valor-p 0,912. Qual conclusão é adequada?</p>
+      <div class="alts">
+        <button data-op="a">(a) Os dados não permitem dizer qual orientação é melhor, ou seja, em que canto está a cauda.</button>
+        <button data-op="b">(b) As duas orientações são equivalentes, com 91,2% de probabilidade.</button>
+        <button data-op="c">(c) A orientação sup-esq é melhor, já que a cauda de crise é a mais plausível.</button>
+        <button data-op="d">(d) O teste não tem poder com essa amostra e não deveria ser usado.</button>
+      </div>
+      <div class="fb" data-op="a">Isso. Não rejeitar a hipótese de modelos equivalentes não prova que sejam iguais: só diz que os dados não os separam.</div>
+      <div class="fb" data-op="b">O valor-p é $P(\text{dados tão extremos} \mid H_0)$, não a probabilidade de $H_0$ ser verdadeira.</div>
+      <div class="fb" data-op="c">O teste não favorece nenhuma; o sinal de $Z$ ($-0{,}11$) é ruído. Plausibilidade econômica não é evidência estatística.</div>
+      <div class="fb" data-op="d">Nos mesmos dados o teste separa a t das outras com valores-p de 0,0002 a 0,004. Poder ele tem; o que falta é informação sobre o canto.</div>
+    </div>
+   </aside>
+  </section>
+  </div>
+
+  <!-- ================= SEÇÃO 5.5 ================= -->
+  <div class="secao" data-numero="5.5" data-titulo="Teste de aderência" data-livro="Genest, Rémillard e Beaudoin (2009); relatório 2.8 e 3.3">
+
+  <section class="passo" data-titulo="Cópula empírica">
+   <div class="texto">
+    <h2>A cópula empírica: o juiz que não escolhe família</h2>
+    <p>Vencer a comparação não garante que o modelo descreva bem os dados: a vencedora pode ser só a menos ruim de um grupo ruim. Falta comparar o modelo diretamente com os dados.</p>
+    <div class="definicao" data-ref-id="d-cn" data-ref-tipo="definicao" data-ref-nome="Cópula empírica">
+      <p><strong>Cópula empírica:</strong> $$C_n(u, v) = \frac{1}{n}\sum_{i=1}^{n} \mathbf{1}\{u_i \le u,\ v_i \le v\},$$ a fração dos dias em que os dois percentis (por postos) ficaram abaixo de $(u, v)$ ao mesmo tempo.</p>
+    </div>
+    <p>Ela é um estimador consistente da cópula verdadeira, $\sup_{u,v} |C_n(u, v) - C(u, v)| \to 0$, sem supor família nenhuma. É ruidosa (erro de ordem $n^{-1/2}$), mas é neutra quanto à família, e é isso que a torna um bom juiz.</p>
+    <div class="ideia">A cópula empírica é a fração de dias abaixo de $(u, v)$ nos dois ativos; converge para a cópula verdadeira sem supor família.</div>
+   </div>
+   <aside class="apoio">
+    <div class="prever" data-sim="sim-cn">
+      <p>No ponto $(0{,}2;\ 0{,}8)$, a cópula empírica dos dados fica acima ou abaixo da independência $\Pi(0{,}2;\ 0{,}8) = 0{,}16$?</p>
+      <div class="alts">
+        <button data-op="a">Acima</button>
+        <button data-op="b" data-certa>Abaixo</button>
+        <button data-op="c">Igual</button>
+      </div>
+      <div class="explica" hidden><p>Abaixo: $C_n(0{,}2;\ 0{,}8) = 0{,}129$ contra $\Pi = 0{,}16$. Sob independência, 80% dos dias de Ibovespa entre os 20% piores teriam o dólar abaixo do seu percentil 80; nos dados, só 64% têm, porque muitos desses dias são de dólar em alta forte. No centro, $(0{,}5;\ 0{,}5)$, a empírica também fica abaixo (0,208 contra 0,25). Mova os controles e veja a t acompanhar a empírica de perto.</p></div>
+    </div>
+    <div class="sim" id="sim-cn">
+      <label>$u$ <input type="range" id="cn-u" min="0.05" max="0.95" step="0.05" value="0.5"> <strong id="cn-uv">0,50</strong></label>
+      <label>$v$ <input type="range" id="cn-v" min="0.05" max="0.95" step="0.05" value="0.5"> <strong id="cn-vv">0,50</strong></label>
+      <svg viewBox="0 0 400 230" id="cn-svg" role="img" aria-label="Pares de postos com o retângulo abaixo de u e v, e os valores da cópula empírica, da t, da normal e da independência"></svg>
+    </div>
+   </aside>
+  </section>
+
+  <section class="passo" data-titulo="Sn e reamostragem">
+   <div class="texto">
+    <h2>Estatística $S_n$ e valor-p por reamostragem paramétrica</h2>
+    <div class="formula" data-ref-id="f-sn" data-ref-tipo="formula" data-ref-nome="Estatística de Cramér-von Mises S_n">
+      $$S_n = \sum_{i=1}^{n} \bigl\{C_n(u_i, v_i) - \hat C(u_i, v_i)\bigr\}^2$$
+    </div>
+    <p>É a distância entre o que os dados mostram e o que a família ajustada prevê, acumulada nos dias observados. Quanto maior $S_n$, pior o ajuste.</p>
+    <p>A distribuição de $S_n$ não tem forma fechada. O valor-p sai de <strong>reamostragem paramétrica</strong> (bootstrap) com $N = 200$ repetições:</p>
+    <ol>
+      <li>sorteie $n$ pares da cópula ajustada $\hat C$;</li>
+      <li>transforme em postos e <strong>reestime</strong> o parâmetro nessa amostra;</li>
+      <li>calcule o $S_n$ dela;</li>
+      <li>o valor-p é a fração dos $N$ valores simulados maiores que o $S_n$ observado.</li>
+    </ol>
+    <p>Como cada amostra simulada passa pela mesma construção empírica, o ruído de $C_n$ entra na distribuição de comparação, em vez de ser confundido com falta de ajuste.</p>
+    <p><strong>Resultados:</strong> não rejeita a t (valor-p 0,326); fica no limite para a Gumbel benigna (0,052); rejeita a normal (0,012) e a Frank (0,003).</p>
+   </div>
+   <aside class="apoio">
+    <div class="acheerro">
+      <p>Um colega montou a reamostragem para testar a cópula t. Toque no passo com erro.</p>
+      <ol class="linhas">
+        <li data-fb="Certo: as amostras simuladas vêm do modelo que está sendo testado.">Sortear 1205 pares da cópula t ajustada.</li>
+        <li data-errada data-fb="Erro: o parâmetro tem que ser reestimado em cada amostra simulada, como foi feito nos dados. Usar o parâmetro original faz as amostras simuladas se ajustarem pior do que os dados se ajustaram (que tiveram o parâmetro escolhido para eles), e o teste fica conservador demais.">Calcular o $S_n$ de cada amostra simulada usando o mesmo $\hat\rho$ e $\hat\nu$ estimados nos dados.</li>
+        <li data-fb="Certo: repetir N vezes forma a distribuição de referência.">Repetir 200 vezes e guardar os valores de $S_n$.</li>
+        <li data-fb="Certo: é a definição do valor-p por reamostragem.">Valor-p: fração dos 200 valores maiores que o $S_n$ dos dados.</li>
+      </ol>
+    </div>
+   </aside>
+  </section>
+
+  <section class="passo" data-titulo="Duas ressalvas">
+   <div class="texto">
+    <h2>Por que o valor-p de 0,326 é otimista</h2>
+    <p><strong>1. A família foi escolhida nos mesmos dados.</strong> O valor-p é calculado como se a família tivesse sido fixada antes de olhar os dados. Mas a t chegou ao teste por ter vencido uma busca entre dez, e vencer quer dizer ter o menor desajuste nestes dados. O $S_n$ observado é um mínimo de dez, e mínimos são sistematicamente menores que um sorteio único. Resultado: $S_n$ pequeno demais, valor-p grande demais, aprovação fácil demais.</p>
+    <p><strong>2. O procedimento supõe dias independentes</strong>, e os retornos não são (cap. 7). Há menos informação do que $n = 1205$ sugere.</p>
+    <p>Por isso o trabalho usa o teste para <strong>descartar</strong> famílias claramente inadequadas (a normal e a Frank), e não para atestar a vencedora.</p>
+    <div class="ideia">Um teste de aderência aplicado à família que venceu uma busca nos mesmos dados é otimista: serve para descartar, não para certificar.</div>
+   </div>
+   <aside class="apoio">
+    <div class="quiz" data-correta="c">
+      <p class="enunciado">Dez famílias de cópulas foram comparadas nos mesmos dados, e a vencedora passou num teste de aderência com valor-p 0,33. Qual afirmação descreve melhor esse valor-p?</p>
+      <div class="alts">
+        <button data-op="a">(a) Há 33% de chance de a família vencedora ser a verdadeira.</button>
+        <button data-op="b">(b) Ele é conservador: como a família venceu entre dez, o valor-p real seria ainda maior.</button>
+        <button data-op="c">(c) Ele é otimista: a família foi escolhida por ter o menor desajuste nesses dados, e o teste não desconta essa escolha.</button>
+        <button data-op="d">(d) Ele é exato, porque a reamostragem reestima o parâmetro em cada amostra.</button>
+      </div>
+      <div class="fb" data-op="a">O valor-p não é a probabilidade de a hipótese ser verdadeira; e não rejeitar não prova adequação.</div>
+      <div class="fb" data-op="b">É o contrário: a busca escolhe o menor $S_n$ entre dez, o que puxa o valor-p para cima artificialmente. O valor-p "honesto" seria menor.</div>
+      <div class="fb" data-op="c">Isso. É o mesmo problema de reportar o valor-p do melhor entre dez preditores sem descontar a busca que o elegeu.</div>
+      <div class="fb" data-op="d">Reestimar o parâmetro corrige a estimação dentro da família, mas não a escolha da família entre dez.</div>
+    </div>
+   </aside>
+  </section>
+  </div>
+
+  <div class="nav">
+    <button id="anterior">Anterior</button>
+    <button id="proximo" class="primario">Próximo</button>
+  </div>
+</div>
+
+<!-- ============ RESUMO ============ -->
+<div id="resumo" hidden>
+  <h2>Resumo</h2>
+  <div class="revisao" id="revisao">
+    <h3>Antes de reler, teste-se</h3>
+    <p class="rev-info"></p>
+    <div id="rev-palco"></div>
+    <div class="rev-acoes">
+      <button class="btn primario" id="rev-iniciar">Começar</button>
+      <button class="btn" id="rev-proxima" hidden>Próxima</button>
+    </div>
+  </div>
+  <div class="resumo-grid">
+  <div>
+  <h3>Ideias centrais</h3>
+  <ul class="resumo-lista">
+    <li>Cada marginal é ajustada por máxima verossimilhança entre seis famílias.</li>
+    <li>AIC e BIC descontam o ganho de ter mais parâmetros: 2 ou $\ln n$ por parâmetro.</li>
+    <li>Ibovespa: t de Student pelos dois critérios. Dólar: Johnson SU pelo AIC, logística pelo BIC (escolha frágil).</li>
+    <li>$\hat\nu = 3{,}63 &lt; 4$: a curtose populacional do Ibovespa é infinita.</li>
+    <li>Pseudo-observações: percentis estimados, por postos ($R_i/(n+1)$) ou pela marginal ajustada.</li>
+    <li>Postos para selecionar a família; paramétrica para o VaR.</li>
+    <li>Máxima pseudo-verossimilhança: maximiza $\sum \ln c_\theta(u_i, v_i)$.</li>
+    <li>A t vence as dez por 41,7 unidades de AIC; AIC e BIC dão a mesma ordem.</li>
+    <li>Vuong: as orientações empatam (canto não identificado); a t supera as concorrentes.</li>
+    <li>$S_n$ com reamostragem: não rejeita a t, rejeita normal e Frank; o valor-p é otimista.</li>
+  </ul>
+  <h3>Fórmulas</h3>
+  <p>$\text{AIC} = -2\ell(\hat\theta) + 2k$; $\text{BIC} = -2\ell(\hat\theta) + k\ln n$.</p>
+  <p>Postos: $u_i = R_i/(n + 1)$.</p>
+  <p>Pseudo-verossimilhança: $\hat\theta = \arg\max \sum \ln c_\theta(u_i, v_i)$.</p>
+  <p>Vuong: $d_i = \ln \hat c_1 - \ln \hat c_2$, $Z = \sqrt{n}\,\bar d / s_d$.</p>
+  <p>Aderência: $C_n(u, v) = \frac1n \sum \mathbf{1}\{u_i \le u, v_i \le v\}$; $S_n = \sum (C_n - \hat C)^2$.</p>
+  </div>
+  <div>
+  <h3>Quando usar e quando não usar</h3>
+  <div class="lado">
+    <div><strong>Use</strong><ul class="resumo-lista"><li>AIC e BIC juntos, para ver se a escolha é robusta;</li><li>Vuong quando a diferença de AIC é pequena ou para dar valor-p a uma margem grande;</li><li>$S_n$ para descartar famílias.</li></ul></div>
+    <div><strong>Cuidado</strong><ul class="resumo-lista"><li>valor-p de $S_n$ após seleção é otimista;</li><li>dependência serial deixa todos os valores-p otimistas;</li><li>postos não servem para inverter percentis.</li></ul></div>
+  </div>
+  <h3>Armadilhas</h3>
+  <ul class="resumo-lista">
+    <li>Comparar famílias pela verossimilhança crua.</li>
+    <li>Achar que o BIC pode preferir o modelo maior quando o AIC prefere o menor.</li>
+    <li>Tomar a curtose amostral como estimativa quando $\nu &lt; 4$.</li>
+    <li>Ler valor-p alto como prova de equivalência ou como probabilidade de $H_0$.</li>
+    <li>Reamostrar sem reestimar o parâmetro.</li>
+    <li>Ler a aprovação da vencedora como certificado de adequação.</li>
+  </ul>
+  </div>
+  </div>
+</div>
+
+<div id="painel" hidden>
+  <button class="btn pequeno" id="painel-voltar">← Voltar</button>
+  <h2 id="painel-titulo" style="margin-top:1rem"></h2>
+  <div id="painel-corpo"></div>
+</div>
+
+</div>
+
+<div class="balao" id="balao" role="dialog" aria-live="polite" hidden></div>
+<div class="gaveta" id="gaveta" role="dialog" aria-modal="false" hidden>
+  <div class="gaveta-interno">
+    <div class="gaveta-topo"><strong id="gaveta-titulo"></strong><button class="btn pequeno" id="gaveta-fechar" aria-label="Fechar">✕</button></div>
+    <div id="gaveta-corpo"></div>
+  </div>
+</div>
+
+<script src="../assets/site.js"></script>
+<script src="../assets/refs.js"></script>
+<script src="../assets/estudo.js"></script>
+<script src="../assets/dados-ic.js"></script>
+<script src="../assets/copulas-lib.js"></script>
+<script>
+/* Simulações do cap. 5. Utilitários: svgEl, corVar, fmt, tipografar (estudo.js) e CL (copulas-lib.js). */
+var D = window.DADOS_IC;
+
+/* ===== Log-pseudo-verossimilhança em função de rho ===== */
+(function () {
+  var sl = document.getElementById('mpv-slider');
+  if (!sl) return;
+  var svg = document.getElementById('mpv-svg'), nu = 4;
+  // quantis calculados uma vez (nu fixo)
+  var at = [], bt = [], an = [], bn = [], lgDen = 0;
+  for (var i = 0; i < D.n; i++) {
+    var a = CL.qt(D.u[i], nu), b = CL.qt(D.v[i], nu);
+    at.push(a); bt.push(b); an.push(CL.qnorm(D.u[i])); bn.push(CL.qnorm(D.v[i]));
+    lgDen += Math.log(CL.dt(a, nu)) + Math.log(CL.dt(b, nu));
+  }
+  var cte = CL.lgamma((nu + 2) / 2) - CL.lgamma(nu / 2) - Math.log(nu * Math.PI);
+  function llT(r) {
+    var r2 = 1 - r * r, s = 0;
+    for (var i = 0; i < D.n; i++) s += cte - 0.5 * Math.log(r2) - (nu + 2) / 2 * Math.log(1 + (at[i] * at[i] - 2 * r * at[i] * bt[i] + bt[i] * bt[i]) / (nu * r2));
+    return s - lgDen;
+  }
+  function llN(r) {
+    var r2 = 1 - r * r, s = 0;
+    for (var i = 0; i < D.n; i++) s += -0.5 * Math.log(r2) - (r * r * (an[i] * an[i] + bn[i] * bn[i]) - 2 * r * an[i] * bn[i]) / (2 * r2);
+    return s;
+  }
+  var curvaT = [], curvaN = [], melhorT = [0, -1e9], melhorN = [0, -1e9];
+  for (var r = -0.6; r <= 0.1001; r += 0.01) {
+    var lt = llT(r), ln = llN(r);
+    curvaT.push([r, lt]); curvaN.push([r, ln]);
+    if (lt > melhorT[1]) melhorT = [r, lt];
+    if (ln > melhorN[1]) melhorN = [r, ln];
+  }
+  function desenhar() {
+    var r = +sl.value;
+    document.getElementById('mpv-valor').textContent = fmt(r, 2);
+    CL.limpar(svg);
+    var e = CL.eixos(svg, { x: 50, y: 10, w: 335, h: 165, xmin: -0.6, xmax: 0.1, ymin: -60, ymax: 100,
+      xticks: [-0.6, -0.4, -0.2, 0], yticks: [-50, 0, 50, 100], xfmt: function (v) { return fmt(v, 1); }, xlab: 'ρ', ylab: 'Σ ln c', grade: true });
+    e.g.appendChild(svgEl('path', { d: CL.caminho(curvaN.map(function (c) { return [e.sx(c[0]), e.sy(c[1])]; })), stroke: corVar('--muted'), 'stroke-width': 2.5, fill: 'none' }));
+    e.g.appendChild(svgEl('path', { d: CL.caminho(curvaT.map(function (c) { return [e.sx(c[0]), e.sy(c[1])]; })), stroke: corVar('--accent'), 'stroke-width': 2.5, fill: 'none' }));
+    var lt = llT(r), ln = llN(r);
+    e.g.appendChild(svgEl('line', { x1: e.sx(r), x2: e.sx(r), y1: e.sy(-60), y2: e.sy(100), stroke: corVar('--text'), 'stroke-opacity': 0.35 }));
+    e.g.appendChild(svgEl('circle', { cx: e.sx(r), cy: e.sy(lt), r: 5, fill: corVar('--accent') }));
+    e.g.appendChild(svgEl('circle', { cx: e.sx(r), cy: e.sy(ln), r: 5, fill: corVar('--muted') }));
+    svg.appendChild(svgEl('text', { x: 50, y: 222, 'font-size': 12.5, fill: corVar('--accent'), 'font-weight': 600 }, 't (ν = 4): ' + fmt(lt, 1) + ';  máximo ' + fmt(melhorT[1], 1) + ' em ρ = ' + fmt(melhorT[0], 2)));
+    svg.appendChild(svgEl('text', { x: 50, y: 242, 'font-size': 12.5, fill: corVar('--muted'), 'font-weight': 600 }, 'normal: ' + fmt(ln, 1) + ';  máximo ' + fmt(melhorN[1], 1) + ' em ρ = ' + fmt(melhorN[0], 2)));
+  }
+  sl.addEventListener('input', desenhar);
+  desenhar();
+})();
+
+/* ===== Cópula empírica contra os modelos ===== */
+(function () {
+  var su = document.getElementById('cn-u'), sv = document.getElementById('cn-v');
+  if (!su) return;
+  var svg = document.getElementById('cn-svg'), rho = D.copula.rho, nu = D.copula.nu;
+  function hT(u, s) { return CL.hT(u, s, rho, nu); }
+  function hN(u, s) { return CL.hNormal(u, s, -0.297); }
+  function desenhar() {
+    var u = +su.value, v = +sv.value;
+    document.getElementById('cn-uv').textContent = fmt(u, 2);
+    document.getElementById('cn-vv').textContent = fmt(v, 2);
+    CL.limpar(svg);
+    var e = CL.eixos(svg, { x: 50, y: 10, w: 175, h: 175, xmin: 0, xmax: 1, ymin: 0, ymax: 1, xticks: [0, 1], yticks: [0, 1], xlab: 'u', ylab: 'v' });
+    e.g.appendChild(svgEl('rect', { x: e.sx(0), y: e.sy(v), width: e.sx(u) - e.sx(0), height: e.sy(0) - e.sy(v), fill: corVar('--accent'), 'fill-opacity': 0.15, stroke: corVar('--accent') }));
+    var dentro = 0;
+    for (var i = 0; i < D.n; i++) {
+      var d = D.u[i] <= u && D.v[i] <= v;
+      if (d) dentro++;
+      e.g.appendChild(svgEl('circle', { cx: e.sx(D.u[i]), cy: e.sy(D.v[i]), r: 1.3, fill: corVar(d ? '--accent' : '--muted'), 'fill-opacity': d ? 0.7 : 0.3 }));
+    }
+    var cn = dentro / D.n, ct = CL.Cporh(hT, u, v, 300), cnor = CL.Cporh(hN, u, v, 300), tx = corVar('--text');
+    svg.appendChild(svgEl('text', { x: 240, y: 40, 'font-size': 12.5, fill: tx, 'font-weight': 600 }, 'Cₙ (dados): ' + fmt(cn, 3)));
+    svg.appendChild(svgEl('text', { x: 240, y: 64, 'font-size': 12.5, fill: corVar('--accent') }, 'cópula t: ' + fmt(ct, 3)));
+    svg.appendChild(svgEl('text', { x: 240, y: 86, 'font-size': 12.5, fill: corVar('--muted') }, 'normal: ' + fmt(cnor, 3)));
+    svg.appendChild(svgEl('text', { x: 240, y: 108, 'font-size': 12.5, fill: corVar('--muted') }, 'Π = uv: ' + fmt(u * v, 3)));
+    svg.appendChild(svgEl('text', { x: 240, y: 140, 'font-size': 11, fill: corVar('--muted') }, dentro + ' de ' + D.n + ' dias'));
+    svg.appendChild(svgEl('text', { x: 240, y: 156, 'font-size': 11, fill: corVar('--muted') }, 'no retângulo'));
+  }
+  su.addEventListener('input', desenhar);
+  sv.addEventListener('input', desenhar);
+  desenhar();
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,644 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="estudo-chave" content="ic-copulas/cap-02">
+<title>Cap. 2 — Cópulas e o teorema de Sklar</title>
+<script>
+window.MathJax = {
+  tex: { inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath: [['$$', '$$'], ['\\[', '\\]']] },
+  svg: { fontCache: 'global' }
+};
+</script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/3.2.2/es5/tex-svg.min.js" defer></script>
+<link rel="stylesheet" href="../assets/estudo.css">
+</head>
+<body>
+<nav class="trilho" id="trilho" tabindex="0" aria-label="Sumário do capítulo" aria-expanded="false">
+  <div class="trilho-tracos" id="trilho-tracos" aria-hidden="true"></div>
+  <div class="trilho-painel">
+    <p class="trilho-cap" id="trilho-cap"></p>
+    <div class="trilho-lista" id="trilho-lista"></div>
+    <div class="trilho-rodape" id="trilho-rodape">
+      <button class="btn pequeno" id="btn-formulas">Fórmulas até aqui</button>
+      <button class="btn pequeno" id="btn-ir-resumo">Resumo</button>
+      <a class="btn pequeno" id="btn-inicio" href="../index.html" hidden>Início</a>
+    </div>
+  </div>
+</nav>
+
+<div class="wrap">
+
+<h1>Cap. 2 — Cópulas e o teorema de Sklar</h1>
+<p class="contexto">Onde isso se encaixa: o cap. 1 mostrou que é preciso a <span class="ref" data-ref="d-conjunta">distribuição conjunta</span> $H$, mas sem amarrar as marginais à dependência. Aqui está a ferramenta que faz essa separação.</p>
+
+<div class="abas" role="tablist">
+  <button role="tab" aria-selected="true" data-aba="trilha">Trilha</button>
+  <button role="tab" aria-selected="false" data-aba="resumo">Resumo</button>
+</div>
+
+<div id="trilha">
+  <nav class="subtopicos" id="subtopicos" aria-label="Passos desta seção"></nav>
+  <div class="retomada" id="retomada" hidden></div>
+
+  <!-- ================= SEÇÃO 2.1 ================= -->
+  <div class="secao" data-numero="2.1" data-titulo="Percentis" data-livro="Nelsen 2.1 e 2.3; relatório 2.2; projeto, Definição 2">
+
+  <section class="passo" data-titulo="Valor → percentil">
+   <div class="texto">
+    <h2>Troque o retorno pelo seu percentil</h2>
+    <p>Em vez de dizer "o Ibovespa caiu 2,3% hoje", diga "hoje ficou no percentil 4": foi pior que 96% dos dias. O número novo é $u = F(x)$, o valor da distribuição acumulada no retorno observado.</p>
+    <p>Esse truque tem uma propriedade que sustenta todo o resto: <strong>qualquer que seja a forma de $F$</strong>, o percentil é uniforme.</p>
+    <div class="definicao" data-ref-id="d-integral" data-ref-tipo="definicao" data-ref-nome="Transformada integral de probabilidade">
+      <p><strong>Transformada integral de probabilidade:</strong> se $X$ é contínua com distribuição $F$, então $U = F(X)$ tem distribuição uniforme em $(0, 1)$.</p>
+    </div>
+    <p>Há tantos dias no percentil 10 quanto no 90, por construção. A forma da distribuição do Ibovespa (caudas pesadas, assimetria) <strong>some</strong> quando se passa para percentis.</p>
+    <details class="demo">
+      <summary>Demonstração: $F(X)$ é uniforme</summary>
+      <p>Suponha $F$ contínua e estritamente crescente (o caso geral usa a quase-inversa do próximo passo). Para $u \in (0, 1)$: $$\begin{aligned} P(F(X) \le u) &= P\bigl(X \le F^{-1}(u)\bigr) \\ &= F\bigl(F^{-1}(u)\bigr) = u. \end{aligned}$$ Essa é a distribuição acumulada da uniforme em $(0, 1)$.</p>
+    </details>
+    <div class="ideia">Passar cada retorno para o seu percentil, $u = F(x)$, produz valores uniformes: a forma da marginal desaparece.</div>
+   </div>
+   <aside class="apoio">
+    <div class="prever" data-sim="sim-percentil">
+      <p>O histograma dos 1205 retornos do Ibovespa tem um pico estreito e caudas longas. O histograma dos percentis desses mesmos dias vai ser...</p>
+      <div class="alts">
+        <button data-op="a">Com pico no meio</button>
+        <button data-op="b" data-certa>Plano</button>
+        <button data-op="c">Alto nas pontas</button>
+      </div>
+      <div class="explica" hidden><p>Plano: cada faixa de 10 percentis tem cerca de 120 dos 1205 dias, porque é assim que percentis são definidos. O pico e as caudas do Ibovespa não aparecem mais: a informação sobre a forma da marginal foi embora.</p></div>
+    </div>
+    <div class="sim" id="sim-percentil">
+      <div class="chips" id="pc-chips">
+        <button data-modo="x" class="on">Retornos</button>
+        <button data-modo="u">Percentis</button>
+      </div>
+      <svg viewBox="0 0 400 230" id="pc-svg" role="img" aria-label="Histograma dos retornos do Ibovespa ou dos seus percentis"></svg>
+    </div>
+   </aside>
+  </section>
+
+  <section class="passo" data-titulo="Ida e volta">
+   <div class="texto">
+    <h2>O caminho de volta: do percentil ao valor</h2>
+    <p>A transformada funciona nos dois sentidos. Se $U$ é uniforme, então $X = F^{-1}(U)$ tem distribuição $F$. É assim que se sorteia de qualquer distribuição a partir de um sorteio uniforme, e é o que o cap. 6 usa para gerar dias artificiais.</p>
+    <p>Quando $F$ tem trechos planos ou saltos, a inversa usual não existe. Usa-se então a quase-inversa:</p>
+    <div class="definicao" data-ref-id="d-quase-inversa" data-ref-tipo="definicao" data-ref-nome="Quase-inversa">
+      <p><strong>Quase-inversa</strong> de uma distribuição $F$: $F^{(-1)}(t) = \inf\{x : F(x) \ge t\}$, para $t \in (0, 1)$. Se $F$ é contínua e estritamente crescente, ela é a inversa usual $F^{-1}$.</p>
+    </div>
+    <p>Para os retornos, as marginais ajustadas são contínuas e estritamente crescentes, então $F^{-1}$ é a função quantil de sempre.</p>
+    <div class="ideia">Se $U$ é uniforme, $F^{-1}(U)$ tem distribuição $F$: percentil e valor se convertem nos dois sentidos.</div>
+   </div>
+   <aside class="apoio">
+    <div class="exemplo" data-ref-id="ex-uniforme" data-ref-tipo="exemplo" data-ref-nome="Uniforme em [−1, 1] e exponencial">
+      <p>$X$ uniforme em $[-1, 1]$: $F(x) = (x + 1)/2$ nesse intervalo, e $F^{-1}(u) = 2u - 1$.</p>
+      <p>$Y$ exponencial de taxa 1: $G(y) = 1 - e^{-y}$ para $y \ge 0$, e $G^{-1}(v) = -\ln(1 - v)$.</p>
+    </div>
+    <div class="lacunas">
+      <p>Com as distribuições do exemplo, um sorteio uniforme deu $u = 0{,}9$ e $v = 0{,}5$.</p>
+      <p>$x = F^{-1}(0{,}9) =$ <input class="lacuna" data-resp="0.8" data-tol="0.001" aria-label="x"></p>
+      <p>$y = G^{-1}(0{,}5) =$ <input class="lacuna" data-resp="0.693" data-tol="0.002" aria-label="y"> (3 casas)</p>
+      <button class="btn" data-conferir>Conferir</button>
+      <p class="dica" hidden>Dica: $2 \times 0{,}9 - 1$; e $-\ln(0{,}5) = \ln 2$.</p>
+      <div class="resolucao" hidden><p>$x = 2(0{,}9) - 1 = 0{,}8$: o percentil 90 da uniforme em $[-1, 1]$. $y = -\ln 0{,}5 = 0{,}693$: a mediana da exponencial.</p></div>
+    </div>
+   </aside>
+  </section>
+
+  <section class="passo" data-titulo="Pares de percentis">
+   <div class="texto">
+    <h2>Nos dois ativos ao mesmo tempo: sobra só a relação</h2>
+    <p>Faça o mesmo com o dólar, $v = G(y)$. Cada dia vira um par $(u, v)$ no quadrado $[0, 1] \times [0, 1]$. Cada coordenada, sozinha, é uniforme: a forma do Ibovespa e a do dólar sumiram.</p>
+    <p>Mas o par <strong>não</strong> é uniforme no quadrado. Se o Ibovespa vai mal quando o dólar vai bem, os pares se acumulam perto do canto $(0, 1)$. O que resta no gráfico dos pares é <strong>exclusivamente a dependência</strong>.</p>
+    <p>A distribuição acumulada desses pares de percentis, $P(U \le u, V \le v)$, é o que se chama de <strong>cópula</strong>.</p>
+    <div class="ideia">Nos pares de percentis $(u, v)$, as marginais foram apagadas e só a dependência sobra; a acumulada desses pares é a cópula.</div>
+   </div>
+   <aside class="apoio">
+    <div class="prever" data-sim="sim-morfo">
+      <p>Arraste do gráfico dos retornos para o dos percentis. No quadrado dos percentis, a nuvem...</p>
+      <div class="alts">
+        <button data-op="a" data-certa>Continua descendo</button>
+        <button data-op="b">Fica sem padrão</button>
+        <button data-op="c">Vira uma reta</button>
+      </div>
+      <div class="explica" hidden><p>Continua descendo: passar para percentis preserva a ordem dos dias, e a associação negativa é uma propriedade da ordem (dia de Ibovespa pior tende a ser dia de dólar melhor). O que muda é que a nuvem se espalha pelo quadrado inteiro, sem o miolo apertado e os pontos isolados das caudas.</p></div>
+    </div>
+    <div class="sim" id="sim-morfo">
+      <label>Retornos → percentis <input type="range" id="mf-slider" min="0" max="1" step="0.05" value="0"> <strong id="mf-valor">0%</strong></label>
+      <svg viewBox="0 0 400 300" id="mf-svg" role="img" aria-label="Nuvem dos 1205 dias passando da escala dos retornos para a escala dos percentis"></svg>
+    </div>
+   </aside>
+  </section>
+  </div>
+
+  <!-- ================= SEÇÃO 2.2 ================= -->
+  <div class="secao" data-numero="2.2" data-titulo="Definição" data-livro="Nelsen 2.1–2.2; relatório, Definição 1">
+
+  <section class="passo" data-titulo="Definição">
+   <div class="texto">
+    <h2>Cópula: uma distribuição no quadrado com marginais uniformes</h2>
+    <div class="definicao" data-ref-id="d-copula" data-ref-tipo="definicao" data-ref-nome="Cópula bidimensional">
+      <p><strong>Cópula:</strong> uma função $C : [0, 1]^2 \to [0, 1]$ tal que</p>
+      <p>(i) $C(u, 0) = C(0, v) = 0$ e $C(u, 1) = u$, $C(1, v) = v$, para todos $u, v \in [0, 1]$;</p>
+      <p>(ii) para $u_1 \le u_2$ e $v_1 \le v_2$: $$\begin{aligned} &C(u_2, v_2) - C(u_2, v_1) \\ &\quad - C(u_1, v_2) + C(u_1, v_1) \ge 0. \end{aligned}$$</p>
+    </div>
+    <p><strong>(i) diz que as marginais são uniformes.</strong> $C(u, 1) = u$ significa: a probabilidade de a primeira coordenada ficar abaixo de $u$, sem restrição na segunda, é exatamente $u$. E nada fica abaixo de 0.</p>
+    <p><strong>(ii) diz que nenhum retângulo tem probabilidade negativa.</strong> O lado esquerdo é a probabilidade de o par cair no retângulo $[u_1, u_2] \times [v_1, v_2]$. Uma função com (ii) se chama <strong>2-crescente</strong>.</p>
+    <div class="ideia">Uma cópula é a distribuição acumulada de um par $(U, V)$ com marginais uniformes em $(0, 1)$.</div>
+   </div>
+   <aside class="apoio">
+    <div class="quiz" data-correta="b">
+      <p class="enunciado">Seja $C$ uma cópula e $(U, V)$ um par com distribuição acumulada $C$. Quanto vale $C(0{,}3;\ 1)$, e o que esse número representa?</p>
+      <div class="alts">
+        <button data-op="a">(a) $0{,}3$, a probabilidade de $U \le 0{,}3$ e $V \le 0{,}3$.</button>
+        <button data-op="b">(b) $0{,}3$, a probabilidade de $U \le 0{,}3$, sem restrição sobre $V$.</button>
+        <button data-op="c">(c) Depende de $C$, porque a dependência entre $U$ e $V$ muda essa probabilidade.</button>
+        <button data-op="d">(d) $1$, porque $V \le 1$ sempre acontece.</button>
+      </div>
+      <div class="fb" data-op="a">$C(0{,}3;\ 0{,}3)$ seria a chance de os dois ficarem abaixo de 0,3, e esse valor sim depende da cópula. Aqui o segundo argumento é 1.</div>
+      <div class="fb" data-op="b">Isso. $V \le 1$ é certo, então $C(0{,}3;\ 1) = P(U \le 0{,}3) = 0{,}3$, pela marginal uniforme. É a condição (i).</div>
+      <div class="fb" data-op="c">Toda cópula tem $C(u, 1) = u$: a marginal não depende da dependência. A cópula só influi quando os dois argumentos são menores que 1.</div>
+      <div class="fb" data-op="d">$V \le 1$ é certo, mas o evento ainda exige $U \le 0{,}3$, que tem probabilidade 0,3.</div>
+    </div>
+   </aside>
+  </section>
+
+  <section class="passo" data-titulo="2-crescente">
+   <div class="texto">
+    <h2>A massa de um retângulo pela regra dos quatro cantos</h2>
+    <p>A probabilidade de um retângulo sai de quatro valores da acumulada: soma os cantos de cima à direita e de baixo à esquerda, subtrai os outros dois. Esse número se chama <strong>volume</strong> do retângulo:</p>
+    <div class="formula" data-ref-id="f-volume" data-ref-tipo="formula" data-ref-nome="Volume de um retângulo">
+      $$\begin{aligned} V_C\bigl([u_1, u_2] \times [v_1, v_2]\bigr) = {} &C(u_2, v_2) - C(u_2, v_1) \\ &- C(u_1, v_2) + C(u_1, v_1) \end{aligned}$$
+    </div>
+    <p>Cuidado: <strong>2-crescente não é o mesmo que crescente em cada argumento.</strong> A função $\max(u, v)$ cresce em $u$ e em $v$, mas dá volume $1 - 1 - 1 + 0 = -1$ ao quadrado inteiro, então não é cópula. Já $(2u - 1)(2v - 1)$ é 2-crescente e decresce em $u$ quando $v &lt; 1/2$ (também não é cópula, por falhar a condição (i)).</p>
+    <div class="ideia">2-crescente quer dizer volume não negativo em todo retângulo; não é o mesmo que crescer em cada argumento.</div>
+   </div>
+   <aside class="apoio">
+    <div class="lacunas">
+      <p>Retângulo $[0{,}2;\ 0{,}6] \times [0{,}5;\ 0{,}9]$.</p>
+      <p>Com $C(u, v) = uv$ (independência): volume $=$ <input class="lacuna" data-resp="0.16" data-tol="0.001" aria-label="volume com uv"></p>
+      <p>Com $C(u, v) = \min(u, v)$: volume $=$ <input class="lacuna" data-resp="0.1" data-tol="0.001" aria-label="volume com min"></p>
+      <button class="btn" data-conferir>Conferir</button>
+      <p class="dica" hidden>Dica: $C(0{,}6;\ 0{,}9) - C(0{,}6;\ 0{,}5)$ $- C(0{,}2;\ 0{,}9) + C(0{,}2;\ 0{,}5)$.</p>
+      <div class="resolucao" hidden><p>Independência: $0{,}54 - 0{,}30 - 0{,}18 + 0{,}10 = 0{,}16$, que é $0{,}4 \times 0{,}4$, o produto dos lados. Com $\min$: $0{,}6 - 0{,}5 - 0{,}2 + 0{,}2 = 0{,}1$. Com o mínimo, toda a massa fica na diagonal $u = v$, e o retângulo só pega o trecho de 0,5 a 0,6 dela.</p></div>
+    </div>
+   </aside>
+  </section>
+
+  <section class="passo" data-titulo="M, Π e W">
+   <div class="texto">
+    <h2>Três cópulas de referência</h2>
+    <div class="definicao" data-ref-id="d-mpw" data-ref-tipo="definicao" data-ref-nome="Cópulas M, Π e W">
+      <p>$M(u, v) = \min(u, v)$: <strong>comonotonia</strong>, $V = U$. Os dois andam juntos perfeitamente.</p>
+      <p>$\Pi(u, v) = uv$: <strong>independência</strong>. Saber $U$ não diz nada sobre $V$.</p>
+      <p>$W(u, v) = \max(u + v - 1, 0)$: <strong>contramonotonia</strong>, $V = 1 - U$. Um sobe exatamente quando o outro desce.</p>
+    </div>
+    <p>Para os retornos, $M$ seria "o melhor dia do Ibovespa é sempre o melhor dia do dólar"; $W$, "o melhor de um é sempre o pior do outro". Dados reais ficam entre esses extremos. Ibovespa e dólar estão do lado de $W$, mas longe dela.</p>
+    <div class="ideia">$M$, $\Pi$ e $W$ descrevem dependência positiva perfeita, independência e dependência negativa perfeita.</div>
+   </div>
+   <aside class="apoio">
+    <div class="prever" data-sim="sim-mpw">
+      <p>Qual das três cópulas põe toda a massa sobre a diagonal que vai de $(0, 1)$ a $(1, 0)$?</p>
+      <div class="alts">
+        <button data-op="a">$M$</button>
+        <button data-op="b">$\Pi$</button>
+        <button data-op="c" data-certa>$W$</button>
+      </div>
+      <div class="explica" hidden><p>$W$: sob contramonotonia, $V = 1 - U$, então todos os pares caem na reta $u + v = 1$. As curvas de nível de $W$ são retas paralelas a ela. Em $M$, os pares ficam na diagonal principal, e as curvas de nível têm forma de L.</p></div>
+    </div>
+    <div class="sim" id="sim-mpw">
+      <div class="chips" id="mpw-chips">
+        <button data-c="M">$M$</button>
+        <button data-c="P" class="on">$\Pi$</button>
+        <button data-c="W">$W$</button>
+      </div>
+      <svg viewBox="0 0 400 300" id="mpw-svg" role="img" aria-label="Pares sorteados da cópula escolhida e suas curvas de nível"></svg>
+    </div>
+   </aside>
+  </section>
+  </div>
+
+  <!-- ================= SEÇÃO 2.3 ================= -->
+  <div class="secao" data-numero="2.3" data-titulo="Cotas" data-livro="Nelsen 2.2 e 2.5">
+
+  <section class="passo" data-titulo="Entre W e M">
+   <div class="texto">
+    <h2>Toda cópula fica entre W e M</h2>
+    <div class="formula" data-ref-id="f-frechet" data-ref-tipo="formula" data-ref-nome="Cotas de Fréchet–Hoeffding">
+      $$W(u, v) \le C(u, v) \le M(u, v)$$
+    </div>
+    <p>Vale para todos $u, v \in [0, 1]$. São as <strong>cotas de Fréchet–Hoeffding</strong>. Nenhuma dependência é mais positiva que $M$ nem mais negativa que $W$. Comparar $C$ com $\Pi$ num ponto diz para que lado a dependência pende: abaixo de $\Pi$ no centro do quadrado indica associação negativa.</p>
+    <details class="demo">
+      <summary>Demonstração das duas cotas</summary>
+      <p><strong>Cota superior.</strong> $\{U \le u, V \le v\}$ está contido em $\{U \le u\}$ e em $\{V \le v\}$, então $C(u, v) \le u$ e $C(u, v) \le v$, ou seja, $C \le \min(u, v)$.</p>
+      <p><strong>Cota inferior.</strong> Aplique a condição (ii) ao retângulo $[u, 1] \times [v, 1]$: $$\begin{aligned} &C(1, 1) - C(1, v) \\ &\quad - C(u, 1) + C(u, v) \ge 0, \end{aligned}$$ isto é, $1 - v - u + C(u, v) \ge 0$, logo $C(u, v) \ge u + v - 1$. Como também $C \ge 0$, vale $C \ge \max(u + v - 1, 0)$.</p>
+    </details>
+    <div class="ideia">$W \le C \le M$: as cotas de Fréchet–Hoeffding limitam qualquer dependência.</div>
+   </div>
+   <aside class="apoio">
+    <div class="lacunas">
+      <p>No centro do quadrado, $(u, v) = (0{,}5;\ 0{,}5)$:</p>
+      <p>$W =$ <input class="lacuna" data-resp="0" data-tol="0" aria-label="W"><br>$\Pi =$ <input class="lacuna" data-resp="0.25" data-tol="0.001" aria-label="Pi"><br>$M =$ <input class="lacuna" data-resp="0.5" data-tol="0.001" aria-label="M"></p>
+      <p>Nos dados, a fração de dias com Ibovespa e dólar abaixo das respectivas medianas foi 0,208. Ela fica entre $W$ e $\Pi$, do lado da associação negativa.</p>
+      <button class="btn" data-conferir>Conferir</button>
+      <p class="dica" hidden>Dica: $\max(0{,}5 + 0{,}5 - 1, 0)$; $0{,}5 \times 0{,}5$; $\min(0{,}5;\ 0{,}5)$.</p>
+      <div class="resolucao" hidden><p>$W = 0$, $\Pi = 0{,}25$, $M = 0{,}5$. Os dados dão 0,208: menos dias "os dois abaixo da mediana" do que a independência daria, como esperado para ativos que andam em sentidos opostos. O modelo final do trabalho dá 0,203 nesse ponto.</p></div>
+    </div>
+   </aside>
+  </section>
+  </div>
+
+  <!-- ================= SEÇÃO 2.4 ================= -->
+  <div class="secao" data-numero="2.4" data-titulo="Teorema de Sklar" data-livro="Nelsen 2.3; Sklar (1959); relatório, Teorema 1">
+
+  <section class="passo" data-titulo="O teorema">
+   <div class="texto">
+    <h2>Toda conjunta é uma cópula aplicada às marginais</h2>
+    <div class="formula" data-ref-id="f-sklar" data-ref-tipo="formula" data-ref-nome="Teorema de Sklar">
+      <p><strong>Teorema de Sklar (1959).</strong> Seja $H$ a distribuição conjunta de $(X, Y)$, com marginais $F$ e $G$. Existe uma cópula $C$ tal que</p>
+      $$H(x, y) = \class{s1}{C}\bigl(\class{s2}{F(x)},\ \class{s3}{G(y)}\bigr) \quad \text{para todos } x, y.$$
+      <p>Se $F$ e $G$ são contínuas, $C$ é única. Reciprocamente, dadas uma cópula $C$ e distribuições $F$ e $G$ quaisquer, a fórmula define uma distribuição conjunta com marginais $F$ e $G$.</p>
+      <ul class="legenda">
+        <li><span class="s1">$C$</span>: a dependência</li>
+        <li><span class="s2">$F(x)$</span>: percentil de $x$ no Ibovespa</li>
+        <li><span class="s3">$G(y)$</span>: percentil de $y$ no dólar</li>
+      </ul>
+    </div>
+    <p><strong>A ida</strong> garante que a separação sempre existe e que a parte de dependência é bem definida. <strong>A volta</strong> é o que viabiliza o trabalho: escolher $F$, $G$ e $C$ em famílias diferentes e recompor, com a garantia de obter uma conjunta legítima.</p>
+    <details class="demo">
+      <summary>Demonstração (marginais contínuas e estritamente crescentes)</summary>
+      <p><strong>Ida.</strong> Defina $C(u, v) = H\bigl(F^{-1}(u), G^{-1}(v)\bigr)$. Com $U = F(X)$ e $V = G(Y)$, $$\begin{aligned} &P(U \le u, V \le v) \\ &= P\bigl(X \le F^{-1}(u), Y \le G^{-1}(v)\bigr) \\ &= C(u, v), \end{aligned}$$ então $C$ é a acumulada de um par com marginais uniformes (pela <span class="ref" data-ref="d-integral">transformada integral</span>), e por isso é cópula. Tomando $u = F(x)$, $v = G(y)$: $C(F(x), G(y)) = H(x, y)$. É única porque, sendo $F$ e $G$ contínuas, $F(x)$ e $G(y)$ percorrem todo o $(0,1)$, e $H$ fixa $C$ em todos esses pontos.</p>
+      <p><strong>Volta.</strong> Seja $(U, V)$ com acumulada $C$ e defina $X = F^{-1}(U)$, $Y = G^{-1}(V)$. Então $P(X \le x, Y \le y)$ $= P(U \le F(x), V \le G(y))$ $= C(F(x), G(y))$, uma distribuição conjunta, e suas marginais são $C(F(x), 1) = F(x)$ e $C(1, G(y)) = G(y)$.</p>
+      <p>Com marginais quaisquer (com saltos), a prova usa a <span class="ref" data-ref="d-quase-inversa">quase-inversa</span> e $C$ só fica única nos pontos da imagem de $F$ vezes a de $G$.</p>
+    </details>
+    <div class="pare">
+      <p>Por que a unicidade exige marginais contínuas?</p>
+      <button class="btn" data-revelar>Ver resposta</button>
+      <div class="resposta" hidden><p>Se $F$ tem um salto, alguns valores de $u$ nunca são atingidos por $F(x)$. A igualdade $H(x, y) = C(F(x), G(y))$ só fixa $C$ nos valores atingidos; no resto, cópulas diferentes servem igualmente. Com retornos contínuos, isso não ocorre.</p></div>
+    </div>
+   </div>
+  </section>
+
+  <section class="passo" data-titulo="Ida: extrair C">
+   <div class="texto">
+    <h2>Da conjunta para a cópula</h2>
+    <p>A demonstração da ida já dá a receita: se as marginais são contínuas,</p>
+    <div class="formula" data-ref-id="f-sklar-inversa" data-ref-tipo="formula" data-ref-nome="Cópula a partir da conjunta">
+      $$C(u, v) = H\bigl(F^{-1}(u),\ G^{-1}(v)\bigr)$$
+    </div>
+    <p>Na prática do trabalho, $H$ é desconhecida e a cópula é estimada dos dados (cap. 5). Mas o caminho algébrico ajuda a ver que a cópula é uma propriedade de $H$, escondida atrás das marginais.</p>
+    <div class="ideia">Para extrair a cópula, avalie a conjunta nos quantis: $C(u, v) = H(F^{-1}(u), G^{-1}(v))$.</div>
+   </div>
+   <aside class="apoio">
+    <div class="exemplo" data-ref-id="ex-sklar-ida" data-ref-tipo="exemplo" data-ref-nome="Cópula extraída de uma conjunta">
+      <p>Em $[-1, 1] \times [0, \infty)$, $$H(x, y) = \frac{(x + 1)(e^{y} - 1)}{x + 2e^{y} - 1}.$$ As marginais são as do <span class="ref" data-ref="ex-uniforme">exemplo da uniforme e da exponencial</span>: $F^{-1}(u) = 2u - 1$ e $G^{-1}(v) = -\ln(1 - v)$, ou seja, $e^{y} = 1/(1 - v)$. Substituindo e simplificando: $$C(u, v) = \frac{uv}{u + v - uv}.$$</p>
+    </div>
+    <div class="lacunas">
+      <p>Com essa cópula: $C(0{,}5;\ 0{,}5) =$ <input class="lacuna" data-resp="0.3333" data-tol="0.001" aria-label="C(0,5;0,5)"> (4 casas)</p>
+      <p>A dependência é <input class="lacuna" data-resp="1" data-tol="0" aria-label="sinal"> (1 = positiva, −1 = negativa)</p>
+      <button class="btn" data-conferir>Conferir</button>
+      <p class="dica" hidden>Dica: compare o resultado com $\Pi(0{,}5;\ 0{,}5) = 0{,}25$.</p>
+      <div class="resolucao" hidden><p>$0{,}25 / (0{,}5 + 0{,}5 - 0{,}25)$ $= 0{,}25/0{,}75$ $= 1/3 \approx 0{,}3333$. É maior que $0{,}25$: mais massa no quadrado de baixo à esquerda do que na independência, ou seja, dependência positiva.</p></div>
+    </div>
+   </aside>
+  </section>
+
+  <section class="passo" data-titulo="Volta: montar H">
+   <div class="texto">
+    <h2>Da cópula para a conjunta: escolha as peças à vontade</h2>
+    <p>A recíproca do teorema é uma <strong>fábrica de modelos</strong>: qualquer cópula combinada com quaisquer marginais dá uma distribuição conjunta. Trocar a marginal não mexe na dependência, e trocar a cópula não mexe nas marginais.</p>
+    <p>É exatamente o que faltava no <span class="ref" data-ref="d-conjunta">problema do cap. 1</span>: uma marginal de cauda pesada para o Ibovespa, outra para o dólar, e uma cópula escolhida à parte.</p>
+    <div class="exemplo" data-ref-id="ex-gumbel-exp" data-ref-tipo="exemplo" data-ref-nome="Exponencial bivariada de Gumbel">
+      <p>Marginais exponenciais de taxa $\lambda$, $F(x) = 1 - e^{-\lambda x}$, e a cópula $$\begin{aligned} C_\theta(u, v) = {} &u + v - 1 \\ &+ (1-u)(1-v)\,e^{-\theta \ln(1-u)\ln(1-v)} \end{aligned}$$ com $\theta \in [0, 1]$. Pela recíproca, para $x, y \ge 0$: $$\begin{aligned} H(x, y) = {} &1 - e^{-\lambda x} - e^{-\lambda y} \\ &+ e^{-\lambda(x + y + \lambda\theta xy)}. \end{aligned}$$ Dois parâmetros, um para as marginais ($\lambda$) e outro para a dependência ($\theta$).</p>
+    </div>
+    <div class="ideia">Pela recíproca de Sklar, qualquer cópula com quaisquer marginais dá uma conjunta legítima: as peças se escolhem separadamente.</div>
+   </div>
+   <aside class="apoio">
+    <div class="prever" data-sim="sim-montar">
+      <p>Se você trocar a marginal de $X$ de normal para t (cauda pesada), mantendo a cópula, o painel dos percentis...</p>
+      <div class="alts">
+        <button data-op="a" data-certa>Não muda</button>
+        <button data-op="b">Abre nas pontas</button>
+        <button data-op="c">Fica mais inclinado</button>
+      </div>
+      <div class="explica" hidden><p>Não muda nada: os percentis vêm da cópula, e a marginal só decide para onde cada percentil vai na escala dos retornos. Já o painel dos valores muda: com a t, alguns pontos se afastam muito na horizontal. Trocar a cópula faz o contrário: muda o desenho dos percentis.</p></div>
+    </div>
+    <div class="sim" id="sim-montar">
+      <div class="chips" id="mt-marg"><button data-m="n" class="on">$X$ normal</button><button data-m="t">$X$ t ($\nu = 3$)</button></div>
+      <div class="chips" id="mt-cop"><button data-c="P">Independência</button><button data-c="N" class="on">Cópula normal</button><button data-c="T">Cópula t</button></div>
+      <svg viewBox="0 0 400 230" id="mt-svg" role="img" aria-label="Pares de percentis sorteados da cópula e os mesmos pares na escala dos valores"></svg>
+    </div>
+   </aside>
+  </section>
+
+  <section class="passo" data-titulo="Densidade">
+   <div class="texto">
+    <h2>A densidade conjunta também se separa</h2>
+    <p>Se as distribuições têm densidade, derivar o <span class="ref" data-ref="f-sklar">teorema de Sklar</span> em $x$ e em $y$ separa a densidade conjunta em duas partes: as densidades individuais e um fator de dependência.</p>
+    <div class="formula" data-ref-id="f-densidade" data-ref-tipo="formula" data-ref-nome="Densidade conjunta por Sklar">
+      $$h(x, y) = \class{s1}{c}\bigl(F(x), G(y)\bigr)\, \class{s2}{f(x)}\, \class{s3}{g(y)}$$ $$\class{s1}{c}(u, v) = \frac{\partial^2 C(u, v)}{\partial u\, \partial v}$$
+      <ul class="legenda">
+        <li><span class="s1">$c$</span>: densidade da cópula</li>
+        <li><span class="s2">$f$</span>: densidade do Ibovespa</li>
+        <li><span class="s3">$g$</span>: densidade do dólar</li>
+      </ul>
+    </div>
+    <p>Sob independência, $c \equiv 1$ e sobra $f(x)\,g(y)$. A densidade da cópula mede quanto a conjunta se afasta da independência em cada ponto. É ela que entra na estimação (cap. 5).</p>
+    <details class="demo">
+      <summary>Demonstração: regra da cadeia</summary>
+      <p>$H(x, y) = C(F(x), G(y))$. Derivando em $x$: $\partial_x H = \partial_u C\bigl(F(x), G(y)\bigr) f(x)$. Derivando em $y$: $$\begin{aligned} h(x, y) &= \partial_y \partial_x H \\ &= \partial_v \partial_u C\bigl(F(x), G(y)\bigr)\, g(y)\, f(x). \end{aligned}$$</p>
+    </details>
+   </div>
+   <aside class="apoio">
+    <div class="quiz" data-correta="c">
+      <p class="enunciado">Pela densidade conjunta $h(x, y) = c(F(x), G(y)) f(x) g(y)$, em quais pontos a densidade da cópula vale exatamente 1, qualquer que seja a dependência?</p>
+      <div class="alts">
+        <button data-op="a">(a) Em todos os pontos, já que a cópula tem marginais uniformes.</button>
+        <button data-op="b">(b) Em todos os pontos em que $f(x) = g(y)$.</button>
+        <button data-op="c">(c) Não há pontos garantidos: $c \equiv 1$ só sob independência.</button>
+        <button data-op="d">(d) No centro $(0{,}5;\ 0{,}5)$, que corresponde às medianas.</button>
+      </div>
+      <div class="fb" data-op="a">Marginais uniformes dizem que $\int_0^1 c(u, v)\, dv = 1$ para cada $u$ (a média em cada linha é 1), não que $c = 1$ em cada ponto.</div>
+      <div class="fb" data-op="b">A densidade da cópula não depende de $f$ e $g$: ela é função só de $(u, v)$.</div>
+      <div class="fb" data-op="c">Isso. A densidade da cópula é 1 em toda parte só para $\Pi$. Fora disso, ela é maior que 1 onde a dependência concentra pares e menor onde os afasta, sem pontos fixos garantidos.</div>
+      <div class="fb" data-op="d">No centro, a densidade da cópula normal com $\rho \ne 0$, por exemplo, vale $1/\sqrt{1 - \rho^2} &gt; 1$.</div>
+    </div>
+   </aside>
+  </section>
+  </div>
+
+  <!-- ================= SEÇÃO 2.5 ================= -->
+  <div class="secao" data-numero="2.5" data-titulo="Invariância" data-livro="Nelsen 2.4">
+
+  <section class="passo" data-titulo="Funções crescentes">
+   <div class="texto">
+    <h2>A cópula não liga para mudanças de escala crescentes</h2>
+    <div class="formula" data-ref-id="f-invariancia" data-ref-tipo="formula" data-ref-nome="Invariância da cópula">
+      <p>Se $\alpha$ e $\beta$ são estritamente crescentes, a cópula de $\bigl(\alpha(X), \beta(Y)\bigr)$ é a mesma cópula de $(X, Y)$.</p>
+    </div>
+    <p>Motivo: uma função crescente preserva a ordem dos dias, e portanto os percentis. O dia que era o 4º pior continua o 4º pior.</p>
+    <p>Consequência para o trabalho: como $R = e^{r} - 1$ é crescente em $r$, a cópula dos <strong>retornos simples</strong> é idêntica à dos <strong>log-retornos</strong>. Medir em % ou em reais, idem. A escolha do log mexe nas marginais, nunca na dependência.</p>
+    <details class="demo">
+      <summary>Demonstração</summary>
+      <p>Com $\alpha$ crescente, $\alpha(X) \le a \iff X \le \alpha^{-1}(a)$, então a marginal de $\alpha(X)$ é $F_\alpha(a) = F(\alpha^{-1}(a))$, e o percentil de $\alpha(X)$ é $F_\alpha(\alpha(X)) = F(X) = U$. O mesmo vale para $\beta(Y)$, que tem percentil $V$. O par de percentis é o mesmo $(U, V)$, logo a cópula é a mesma.</p>
+    </details>
+    <div class="ideia">Transformações estritamente crescentes não mudam a cópula: ela só enxerga a ordem.</div>
+   </div>
+   <aside class="apoio">
+    <div class="quiz" data-correta="a">
+      <p class="enunciado">Um analista estima a cópula entre os log-retornos do Ibovespa e do dólar. Um colega estima a cópula entre os retornos simples, em %, das mesmas datas. O que se espera?</p>
+      <div class="alts">
+        <button data-op="a">(a) A mesma cópula, porque o retorno simples é função crescente do log-retorno.</button>
+        <button data-op="b">(b) Cópulas diferentes, porque as distribuições marginais dos dois tipos de retorno são diferentes.</button>
+        <button data-op="c">(c) A mesma cópula só se os retornos forem pequenos, quando $e^{r} - 1 \approx r$.</button>
+        <button data-op="d">(d) A mesma correlação de Pearson e, por isso, a mesma cópula.</button>
+      </div>
+      <div class="fb" data-op="a">Isso. $R = e^{r} - 1$ é estritamente crescente, então os percentis de cada dia não mudam, e a cópula também não. Vale exatamente, não só aproximadamente.</div>
+      <div class="fb" data-op="b">As marginais mudam, sim. Mas a cópula é justamente o que não depende delas: só a ordem dos dias importa.</div>
+      <div class="fb" data-op="c">A invariância é exata para qualquer função estritamente crescente, sem aproximação.</div>
+      <div class="fb" data-op="d">A correlação de Pearson muda com a transformação (ela mede relação linear). A cópula não muda, mas não por causa de Pearson.</div>
+    </div>
+   </aside>
+  </section>
+
+  <section class="passo" data-titulo="Decrescentes">
+   <div class="texto">
+    <h2>Inverter o sentido de uma variável reflete a cópula</h2>
+    <p>Se uma das funções for <strong>decrescente</strong>, a ordem daquela variável se inverte: o percentil $u$ vira $1 - u$. A cópula muda de um jeito previsível:</p>
+    <div class="formula" data-ref-id="f-reflexao" data-ref-tipo="formula" data-ref-nome="Cópula com uma variável invertida">
+      $$C_{-X,\,Y}(u, v) = v - C(1 - u,\ v)$$
+    </div>
+    <p>Geometricamente, é espelhar o quadrado no eixo horizontal: a nuvem que subia passa a descer. O cap. 4 usa exatamente isso para adaptar famílias que só descrevem associação positiva a dados com associação negativa, como Ibovespa e dólar.</p>
+    <details class="demo">
+      <summary>Demonstração</summary>
+      <p>O percentil de $-X$ é $1 - U$ (com $X$ contínua). Então $$\begin{aligned} &P(1 - U \le u,\ V \le v) \\ &= P(U \ge 1 - u,\ V \le v) \\ &= P(V \le v) - P(U &lt; 1 - u,\ V \le v), \end{aligned}$$ que é $v - C(1 - u, v)$.</p>
+    </details>
+    <div class="ideia">Trocar $X$ por $-X$ espelha a cópula: $C_{-X,Y}(u, v) = v - C(1 - u, v)$.</div>
+   </div>
+   <aside class="apoio">
+    <div class="pare">
+      <p>Use a fórmula para descobrir a cópula de $(-X, Y)$ quando $X$ e $Y$ são independentes. O resultado faz sentido?</p>
+      <button class="btn" data-revelar>Ver resposta</button>
+      <div class="resposta" hidden><p>$v - (1 - u)v$ $= v - v + uv$ $= uv = \Pi$. Faz sentido: se $X$ e $Y$ são independentes, $-X$ e $Y$ também são. Inverter uma variável independente continua dando independência.</p></div>
+    </div>
+    <div class="pare">
+      <p>E se $Y = X$ (cópula $M$)? Qual a cópula de $(-X, X)$?</p>
+      <button class="btn" data-revelar>Ver resposta</button>
+      <div class="resposta" hidden><p>$v - \min(1 - u, v)$. Se $v \le 1 - u$, dá $0$; se $v &gt; 1 - u$, dá $u + v - 1$. Ou seja, $\max(u + v - 1, 0) = W$: inverter um lado da comonotonia dá a contramonotonia.</p></div>
+    </div>
+   </aside>
+  </section>
+  </div>
+
+  <div class="nav">
+    <button id="anterior">Anterior</button>
+    <button id="proximo" class="primario">Próximo</button>
+  </div>
+</div>
+
+<!-- ============ RESUMO ============ -->
+<div id="resumo" hidden>
+  <h2>Resumo</h2>
+  <div class="revisao" id="revisao">
+    <h3>Antes de reler, teste-se</h3>
+    <p class="rev-info"></p>
+    <div id="rev-palco"></div>
+    <div class="rev-acoes">
+      <button class="btn primario" id="rev-iniciar">Começar</button>
+      <button class="btn" id="rev-proxima" hidden>Próxima</button>
+    </div>
+  </div>
+  <div class="resumo-grid">
+  <div>
+  <h3>Ideias centrais</h3>
+  <ul class="resumo-lista">
+    <li>$U = F(X)$ é uniforme: o percentil apaga a forma da marginal.</li>
+    <li>$X = F^{-1}(U)$ tem distribuição $F$: percentil e valor se convertem nos dois sentidos.</li>
+    <li>Nos pares de percentis só sobra a dependência; a acumulada deles é a cópula.</li>
+    <li>Cópula: acumulada no quadrado com marginais uniformes e volume não negativo em todo retângulo.</li>
+    <li>2-crescente não é crescer em cada argumento.</li>
+    <li>$M$, $\Pi$ e $W$: comonotonia, independência e contramonotonia.</li>
+    <li>Toda cópula fica entre $W$ e $M$.</li>
+    <li>Sklar: $H = C(F, G)$; $C$ única com marginais contínuas; a recíproca monta modelos.</li>
+    <li>A densidade conjunta é $c \cdot f \cdot g$.</li>
+    <li>Funções crescentes não mudam a cópula; inverter uma variável a espelha.</li>
+  </ul>
+  <h3>Fórmulas</h3>
+  <p>Sklar: $H(x, y) = C(F(x), G(y))$; inversa: $C(u, v) = H(F^{-1}(u), G^{-1}(v))$.</p>
+  <p>Volume: $V_C = C(u_2, v_2) - C(u_2, v_1)$ $- C(u_1, v_2) + C(u_1, v_1) \ge 0$.</p>
+  <p>Cotas: $\max(u + v - 1, 0) \le C(u, v) \le \min(u, v)$.</p>
+  <p>Densidade: $h(x, y) = c(F(x), G(y)) f(x) g(y)$, $c = \partial^2 C / \partial u \partial v$.</p>
+  <p>Reflexão: $C_{-X, Y}(u, v) = v - C(1 - u, v)$.</p>
+  </div>
+  <div>
+  <h3>Quando usar e quando não usar</h3>
+  <div class="lado">
+    <div><strong>A cópula ajuda quando</strong><ul class="resumo-lista"><li>as marginais têm formas que nenhuma família bivariada pronta acomoda;</li><li>se quer trocar uma peça (marginal ou dependência) sem refazer o resto;</li><li>a dependência deve valer em qualquer escala crescente.</li></ul></div>
+    <div><strong>Cuidado quando</strong><ul class="resumo-lista"><li>as marginais têm saltos: a cópula deixa de ser única;</li><li>uma variável entra com sinal trocado: a cópula é espelhada, não a mesma.</li></ul></div>
+  </div>
+  <h3>Armadilhas</h3>
+  <ul class="resumo-lista">
+    <li>Confundir $C(u, 1) = u$ (marginal) com $C(u, u)$ (os dois abaixo de $u$).</li>
+    <li>Achar que crescente em cada argumento basta para 2-crescente.</li>
+    <li>Achar que a densidade da cópula vale 1 em algum ponto fixo: só sob independência.</li>
+    <li>Achar que trocar log-retorno por retorno simples muda a cópula.</li>
+    <li>Confundir a invariância da cópula com a da correlação de Pearson, que não é invariante.</li>
+  </ul>
+  </div>
+  </div>
+</div>
+
+<div id="painel" hidden>
+  <button class="btn pequeno" id="painel-voltar">← Voltar</button>
+  <h2 id="painel-titulo" style="margin-top:1rem"></h2>
+  <div id="painel-corpo"></div>
+</div>
+
+</div>
+
+<div class="balao" id="balao" role="dialog" aria-live="polite" hidden></div>
+<div class="gaveta" id="gaveta" role="dialog" aria-modal="false" hidden>
+  <div class="gaveta-interno">
+    <div class="gaveta-topo"><strong id="gaveta-titulo"></strong><button class="btn pequeno" id="gaveta-fechar" aria-label="Fechar">✕</button></div>
+    <div id="gaveta-corpo"></div>
+  </div>
+</div>
+
+<script src="../assets/site.js"></script>
+<script src="../assets/refs.js"></script>
+<script src="../assets/estudo.js"></script>
+<script src="../assets/dados-ic.js"></script>
+<script src="../assets/copulas-lib.js"></script>
+<script>
+/* Simulações do cap. 2. Utilitários: svgEl, corVar, fmt, tipografar (estudo.js) e CL (copulas-lib.js). */
+var D = window.DADOS_IC;
+function ligarChips(id, aoMudar) {
+  var box = document.getElementById(id);
+  box.querySelectorAll('button').forEach(function (b) {
+    b.addEventListener('click', function () {
+      box.querySelectorAll('button').forEach(function (x) { x.classList.remove('on'); });
+      b.classList.add('on');
+      aoMudar(b);
+    });
+  });
+}
+function escolhido(id, attr) { return document.querySelector('#' + id + ' button.on').getAttribute(attr); }
+
+/* ===== Histograma: retornos ou percentis ===== */
+(function () {
+  var svg = document.getElementById('pc-svg');
+  if (!svg) return;
+  function desenhar() {
+    var modo = escolhido('pc-chips', 'data-modo');
+    CL.limpar(svg);
+    var dados = modo === 'x' ? D.x : D.u, nb = modo === 'x' ? 48 : 10;
+    var lo = modo === 'x' ? -8 : 0, hi = modo === 'x' ? 8 : 1, larg = (hi - lo) / nb, cont = new Array(nb).fill(0);
+    dados.forEach(function (v) { var b = Math.floor((Math.max(lo, Math.min(hi - 1e-9, v)) - lo) / larg); cont[b]++; });
+    var ymax = modo === 'x' ? 260 : 260;
+    var e = CL.eixos(svg, { x: 46, y: 10, w: 340, h: 170, xmin: lo, xmax: hi, ymin: 0, ymax: ymax,
+      xticks: modo === 'x' ? [-8, -4, 0, 4, 8] : [0, 0.2, 0.4, 0.6, 0.8, 1], yticks: [0, 100, 200],
+      xfmt: modo === 'x' ? undefined : function (v) { return fmt(v, 1); },
+      xlab: modo === 'x' ? 'log-retorno do Ibovespa (%), extremos somados nas pontas' : 'percentil u = F(x)', ylab: 'dias' });
+    cont.forEach(function (c, i) {
+      e.g.appendChild(svgEl('rect', { x: e.sx(lo + i * larg) + 0.5, y: e.sy(Math.min(c, ymax)), width: Math.max(1, e.sx(lo + (i + 1) * larg) - e.sx(lo + i * larg) - 1),
+        height: e.sy(0) - e.sy(Math.min(c, ymax)), fill: corVar(modo === 'x' ? '--muted' : '--accent'), 'fill-opacity': modo === 'x' ? 0.5 : 0.75 }));
+    });
+  }
+  ligarChips('pc-chips', desenhar);
+  desenhar();
+})();
+
+/* ===== Nuvem: retornos → percentis ===== */
+(function () {
+  var sl = document.getElementById('mf-slider');
+  if (!sl) return;
+  var svg = document.getElementById('mf-svg');
+  var xmin = Math.min.apply(null, D.x), xmax = Math.max.apply(null, D.x), ymin = Math.min.apply(null, D.y), ymax = Math.max.apply(null, D.y);
+  function desenhar() {
+    var s = +sl.value;
+    document.getElementById('mf-valor').textContent = fmt(100 * s, 0) + '%';
+    CL.limpar(svg);
+    var e = CL.eixos(svg, { x: 50, y: 10, w: 240, h: 240, xmin: 0, xmax: 1, ymin: 0, ymax: 1, xticks: [0, 0.5, 1], yticks: [0, 0.5, 1],
+      xfmt: function (v) { return fmt(v, 1); }, yfmt: function (v) { return fmt(v, 1); },
+      xlab: s < 0.5 ? 'Ibovespa (escala do retorno)' : 'u (percentil do Ibovespa)', ylab: s < 0.5 ? 'dólar (escala do retorno)' : 'v (percentil do dólar)' });
+    for (var i = 0; i < D.n; i++) {
+      var a = (D.x[i] - xmin) / (xmax - xmin), b = (D.y[i] - ymin) / (ymax - ymin);
+      var px = (1 - s) * a + s * D.u[i], py = (1 - s) * b + s * D.v[i];
+      e.g.appendChild(svgEl('circle', { cx: e.sx(px), cy: e.sy(py), r: 1.7, fill: corVar('--accent'), 'fill-opacity': 0.45 }));
+    }
+    var tx = corVar('--muted');
+    svg.appendChild(svgEl('text', { x: 305, y: 40, 'font-size': 11.5, fill: tx }, s < 1 ? 'Arraste até' : 'Cada eixo é'));
+    svg.appendChild(svgEl('text', { x: 305, y: 56, 'font-size': 11.5, fill: tx }, s < 1 ? '100% para ver' : 'uniforme; a'));
+    svg.appendChild(svgEl('text', { x: 305, y: 72, 'font-size': 11.5, fill: tx }, s < 1 ? 'os percentis.' : 'nuvem mostra só'));
+    if (s === 1) svg.appendChild(svgEl('text', { x: 305, y: 88, 'font-size': 11.5, fill: tx }, 'a dependência.'));
+  }
+  sl.addEventListener('input', desenhar);
+  desenhar();
+})();
+
+/* ===== M, Π e W: pares e curvas de nível ===== */
+(function () {
+  var svg = document.getElementById('mpw-svg');
+  if (!svg) return;
+  var r = CL.rng(11), us = [], ws = [];
+  for (var i = 0; i < 250; i++) { us.push(r()); ws.push(r()); }
+  function desenhar() {
+    var c = escolhido('mpw-chips', 'data-c');
+    CL.limpar(svg);
+    var e = CL.eixos(svg, { x: 50, y: 10, w: 240, h: 240, xmin: 0, xmax: 1, ymin: 0, ymax: 1, xticks: [0, 0.5, 1], yticks: [0, 0.5, 1],
+      xfmt: function (v) { return fmt(v, 1); }, yfmt: function (v) { return fmt(v, 1); }, xlab: 'u', ylab: 'v' });
+    [0.2, 0.4, 0.6, 0.8].forEach(function (k) {
+      var pts = [];
+      if (c === 'M') pts = [[k, 1], [k, k], [1, k]];
+      else if (c === 'W') pts = [[k, 1], [1, k]];
+      else for (var u = k; u <= 1.0001; u += 0.01) pts.push([u, k / u]);
+      e.g.appendChild(svgEl('path', { d: CL.caminho(pts.map(function (p) { return [e.sx(p[0]), e.sy(p[1])]; })), stroke: corVar('--roxo'), 'stroke-width': 1.5, fill: 'none', 'stroke-opacity': 0.8 }));
+      var lab = c === 'M' ? [k, k] : c === 'W' ? [(1 + k) / 2, (1 + k) / 2] : [Math.sqrt(k), Math.sqrt(k)];
+      e.g.appendChild(svgEl('text', { x: e.sx(lab[0]) + 4, y: e.sy(lab[1]) - 4, 'font-size': 10.5, fill: corVar('--roxo') }, fmt(k, 1)));
+    });
+    for (i = 0; i < us.length; i++) {
+      var u0 = us[i], v0 = c === 'M' ? u0 : c === 'W' ? 1 - u0 : ws[i];
+      e.g.appendChild(svgEl('circle', { cx: e.sx(u0), cy: e.sy(v0), r: 2.2, fill: corVar('--accent'), 'fill-opacity': 0.6 }));
+    }
+    var nome = { M: 'M: V = U', P: 'Π: independentes', W: 'W: V = 1 − U' }[c];
+    svg.appendChild(svgEl('text', { x: 302, y: 40, 'font-size': 12, fill: corVar('--text'), 'font-weight': 600 }, nome));
+    svg.appendChild(svgEl('text', { x: 302, y: 60, 'font-size': 11, fill: corVar('--roxo') }, 'roxo: C(u, v) = k'));
+    svg.appendChild(svgEl('text', { x: 302, y: 76, 'font-size': 11, fill: corVar('--accent') }, 'azul: pares (U, V)'));
+  }
+  ligarChips('mpw-chips', desenhar);
+  desenhar();
+})();
+
+/* ===== Montar a conjunta: cópula + marginais ===== */
+(function () {
+  var svg = document.getElementById('mt-svg');
+  if (!svg) return;
+  var N = 400, rho = -0.5;
+  var pares = {
+    P: (function () { var r = CL.rng(5), o = []; for (var i = 0; i < N; i++) o.push([r(), r()]); return o; })(),
+    N: CL.sortearNormal(rho, N, CL.rng(5)),
+    T: CL.sortearT(rho, 2, N, CL.rng(5))
+  };
+  function desenhar() {
+    var m = escolhido('mt-marg', 'data-m'), c = escolhido('mt-cop', 'data-c');
+    CL.limpar(svg);
+    var a = CL.eixos(svg, { x: 46, y: 10, w: 140, h: 150, xmin: 0, xmax: 1, ymin: 0, ymax: 1, xticks: [0, 1], yticks: [0, 1], xlab: 'u', ylab: 'v' });
+    var b = CL.eixos(svg, { x: 246, y: 10, w: 140, h: 150, xmin: -6, xmax: 6, ymin: -3.5, ymax: 3.5, xticks: [-6, 0, 6], yticks: [-3, 0, 3], xlab: 'x', ylab: 'y' });
+    pares[c].forEach(function (p) {
+      var u = Math.min(Math.max(p[0], 1e-6), 1 - 1e-6), v = Math.min(Math.max(p[1], 1e-6), 1 - 1e-6);
+      a.g.appendChild(svgEl('circle', { cx: a.sx(u), cy: a.sy(v), r: 1.8, fill: corVar('--accent'), 'fill-opacity': 0.55 }));
+      var x = m === 'n' ? CL.qnorm(u) : CL.qt(u, 3) / Math.sqrt(3), y = CL.qnorm(v);
+      b.g.appendChild(svgEl('circle', { cx: b.sx(x), cy: b.sy(y), r: 1.8, fill: corVar('--s3'), 'fill-opacity': 0.55 }));
+    });
+    svg.appendChild(svgEl('text', { x: 46, y: 222, 'font-size': 11, fill: corVar('--muted') }, 'percentis: vêm da cópula'));
+    svg.appendChild(svgEl('text', { x: 222, y: 222, 'font-size': 11, fill: corVar('--muted') }, 'valores: x = F⁻¹(u), y = G⁻¹(v)'));
+  }
+  ligarChips('mt-marg', desenhar);
+  ligarChips('mt-cop', desenhar);
+  desenhar();
+})();
+</script>
+</body>
+</html>

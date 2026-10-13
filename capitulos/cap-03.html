@@ -1,0 +1,495 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="estudo-chave" content="ic-copulas/cap-03">
+<title>Cap. 3 — Medindo dependência: Kendall e as caudas</title>
+<script>
+window.MathJax = {
+  tex: { inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath: [['$$', '$$'], ['\\[', '\\]']] },
+  svg: { fontCache: 'global' }
+};
+</script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/3.2.2/es5/tex-svg.min.js" defer></script>
+<link rel="stylesheet" href="../assets/estudo.css">
+</head>
+<body>
+<nav class="trilho" id="trilho" tabindex="0" aria-label="Sumário do capítulo" aria-expanded="false">
+  <div class="trilho-tracos" id="trilho-tracos" aria-hidden="true"></div>
+  <div class="trilho-painel">
+    <p class="trilho-cap" id="trilho-cap"></p>
+    <div class="trilho-lista" id="trilho-lista"></div>
+    <div class="trilho-rodape" id="trilho-rodape">
+      <button class="btn pequeno" id="btn-formulas">Fórmulas até aqui</button>
+      <button class="btn pequeno" id="btn-ir-resumo">Resumo</button>
+      <a class="btn pequeno" id="btn-inicio" href="../index.html" hidden>Início</a>
+    </div>
+  </div>
+</nav>
+
+<div class="wrap">
+
+<h1>Cap. 3 — Medindo dependência: Kendall e as caudas</h1>
+<p class="contexto">Onde isso se encaixa: a <span class="ref" data-ref="d-copula">cópula</span> descreve a dependência inteira, mas é uma função. Aqui estão os números que a resumem, e por que a correlação usual não basta para falar de perdas extremas.</p>
+
+<div class="abas" role="tablist">
+  <button role="tab" aria-selected="true" data-aba="trilha">Trilha</button>
+  <button role="tab" aria-selected="false" data-aba="resumo">Resumo</button>
+</div>
+
+<div id="trilha">
+  <nav class="subtopicos" id="subtopicos" aria-label="Passos desta seção"></nav>
+  <div class="retomada" id="retomada" hidden></div>
+
+  <!-- ================= SEÇÃO 3.1 ================= -->
+  <div class="secao" data-numero="3.1" data-titulo="Limites de Pearson" data-livro="Embrechts, McNeil e Straumann (2002); relatório 2.5 e 3.1">
+
+  <section class="passo" data-titulo="Pearson">
+   <div class="texto">
+    <h2>A correlação de Pearson mede o quanto a nuvem parece uma reta</h2>
+    <p>A medida mais conhecida é a correlação linear: $$\rho_P = \frac{\operatorname{Cov}(X, Y)}{\sigma_X\, \sigma_Y}.$$ Ela vale $\pm 1$ só quando os pontos caem exatamente numa reta.</p>
+    <p>O problema para o trabalho: $\rho_P$ depende das <strong>marginais</strong>, não só da dependência. Aplique uma função crescente aos dados, como $e^{3x}$, e a ordem dos dias fica igual, a <span class="ref" data-ref="f-invariancia">cópula fica igual</span>, mas $\rho_P$ muda.</p>
+    <p>No exemplo dos cinco dias, $\rho_P = -0{,}70$. Depois de aplicar $e^{3x}$ a cada coordenada, $\rho_P = -0{,}47$. Mesma dependência, número diferente.</p>
+    <div class="ideia">A correlação de Pearson mistura dependência e marginais: muda sob transformações crescentes, que não mudam a cópula.</div>
+   </div>
+   <aside class="apoio">
+    <div class="exemplo" data-ref-id="ex-cinco-dias" data-ref-tipo="exemplo" data-ref-nome="Cinco dias de retornos">
+      <p>Cinco dias inventados, com os retornos do dia em %.</p>
+      <div class="escala"><table class="tab">
+        <tr><th>Dia</th><th>Ibovespa $x$</th><th>dólar $y$</th></tr>
+        <tr><td>A</td><td>1,2</td><td>−0,4</td></tr>
+        <tr><td>B</td><td>−0,8</td><td>0,6</td></tr>
+        <tr><td>C</td><td>0,3</td><td>0,1</td></tr>
+        <tr><td>D</td><td>−1,5</td><td>0,2</td></tr>
+        <tr><td>E</td><td>0,6</td><td>−0,9</td></tr>
+      </table></div>
+    </div>
+    <div class="pare">
+      <p>Se você trocasse os retornos pelos seus postos (1 para o menor, 5 para o maior) e calculasse Pearson nos postos, ele mudaria com a transformação $e^{3x}$?</p>
+      <button class="btn" data-revelar>Ver resposta</button>
+      <div class="resposta" hidden><p>Não. Os postos não mudam com funções crescentes, então Pearson calculado nos postos também não muda. Esse é o coeficiente de Spearman: Pearson aplicado aos percentis, uma medida que depende só da cópula.</p></div>
+    </div>
+   </aside>
+  </section>
+
+  <section class="passo" data-titulo="Três armadilhas">
+   <div class="texto">
+    <h2>Três armadilhas da correlação em gestão de risco</h2>
+    <p><strong>1. Correlação zero não é independência.</strong> Com $X$ normal padrão e $Y = X^2$, $\rho_P = 0$, mas $Y$ é função de $X$.</p>
+    <p><strong>2. Com as marginais fixadas, nem todo valor entre $-1$ e $1$ é possível.</strong> Se $X$ e $Y$ são log-normais com desvios diferentes, a correlação máxima, alcançada quando $Y$ é função crescente de $X$, pode ficar perto de zero. Uma correlação "baixa" pode ser a dependência mais forte possível.</p>
+    <p><strong>3. Um número não descreve as caudas.</strong> Duas cópulas com a mesma correlação podem ter comportamentos opostos nos dias extremos. É a armadilha que mais pesa para este trabalho.</p>
+    <div class="ideia">Correlação zero não garante independência, o intervalo possível depende das marginais, e um único número não diz nada sobre extremos.</div>
+    <details class="demo">
+      <summary>De onde vem a correlação máxima das log-normais</summary>
+      <p>Sejam $X = e^{Z}$ e $Y = e^{\sigma Z'}$, com $Z, Z'$ normais padrão. A correlação é máxima quando $Z' = Z$ (comonotonia) e mínima quando $Z' = -Z$ (contramonotonia). Usando $E[e^{aZ}] = e^{a^2/2}$: $$\rho_{\max} = \frac{e^{\sigma} - 1}{\sqrt{(e - 1)(e^{\sigma^2} - 1)}}$$ $$\rho_{\min} = \frac{e^{-\sigma} - 1}{\sqrt{(e - 1)(e^{\sigma^2} - 1)}}.$$ As duas vão a zero quando $\sigma$ cresce.</p>
+    </details>
+   </div>
+   <aside class="apoio">
+    <div class="prever" data-sim="sim-lognormal">
+      <p>$X$ e $Y$ log-normais, com $Y$ função crescente de $X$ (dependência positiva perfeita). Aumentando o desvio $\sigma$ de $Y$, a correlação de Pearson entre eles...</p>
+      <div class="alts">
+        <button data-op="a">Fica em 1</button>
+        <button data-op="b" data-certa>Cai para perto de 0</button>
+        <button data-op="c">Fica negativa</button>
+      </div>
+      <div class="explica" hidden><p>Cai para perto de zero, mesmo com $Y$ sendo função exata de $X$. Com $\sigma = 3$, a correlação máxima possível é 0,16; com $\sigma = 5$, 0,0004. A reta é uma péssima descrição de uma relação crescente muito curva, e Pearson só mede reta. A cópula, enquanto isso, é sempre $M$.</p></div>
+    </div>
+    <div class="sim" id="sim-lognormal">
+      <label>Desvio $\sigma$ de $\ln Y$ <input type="range" id="ln-slider" min="0.5" max="5" step="0.25" value="1"> <strong id="ln-valor">1,00</strong></label>
+      <svg viewBox="0 0 400 240" id="ln-svg" role="img" aria-label="Correlação máxima e mínima possíveis entre duas log-normais em função do desvio"></svg>
+    </div>
+   </aside>
+  </section>
+
+  <section class="passo" data-titulo="Nos dados">
+   <div class="texto">
+    <h2>Ibovespa e dólar: negativos por qualquer medida</h2>
+    <p>Nos 1205 dias, as três medidas de associação são negativas: Pearson $-0{,}277$, Spearman $-0{,}267$ e $\tau$ de Kendall $-0{,}185$ (o $\tau$ é definido na próxima seção). Valores menores em módulo não indicam dependência mais fraca: cada medida tem sua escala.</p>
+    <p>O sinal é estável, mas a intensidade não. Calculada em janelas móveis de 63 pregões (cerca de um trimestre), a correlação percorre boa parte do intervalo entre $-1$ e $0$ e chega a cruzar o zero.</p>
+    <p>Esse é o argumento concreto para descrever a dependência por uma <strong>função</strong> (a cópula) e não por um número: a relação muda conforme a região da distribuição, e o que interessa é a região das perdas grandes.</p>
+    <div class="ideia">A associação entre Ibovespa e dólar é negativa e estável em sinal, mas não em intensidade; um número só não a resume.</div>
+   </div>
+   <aside class="apoio">
+    <div class="quiz" data-correta="b">
+      <p class="enunciado">Dois pares de ativos têm a mesma correlação de Pearson, $-0{,}28$. O que se pode concluir sobre a chance de os dois pares terem perdas extremas simultâneas (um caindo muito enquanto o outro sobe muito)?</p>
+      <div class="alts">
+        <button data-op="a">(a) É a mesma nos dois pares, porque a correlação é a mesma.</button>
+        <button data-op="b">(b) Nada: a correlação resume a nuvem inteira e não determina o que ocorre nos extremos.</button>
+        <button data-op="c">(c) É maior no par cujas marginais têm caudas mais pesadas, porque a correlação já está fixada.</button>
+        <button data-op="d">(d) É desprezível nos dois, porque $|{-0{,}28}|$ é uma correlação fraca.</button>
+      </div>
+      <div class="fb" data-op="a">Essa é a armadilha 3: cópulas diferentes podem ter a mesma correlação e comportamentos opostos nas caudas.</div>
+      <div class="fb" data-op="b">Isso. A ocorrência conjunta de extremos é uma propriedade da cópula nas pontas do quadrado, e a correlação não a fixa.</div>
+      <div class="fb" data-op="c">Caudas pesadas nas marginais dizem quão grandes são os extremos de cada ativo, não se eles acontecem juntos. Isso é da cópula.</div>
+      <div class="fb" data-op="d">Correlação baixa no conjunto não impede dependência forte nos extremos; os dados do trabalho são exatamente esse caso.</div>
+    </div>
+   </aside>
+  </section>
+  </div>
+
+  <!-- ================= SEÇÃO 3.2 ================= -->
+  <div class="secao" data-numero="3.2" data-titulo="Tau de Kendall" data-livro="Nelsen 5.1.1; relatório 2.6">
+
+  <section class="passo" data-titulo="Concordância">
+   <div class="texto">
+    <h2>Compare os dias dois a dois</h2>
+    <p>Sorteie dois dias. O par é <strong>concordante</strong> se o dia de Ibovespa maior é também o de dólar maior, e <strong>discordante</strong> se é o de dólar menor.</p>
+    <div class="definicao" data-ref-id="d-tau" data-ref-tipo="definicao" data-ref-nome="Tau de Kendall">
+      <p><strong>$\tau$ de Kendall:</strong> com $(X_1, Y_1)$ e $(X_2, Y_2)$ independentes e com a mesma distribuição de $(X, Y)$, $$\begin{aligned} \tau = {} &P\bigl[(X_1 - X_2)(Y_1 - Y_2) &gt; 0\bigr] \\ &- P\bigl[(X_1 - X_2)(Y_1 - Y_2) &lt; 0\bigr]. \end{aligned}$$</p>
+      <p><strong>Estimador:</strong> com $c$ pares concordantes e $d$ discordantes entre os $\binom{n}{2}$ pares de dias, $\hat\tau = (c - d) \big/ \binom{n}{2}$.</p>
+    </div>
+    <p>Vale $+1$ sob concordância total ($M$), $-1$ sob discordância total ($W$) e $0$ sob independência.</p>
+    <div class="ideia">O $\tau$ de Kendall é a probabilidade de dois dias concordarem menos a de discordarem.</div>
+   </div>
+   <aside class="apoio">
+    <div class="lacunas">
+      <p>Nos <span class="ref" data-ref="ex-cinco-dias">cinco dias</span> há $\binom{5}{2} = 10$ pares. O par AE é concordante: $x$ e $y$ caem juntos de A para E.</p>
+      <p>Pares concordantes $c =$ <input class="lacuna" data-resp="2" data-tol="0" aria-label="concordantes"></p>
+      <p>Pares discordantes $d =$ <input class="lacuna" data-resp="8" data-tol="0" aria-label="discordantes"></p>
+      <p>$\hat\tau =$ <input class="lacuna" data-resp="-0.6" data-tol="0.001" aria-label="tau"></p>
+      <button class="btn" data-conferir>Conferir</button>
+      <p class="dica" hidden>Dica: para cada par, veja se $(x_1 - x_2)$ e $(y_1 - y_2)$ têm o mesmo sinal. Só AE e BD concordam.</p>
+      <div class="resolucao" hidden><p>Concordantes: AE ($x$: 1,2 → 0,6 cai; $y$: −0,4 → −0,9 cai) e BD ($x$: −0,8 → −1,5 cai; $y$: 0,6 → 0,2 cai). Os outros 8 são discordantes. $\hat\tau = (2 - 8)/10 = -0{,}6$.</p></div>
+    </div>
+   </aside>
+  </section>
+
+  <section class="passo" data-titulo="Só a ordem">
+   <div class="texto">
+    <h2>O τ só enxerga a ordem, e por isso é da cópula</h2>
+    <p>Concordar ou discordar depende só de qual dia é maior, não de quanto. Uma transformação estritamente crescente preserva essas comparações, então <strong>não muda o $\tau$</strong>, a mesma invariância da cópula.</p>
+    <p>Consequência exata: o $\tau$ se escreve só em função de $C$.</p>
+    <div class="formula" data-ref-id="f-tau-copula" data-ref-tipo="formula" data-ref-nome="Tau de Kendall pela cópula">
+      $$\tau = 4 \iint_{[0,1]^2} C(u, v)\, dC(u, v) - 1$$ $$\tau = 4\,E\bigl[C(U, V)\bigr] - 1$$
+    </div>
+    <p>É uma característica da dependência, não das marginais. Por isso cada família de cópulas consegue representar só uma faixa própria de valores de $\tau$, como o cap. 4 vai mostrar.</p>
+    <details class="demo">
+      <summary>Demonstração: τ como função da cópula</summary>
+      <p>Por simetria entre os dois dias, $P[\text{conc.}]$ $= 2P(X_2 &lt; X_1, Y_2 &lt; Y_1)$. Condicionando no primeiro dia e passando para percentis: $$P(X_2 &lt; X_1, Y_2 &lt; Y_1) = E\bigl[C(U_1, V_1)\bigr].$$ Com variáveis contínuas não há empates, então $P[\text{disc.}] = 1 - P[\text{conc.}]$ e $\tau = 2P[\text{conc.}] - 1$ $= 4E[C(U, V)] - 1$.</p>
+      <p>Conferindo com $\Pi$: $E[UV] = 1/4$, então $\tau = 0$.</p>
+    </details>
+   </div>
+   <aside class="apoio">
+    <div class="acheerro">
+      <p>Uma colega trabalha com os <span class="ref" data-ref="ex-cinco-dias">cinco dias</span>. Toque na linha com erro.</p>
+      <ol class="linhas">
+        <li data-fb="Certo: é a correlação de Pearson dos cinco pares.">Pearson nos dados originais: $\rho_P = -0{,}70$.</li>
+        <li data-fb="Certo: a curvatura de e^{3x} muda a forma da nuvem e Pearson muda.">Depois de aplicar $e^{3x}$ e $e^{3y}$: $\rho_P = -0{,}47$.</li>
+        <li data-errada data-fb="Erro: a transformação é crescente, então todo par concordante continua concordante e todo discordante continua discordante. O τ continua −0,6.">Logo o $\tau$ de Kendall também fica menos negativo que $-0{,}6$.</li>
+      </ol>
+    </div>
+   </aside>
+  </section>
+
+  <section class="passo" data-titulo="τ e ρ">
+   <div class="texto">
+    <h2>Nas cópulas normal e t, τ e o parâmetro ρ se convertem</h2>
+    <p>Para as cópulas normal e t (cap. 4), que têm um parâmetro de correlação $\rho$, vale uma relação fechada:</p>
+    <div class="formula" data-ref-id="f-tau-rho" data-ref-tipo="formula" data-ref-nome="Tau nas cópulas normal e t">
+      $$\tau = \frac{2}{\pi} \arcsin \rho \quad \Longleftrightarrow \quad \rho = \sin\!\left(\frac{\pi \tau}{2}\right)$$
+    </div>
+    <p>Nos dados, $\hat\tau = -0{,}185$, com intervalo de 95% por reamostragem $[-0{,}225;\ -0{,}145]$, que não contém o zero. A reamostragem sorteia dias como se fossem independentes; como os retornos têm dependência ao longo do tempo (cap. 7), o intervalo real é mais largo.</p>
+    <p>O modelo final do trabalho, uma cópula t com $\rho = -0{,}2935$, implica $\tau = -0{,}190$: a associação média está calibrada.</p>
+    <p>Outra medida que depende só da cópula é o $\rho$ de <strong>Spearman</strong>, a correlação de Pearson dos percentis: $\rho_S = 12 \iint uv\, dC(u, v) - 3$.</p>
+   </div>
+   <aside class="apoio">
+    <div class="lacunas">
+      <p>Que $\rho$ de uma cópula normal reproduz $\tau = -0{,}185$?</p>
+      <p>$\rho =$ <input class="lacuna" data-resp="-0.287" data-tol="0.002" aria-label="rho"> (3 casas)</p>
+      <p>E qual $\tau$ uma cópula com $\rho = -0{,}5$ implica? $\tau =$ <input class="lacuna" data-resp="-0.333" data-tol="0.002" aria-label="tau"></p>
+      <button class="btn" data-conferir>Conferir</button>
+      <p class="dica" hidden>Dica: $\sin(-0{,}185\,\pi/2) = \sin(-0{,}2906)$; e $\arcsin(-0{,}5) = -\pi/6$.</p>
+      <div class="resolucao" hidden><p>$\rho = \sin(-0{,}2906) = -0{,}287$. Para $\rho = -0{,}5$: $\tau = \tfrac{2}{\pi}(-\pi/6) = -1/3$. Em módulo, $\tau$ é sempre menor que $\rho$ nessas cópulas, como nos dados ($-0{,}185$ contra $-0{,}29$).</p></div>
+    </div>
+   </aside>
+  </section>
+  </div>
+
+  <!-- ================= SEÇÃO 3.3 ================= -->
+  <div class="secao" data-numero="3.3" data-titulo="Dependência de cauda" data-livro="Nelsen 5.4; Embrechts et al. (2002); Demarta e McNeil (2005); relatório 2.5">
+
+  <section class="passo" data-titulo="Extremos juntos?">
+   <div class="texto">
+    <h2>A pergunta certa: os extremos continuam andando juntos?</h2>
+    <p>Entre os dias em que o dólar ficou entre os 5% de maior alta, em que fração o Ibovespa esteve entre os seus 5% piores? E se o critério apertar para 1%? Para 0,1%?</p>
+    <p>A fração pode ir a zero (os extremos deixam de andar juntos quando ficam raros o bastante) ou estabilizar num valor positivo. O limite é o <strong>coeficiente de dependência de cauda</strong>.</p>
+    <div class="definicao" data-ref-id="d-lambda" data-ref-tipo="definicao" data-ref-nome="Dependência de cauda (canto de crise)">
+      <p><strong>Dependência de cauda no canto de crise</strong> (Ibovespa muito baixo, dólar muito alto): $$\lambda = \lim_{q \to 0^+} P\bigl(U \le q \mid V &gt; 1 - q\bigr).$$</p>
+      <p>Nos cantos da diagonal: $\lambda_L = \lim_{q \to 0^+} C(q, q)/q$ (os dois muito baixos) e $\lambda_U$, análogo para os dois muito altos.</p>
+    </div>
+    <p>$\lambda = 0$ quer dizer que os extremos acabam se desacoplando; $\lambda &gt; 0$, que uma fração deles continua junta por mais que se aperte o critério.</p>
+    <div class="ideia">$\lambda$ é a fração-limite de dias extremos de um ativo que também são extremos no outro, quando o critério de extremo aperta sem fim.</div>
+   </div>
+   <aside class="apoio">
+    <div class="lacunas">
+      <p>Nos 1205 dias, 60 ficaram acima do percentil 95 do dólar. Destes, 16 ficaram abaixo do percentil 5 do Ibovespa.</p>
+      <p>Fração com $q = 5\%$: <input class="lacuna" data-resp="0.267" data-tol="0.002" aria-label="fração"> (3 casas)</p>
+      <p>Sob independência, a fração esperada seria <input class="lacuna" data-resp="0.05" data-tol="0.001" aria-label="fração sob independência"></p>
+      <button class="btn" data-conferir>Conferir</button>
+      <p class="dica" hidden>Dica: sob independência, saber que o dólar foi extremo não muda a chance de o Ibovespa estar abaixo do percentil 5.</p>
+      <div class="resolucao" hidden><p>$16/60 = 0{,}267$. Sob independência, $P(U \le 0{,}05 \mid V &gt; 0{,}95)$ $= P(U \le 0{,}05) = 0{,}05$: a fração observada é mais de 5 vezes isso. Mas uma fração em $q = 5\%$ ainda não é o limite $\lambda$: falta saber como ela se comporta quando $q$ diminui.</p></div>
+    </div>
+   </aside>
+  </section>
+
+  <section class="passo" data-titulo="Normal × t">
+   <div class="texto">
+    <h2>A cópula normal sempre separa os extremos; a t, não</h2>
+    <p>Duas cópulas com quase o mesmo parâmetro de correlação podem discordar completamente sobre os extremos.</p>
+    <p>A <strong>cópula normal</strong> tem $\lambda = 0$ em todos os cantos, por mais forte que seja a correlação (exceto $\rho = \pm 1$). A <strong>cópula t</strong> admite $\lambda &gt; 0$, controlado pelos graus de liberdade $\nu$: quanto menor $\nu$, maior $\lambda$.</p>
+    <p>Na simulação, as curvas são as duas cópulas ajustadas aos dados no trabalho, e os pontos são as frações observadas. Com poucos dias nas regiões extremas (só 11 dias acima do percentil 99 do dólar), os pontos oscilam bastante.</p>
+    <div class="ideia">A cópula normal tem $\lambda = 0$ qualquer que seja a correlação; a cópula t tem $\lambda &gt; 0$, maior quanto menores os graus de liberdade.</div>
+   </div>
+   <aside class="apoio">
+    <div class="prever" data-sim="sim-cauda">
+      <p>Com a cópula normal ajustada aos dados, conforme o critério $q$ de extremo vai a zero, a fração $P(U \le q \mid V &gt; 1 - q)$...</p>
+      <div class="alts">
+        <button data-op="a" data-certa>Vai a zero</button>
+        <button data-op="b">Estabiliza acima de 0</button>
+        <button data-op="c">Cresce</button>
+      </div>
+      <div class="explica" hidden><p>Vai a zero, devagar: em $q = 1\%$ ainda dá uns 0,05, mas o limite é zero. A t estabiliza em 0,159. Em $q = 5\%$ as duas ainda estão perto uma da outra e dos dados; a diferença aparece onde há poucos dias, por isso a escolha da família importa tanto para risco extremo.</p></div>
+    </div>
+    <div class="sim" id="sim-cauda">
+      <label>Critério $q$ <input type="range" id="ca-slider" min="0" max="100" step="1" value="30"> <strong id="ca-valor">5%</strong></label>
+      <svg viewBox="0 0 400 285" id="ca-svg" role="img" aria-label="Fração de dias de alta extrema do dólar que são de queda extrema do Ibovespa, em função do critério q, para as cópulas normal e t e para os dados"></svg>
+    </div>
+   </aside>
+  </section>
+
+  <section class="passo" data-titulo="λ da t">
+   <div class="texto">
+    <h2>A conta do λ na cópula t</h2>
+    <p>Para a cópula t com correlação $\rho$ e $\nu$ graus de liberdade, a dependência de cauda tem fórmula fechada:</p>
+    <div class="formula" data-ref-id="f-lambda-t" data-ref-tipo="formula" data-ref-nome="Dependência de cauda da cópula t">
+      $$\lambda_{\text{diag}} = 2\, t_{\nu+1}\!\left(-\sqrt{\frac{(\nu + 1)(1 - \rho)}{1 + \rho}}\right)$$
+      <p>Nos cantos fora da diagonal (como o de crise), troca-se $\rho$ por $-\rho$.</p>
+      <ul class="legenda">
+        <li>$t_{\nu+1}$: acumulada da t de Student com $\nu + 1$ graus de liberdade</li>
+      </ul>
+    </div>
+    <p>Com $\rho &lt; 0$, como nos dados, o canto de crise ganha mais dependência de cauda que os cantos da diagonal.</p>
+    <details class="demo">
+      <summary>Demonstração (canto inferior esquerdo)</summary>
+      <p>Pela simetria da cópula t e pela regra de L'Hôpital, $\lambda_L = \lim C(q, q)/q$ $= 2 \lim_{q \to 0} P(U \le q \mid V = q)$. Na cópula t, com $a = t_\nu^{-1}(u)$ e $b = t_\nu^{-1}(v)$, $$\begin{aligned} &P(U \le u \mid V = v) \\ &= t_{\nu+1}\!\left(\frac{a - \rho b}{\sqrt{(\nu + b^2)(1 - \rho^2)/(\nu + 1)}}\right). \end{aligned}$$ Com $u = v = q$, $a = b \to -\infty$ e o argumento tende a $$\frac{(1 - \rho)\,a}{|a|\sqrt{(1 - \rho^2)/(\nu + 1)}}$$ $$= -\sqrt{\frac{(\nu + 1)(1 - \rho)}{1 + \rho}}.$$ Na cópula normal, o mesmo argumento com $\nu \to \infty$ vai a $-\infty$, e $\lambda = 0$.</p>
+    </details>
+   </div>
+   <aside class="apoio">
+    <div class="lacunas">
+      <p>Modelo do trabalho: $\rho = -0{,}2935$, $\nu = 4$. No canto de crise, troque $\rho$ por $+0{,}2935$.</p>
+      <p>$\sqrt{5 \times 0{,}7065 / 1{,}2935} =$ <input class="lacuna" data-resp="1.653" data-tol="0.003" aria-label="argumento"> (3 casas)</p>
+      <p>Sabendo que $t_5(-1{,}653) = 0{,}0797$: $\lambda =$ <input class="lacuna" data-resp="0.159" data-tol="0.002" aria-label="lambda"></p>
+      <button class="btn" data-conferir>Conferir</button>
+      <p class="dica" hidden>Dica: $5 \times 0{,}7065 / 1{,}2935 = 2{,}731$; e $\lambda = 2 \times 0{,}0797$.</p>
+      <div class="resolucao" hidden><p>$\sqrt{2{,}731} = 1{,}653$ e $\lambda = 2 \times 0{,}0797 = 0{,}159$. Nos cantos da diagonal, com $\rho = -0{,}2935$: o argumento vira $\sqrt{5 \times 1{,}2935/0{,}7065} = 3{,}03$ e $\lambda = 0{,}029$.</p></div>
+    </div>
+   </aside>
+  </section>
+
+  <section class="passo" data-titulo="Ler o 0,159">
+   <div class="texto">
+    <h2>O que λ = 0,159 diz, e o que não diz</h2>
+    <p>No modelo final do trabalho, $\lambda = 0{,}159$ no canto de crise, contra $0{,}029$ nos cantos da diagonal. Leitura direta: mesmo apertando sem fim o critério de dia extremo, cerca de <strong>16% dos dias de alta extrema do dólar continuam sendo dias de queda extrema do Ibovespa</strong>.</p>
+    <p>Um modelo com $\lambda = 0$ afirmaria o contrário: que essa coincidência desaparece à medida que se avança na cauda. Os dados do trabalho mostram 16 dias na região de canto de 5% (Ibovespa abaixo do percentil 5 e dólar acima do 95), contra 14,3 esperados pela t e 6,5 por uma família sem dependência de cauda nesse canto (cap. 5).</p>
+    <p>Essa leitura vale como limite: ela descreve o comportamento muito na ponta, não uma frequência que se aplica a qualquer dia ruim.</p>
+   </div>
+   <aside class="apoio">
+    <div class="quiz" data-correta="c">
+      <p class="enunciado">Um modelo de cópula estima $\lambda = 0{,}16$ no canto (Ibovespa muito baixo, dólar muito alto). Qual leitura está correta?</p>
+      <div class="alts">
+        <button data-op="a">(a) Em 16% dos dias, o Ibovespa cai muito e o dólar sobe muito ao mesmo tempo.</button>
+        <button data-op="b">(b) Quando o Ibovespa tem uma queda extrema, o dólar sobe em 16% das vezes.</button>
+        <button data-op="c">(c) Entre dias de alta cada vez mais extrema do dólar, a fração que também é de queda igualmente extrema do Ibovespa tende a 16%.</button>
+        <button data-op="d">(d) A correlação entre Ibovespa e dólar nos dias de crise é $-0{,}16$.</button>
+      </div>
+      <div class="fb" data-op="a">Isso seria uma probabilidade conjunta, que vai a zero com o critério (extremos são raros). $\lambda$ é uma probabilidade <em>condicional</em> no limite.</div>
+      <div class="fb" data-op="b">Faltou o "extremo" do lado do dólar e o limite. Subir, ainda que pouco, acontece em bem mais que 16% dos dias de queda extrema.</div>
+      <div class="fb" data-op="c">Isso: é o limite de $P(U \le q \mid V &gt; 1 - q)$ quando $q \to 0$, com o mesmo critério nos dois ativos.</div>
+      <div class="fb" data-op="d">$\lambda$ é uma probabilidade-limite, entre 0 e 1, e não uma correlação. Nem tem sinal: o "negativo" está no canto escolhido.</div>
+    </div>
+   </aside>
+  </section>
+
+  <section class="passo" data-titulo="Quatro cantos">
+   <div class="texto">
+    <h2>Cada canto do quadrado conta uma história</h2>
+    <p>Com $u$ (Ibovespa) no eixo horizontal e $v$ (dólar) no vertical:</p>
+    <ul>
+      <li><strong>Superior esquerdo $(0, 1)$:</strong> Ibovespa entre os piores dias e dólar entre as maiores altas. É o <strong>canto de crise</strong>, o que interessa para risco.</li>
+      <li><strong>Inferior direito $(1, 0)$:</strong> bolsa muito bem e dólar muito em queda. O canto benigno.</li>
+      <li><strong>Cantos da diagonal</strong>, $(0, 0)$ e $(1, 1)$: os dois indo na mesma direção, situação menos frequente com associação negativa.</li>
+    </ul>
+    <p>A cópula t é <strong>radialmente simétrica</strong>: dá o mesmo $\lambda$ ao canto de crise e ao benigno. Outras famílias concentram a dependência de cauda num canto só, e aí importa qual (cap. 4).</p>
+    <div class="ideia">O canto superior esquerdo, Ibovespa péssimo com dólar disparando, é o canto de crise; é nele que $\lambda$ interessa.</div>
+    <div class="pare">
+      <p>Uma família dá $\lambda = 0{,}25$ no canto benigno e $\lambda = 0$ no de crise. Ela poderia ter um ajuste global parecido com o da t?</p>
+      <button class="btn" data-revelar>Ver resposta</button>
+      <div class="resposta" hidden><p>Sim. O ajuste global é dominado pelo corpo da distribuição, onde estão quase todos os dias, e lá as duas podem ser parecidas. Mas para risco ela diria que a crise extrema não tem dependência, uma conclusão oposta. Por isso o trabalho reporta $\lambda$ por canto em toda tabela de cópulas.</p></div>
+    </div>
+   </div>
+  </section>
+  </div>
+
+  <div class="nav">
+    <button id="anterior">Anterior</button>
+    <button id="proximo" class="primario">Próximo</button>
+  </div>
+</div>
+
+<!-- ============ RESUMO ============ -->
+<div id="resumo" hidden>
+  <h2>Resumo</h2>
+  <div class="revisao" id="revisao">
+    <h3>Antes de reler, teste-se</h3>
+    <p class="rev-info"></p>
+    <div id="rev-palco"></div>
+    <div class="rev-acoes">
+      <button class="btn primario" id="rev-iniciar">Começar</button>
+      <button class="btn" id="rev-proxima" hidden>Próxima</button>
+    </div>
+  </div>
+  <div class="resumo-grid">
+  <div>
+  <h3>Ideias centrais</h3>
+  <ul class="resumo-lista">
+    <li>Pearson mede relação linear e muda sob transformações crescentes; a cópula não muda.</li>
+    <li>Correlação zero não é independência; o intervalo possível depende das marginais; um número não descreve as caudas.</li>
+    <li>Nos dados, Pearson $-0{,}277$, Spearman $-0{,}267$, Kendall $-0{,}185$; intensidade instável no tempo.</li>
+    <li>$\tau$ de Kendall: concordantes menos discordantes, entre pares de dias.</li>
+    <li>$\tau$ só enxerga a ordem e é função só da cópula.</li>
+    <li>Nas cópulas normal e t, $\tau = (2/\pi)\arcsin\rho$.</li>
+    <li>$\lambda$: fração-limite de extremos de um ativo que são extremos no outro.</li>
+    <li>Cópula normal: $\lambda = 0$; cópula t: $\lambda &gt; 0$, maior com $\nu$ menor.</li>
+    <li>Modelo do trabalho: $\lambda = 0{,}159$ no canto de crise, $0{,}029$ na diagonal.</li>
+    <li>O canto de crise é o superior esquerdo: Ibovespa baixo, dólar alto.</li>
+  </ul>
+  <h3>Fórmulas</h3>
+  <p>$\tau = P(\text{conc.}) - P(\text{disc.})$; $\hat\tau = (c - d)/\binom{n}{2}$; $\tau = 4E[C(U, V)] - 1$.</p>
+  <p>Normal e t: $\tau = (2/\pi)\arcsin\rho$.</p>
+  <p>$\lambda = \lim_{q \to 0^+} P(U \le q \mid V &gt; 1 - q)$; $\lambda_L = \lim C(q, q)/q$.</p>
+  <p>t: $\lambda_{\text{diag}} = 2 t_{\nu+1}\bigl(-\sqrt{(\nu+1)(1-\rho)/(1+\rho)}\bigr)$; fora da diagonal, $\rho \to -\rho$.</p>
+  </div>
+  <div>
+  <h3>Quando usar e quando não usar</h3>
+  <div class="lado">
+    <div><strong>Use $\tau$ ou Spearman quando</strong><ul class="resumo-lista"><li>quer uma medida de associação que não dependa das marginais;</li><li>vai calibrar ou checar o parâmetro de uma cópula.</li></ul></div>
+    <div><strong>Use $\lambda$ quando</strong><ul class="resumo-lista"><li>a pergunta é sobre extremos simultâneos;</li><li>precisa escolher entre famílias que se ajustam parecido no centro.</li></ul></div>
+  </div>
+  <h3>Armadilhas</h3>
+  <ul class="resumo-lista">
+    <li>Achar que mesma correlação implica mesmo risco de extremos conjuntos.</li>
+    <li>Achar que o $\tau$ muda quando se transforma os dados por função crescente.</li>
+    <li>Ler $\lambda$ como probabilidade conjunta ou como correlação de crise.</li>
+    <li>Tomar a fração em $q = 5\%$ como se fosse o limite $\lambda$.</li>
+    <li>Interpretar correlação baixa como dependência fraca quando as marginais limitam o intervalo possível.</li>
+  </ul>
+  </div>
+  </div>
+</div>
+
+<div id="painel" hidden>
+  <button class="btn pequeno" id="painel-voltar">← Voltar</button>
+  <h2 id="painel-titulo" style="margin-top:1rem"></h2>
+  <div id="painel-corpo"></div>
+</div>
+
+</div>
+
+<div class="balao" id="balao" role="dialog" aria-live="polite" hidden></div>
+<div class="gaveta" id="gaveta" role="dialog" aria-modal="false" hidden>
+  <div class="gaveta-interno">
+    <div class="gaveta-topo"><strong id="gaveta-titulo"></strong><button class="btn pequeno" id="gaveta-fechar" aria-label="Fechar">✕</button></div>
+    <div id="gaveta-corpo"></div>
+  </div>
+</div>
+
+<script src="../assets/site.js"></script>
+<script src="../assets/refs.js"></script>
+<script src="../assets/estudo.js"></script>
+<script src="../assets/dados-ic.js"></script>
+<script src="../assets/copulas-lib.js"></script>
+<script>
+/* Simulações do cap. 3. Utilitários: svgEl, corVar, fmt, tipografar (estudo.js) e CL (copulas-lib.js). */
+var D = window.DADOS_IC;
+
+/* ===== Correlação máxima e mínima de duas log-normais ===== */
+(function () {
+  var sl = document.getElementById('ln-slider');
+  if (!sl) return;
+  var svg = document.getElementById('ln-svg');
+  function lim(s) {
+    var den = Math.sqrt((Math.E - 1) * (Math.exp(s * s) - 1));
+    return [(Math.exp(s) - 1) / den, (Math.exp(-s) - 1) / den];
+  }
+  function desenhar() {
+    var s = +sl.value;
+    document.getElementById('ln-valor').textContent = fmt(s, 2);
+    CL.limpar(svg);
+    var e = CL.eixos(svg, { x: 46, y: 10, w: 340, h: 160, xmin: 0.5, xmax: 5, ymin: -1, ymax: 1,
+      xticks: [1, 2, 3, 4, 5], yticks: [-1, -0.5, 0, 0.5, 1], yfmt: function (v) { return fmt(v, 1); }, xlab: 'desvio σ de ln Y', grade: true });
+    var mx = [], mn = [];
+    for (var t = 0.5; t <= 5.0001; t += 0.05) { var l = lim(t); mx.push([e.sx(t), e.sy(l[0])]); mn.push([e.sx(t), e.sy(l[1])]); }
+    var faixa = mx.concat(mn.slice().reverse());
+    e.g.appendChild(svgEl('path', { d: CL.caminho(faixa) + ' Z', fill: corVar('--accent'), 'fill-opacity': 0.12 }));
+    e.g.appendChild(svgEl('path', { d: CL.caminho(mx), stroke: corVar('--accent'), 'stroke-width': 2.5, fill: 'none' }));
+    e.g.appendChild(svgEl('path', { d: CL.caminho(mn), stroke: corVar('--s1'), 'stroke-width': 2.5, fill: 'none' }));
+    var l0 = lim(s);
+    e.g.appendChild(svgEl('circle', { cx: e.sx(s), cy: e.sy(l0[0]), r: 5, fill: corVar('--accent') }));
+    e.g.appendChild(svgEl('circle', { cx: e.sx(s), cy: e.sy(l0[1]), r: 5, fill: corVar('--s1') }));
+    svg.appendChild(svgEl('text', { x: 46, y: 212, 'font-size': 12.5, fill: corVar('--accent'), 'font-weight': 600 }, 'máximo (Y função crescente de X): ' + fmt(l0[0], 4)));
+    svg.appendChild(svgEl('text', { x: 46, y: 232, 'font-size': 12.5, fill: corVar('--s1'), 'font-weight': 600 }, 'mínimo (Y função decrescente de X): ' + fmt(l0[1], 4)));
+  }
+  sl.addEventListener('input', desenhar);
+  desenhar();
+})();
+
+/* ===== Dependência de cauda: normal e t ajustadas, contra os dados ===== */
+(function () {
+  var sl = document.getElementById('ca-slider');
+  if (!sl) return;
+  var svg = document.getElementById('ca-svg');
+  var rhoT = D.copula.rho, nu = D.copula.nu, rhoN = -0.297;
+  // P(U <= q, V > 1 - q) / q = média de h(q | s) para s em (1 - q, 1)
+  function frac(h, q) {
+    var n = 160, s = 0;
+    for (var i = 0; i < n; i++) s += h(q, 1 - q * (i + 0.5) / n);
+    return s / n;
+  }
+  function hT(u, v) { return CL.hT(u, v, rhoT, nu); }
+  function hN(u, v) { return CL.hNormal(u, v, rhoN); }
+  // escala logarítmica em q: posição 0..100 → q de 20% a 0,05%
+  function qDe(p) { return Math.exp(Math.log(0.2) + (Math.log(0.0005) - Math.log(0.2)) * p / 100); }
+  var curvaT = [], curvaN = [];
+  for (var p = 0; p <= 100; p += 2) { var q = qDe(p); curvaT.push([p, frac(hT, q)]); curvaN.push([p, frac(hN, q)]); }
+  var emp = [0.1, 0.05, 0.025, 0.01].map(function (q) {
+    var nv = 0, c = 0;
+    for (var i = 0; i < D.n; i++) if (D.v[i] > 1 - q) { nv++; if (D.u[i] <= q) c++; }
+    return { q: q, nv: nv, c: c };
+  });
+  function pDe(q) { return 100 * (Math.log(q) - Math.log(0.2)) / (Math.log(0.0005) - Math.log(0.2)); }
+  function desenhar() {
+    var pos = +sl.value, q = qDe(pos);
+    document.getElementById('ca-valor').textContent = (q >= 0.01 ? fmt(100 * q, 1) : fmt(100 * q, 2)) + '%';
+    CL.limpar(svg);
+    var e = CL.eixos(svg, { x: 46, y: 10, w: 340, h: 160, xmin: 0, xmax: 100, ymin: 0, ymax: 0.45,
+      xticks: [pDe(0.1), pDe(0.01), pDe(0.001)], yticks: [0, 0.1, 0.2, 0.3, 0.4],
+      xfmt: function (v) { var qq = qDe(v); return fmt(100 * qq, qq >= 0.01 ? 0 : 1) + '%'; }, yfmt: function (v) { return fmt(v, 1); },
+      xlab: 'critério q (mais extremo à direita)', grade: true });
+    e.g.appendChild(svgEl('line', { x1: e.sx(0), x2: e.sx(100), y1: e.sy(CL.lambdaT(rhoT, nu, true)), y2: e.sy(CL.lambdaT(rhoT, nu, true)), stroke: corVar('--accent'), 'stroke-dasharray': '4 4' }));
+    e.g.appendChild(svgEl('path', { d: CL.caminho(curvaN.map(function (c) { return [e.sx(c[0]), e.sy(c[1])]; })), stroke: corVar('--muted'), 'stroke-width': 2.5, fill: 'none' }));
+    e.g.appendChild(svgEl('path', { d: CL.caminho(curvaT.map(function (c) { return [e.sx(c[0]), e.sy(c[1])]; })), stroke: corVar('--accent'), 'stroke-width': 2.5, fill: 'none' }));
+    emp.forEach(function (o) { e.g.appendChild(svgEl('circle', { cx: e.sx(pDe(o.q)), cy: e.sy(o.c / o.nv), r: 5, fill: corVar('--s1') })); });
+    e.g.appendChild(svgEl('line', { x1: e.sx(pos), x2: e.sx(pos), y1: e.sy(0), y2: e.sy(0.45), stroke: corVar('--text'), 'stroke-opacity': 0.4 }));
+    var ft = frac(hT, q), fn = frac(hN, q);
+    svg.appendChild(svgEl('text', { x: 46, y: 228, 'font-size': 12.5, fill: corVar('--accent'), 'font-weight': 600 }, 'cópula t: ' + fmt(ft, 3) + '  (limite λ = ' + fmt(CL.lambdaT(rhoT, nu, true), 3) + ')'));
+    svg.appendChild(svgEl('text', { x: 46, y: 248, 'font-size': 12.5, fill: corVar('--muted'), 'font-weight': 600 }, 'cópula normal: ' + fmt(fn, 3) + '  (limite λ = 0)'));
+    var perto = emp.filter(function (o) { return Math.abs(pDe(o.q) - pos) < 3; })[0];
+    svg.appendChild(svgEl('text', { x: 46, y: 268, 'font-size': 12, fill: corVar('--s1') }, perto ? 'dados: ' + perto.c + ' de ' + perto.nv + ' dias = ' + fmt(perto.c / perto.nv, 3) : 'pontos laranja: frações observadas nos dados'));
+  }
+  sl.addEventListener('input', desenhar);
+  desenhar();
+})();
+</script>
+</body>
+</html>

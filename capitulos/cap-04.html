@@ -1,0 +1,493 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="estudo-chave" content="ic-copulas/cap-04">
+<title>Cap. 4 — Famílias de cópulas</title>
+<script>
+window.MathJax = {
+  tex: { inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath: [['$$', '$$'], ['\\[', '\\]']] },
+  svg: { fontCache: 'global' }
+};
+</script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/3.2.2/es5/tex-svg.min.js" defer></script>
+<link rel="stylesheet" href="../assets/estudo.css">
+</head>
+<body>
+<nav class="trilho" id="trilho" tabindex="0" aria-label="Sumário do capítulo" aria-expanded="false">
+  <div class="trilho-tracos" id="trilho-tracos" aria-hidden="true"></div>
+  <div class="trilho-painel">
+    <p class="trilho-cap" id="trilho-cap"></p>
+    <div class="trilho-lista" id="trilho-lista"></div>
+    <div class="trilho-rodape" id="trilho-rodape">
+      <button class="btn pequeno" id="btn-formulas">Fórmulas até aqui</button>
+      <button class="btn pequeno" id="btn-ir-resumo">Resumo</button>
+      <a class="btn pequeno" id="btn-inicio" href="../index.html" hidden>Início</a>
+    </div>
+  </div>
+</nav>
+
+<div class="wrap">
+
+<h1>Cap. 4 — Famílias de cópulas</h1>
+<p class="contexto">Onde isso se encaixa: para estimar a cópula dos dados, o trabalho compara famílias paramétricas. Cada família consegue descrever certos valores de <span class="ref" data-ref="d-tau">$\tau$</span> e certos padrões de <span class="ref" data-ref="d-lambda">dependência de cauda</span>, e é isso que decide quais servem para Ibovespa e dólar.</p>
+
+<div class="abas" role="tablist">
+  <button role="tab" aria-selected="true" data-aba="trilha">Trilha</button>
+  <button role="tab" aria-selected="false" data-aba="resumo">Resumo</button>
+</div>
+
+<div id="trilha">
+  <nav class="subtopicos" id="subtopicos" aria-label="Passos desta seção"></nav>
+  <div class="retomada" id="retomada" hidden></div>
+
+  <!-- ================= SEÇÃO 4.1 ================= -->
+  <div class="secao" data-numero="4.1" data-titulo="Normal e t" data-livro="Nelsen 2.3; Demarta e McNeil (2005); Cherubini et al. (2004) cap. 2">
+
+  <section class="passo" data-titulo="Cópula normal">
+   <div class="texto">
+    <h2>A cópula normal: a dependência de uma normal bivariada, sem as marginais</h2>
+    <p>Tome uma normal bivariada padrão com correlação $\rho$ e use a <span class="ref" data-ref="f-sklar-inversa">receita de extrair a cópula</span>: avalie a conjunta nos quantis.</p>
+    <div class="formula" data-ref-id="f-cop-normal" data-ref-tipo="formula" data-ref-nome="Cópula normal">
+      $$C^{N}_{\rho}(u, v) = \Phi_\rho\bigl(\Phi^{-1}(u),\ \Phi^{-1}(v)\bigr)$$
+      <ul class="legenda">
+        <li>$\Phi_\rho$: acumulada da normal bivariada padrão com correlação $\rho$</li>
+        <li>$\Phi^{-1}$: quantil da normal padrão</li>
+      </ul>
+    </div>
+    <p>O resultado não tem fórmula fechada, mas é fácil de calcular e de sortear. Um parâmetro só, $\rho \in [-1, 1]$, que admite associação positiva e negativa, com $\tau = (2/\pi)\arcsin\rho$.</p>
+    <p>Combinada com marginais t ou Johnson, ela já foge da normal bivariada: só a dependência continua "normal". E dependência normal significa <strong>$\lambda = 0$ em todos os cantos</strong>.</p>
+    <div class="ideia">A cópula normal guarda só a dependência da normal bivariada: aceita qualquer sinal de associação, mas tem dependência de cauda zero.</div>
+   </div>
+   <aside class="apoio">
+    <div class="quiz" data-correta="d">
+      <p class="enunciado">Um modelo usa marginais t de Student (caudas pesadas) para dois ativos e uma cópula normal com $\rho = -0{,}3$. Sobre esse modelo, é correto afirmar:</p>
+      <div class="alts">
+        <button data-op="a">(a) A distribuição conjunta é normal bivariada, porque a cópula é normal.</button>
+        <button data-op="b">(b) Os extremos são pesados em cada ativo e, por isso, os extremos conjuntos têm $\lambda &gt; 0$.</button>
+        <button data-op="c">(c) A correlação de Pearson entre os ativos é exatamente $-0{,}3$.</button>
+        <button data-op="d">(d) Cada ativo tem cauda pesada, mas os extremos dos dois se desacoplam no limite ($\lambda = 0$).</button>
+      </div>
+      <div class="fb" data-op="a">A conjunta só é normal bivariada se as marginais também forem normais. Aqui as marginais são t.</div>
+      <div class="fb" data-op="b">Cauda pesada é propriedade das marginais; $\lambda$ é propriedade da cópula. Com a cópula normal, $\lambda = 0$ qualquer que sejam as marginais.</div>
+      <div class="fb" data-op="c">$\rho$ é o parâmetro da cópula, a correlação dos escores normais $\Phi^{-1}(U)$ e $\Phi^{-1}(V)$. Com marginais t, a correlação de Pearson dos retornos é outra.</div>
+      <div class="fb" data-op="d">Isso. As marginais decidem o tamanho dos extremos de cada um; a cópula normal decide que eles não acontecem juntos no limite.</div>
+    </div>
+   </aside>
+  </section>
+
+  <section class="passo" data-titulo="Cópula t">
+   <div class="texto">
+    <h2>A cópula t: um choque comum de volatilidade</h2>
+    <p>A t bivariada nasce de uma normal bivariada multiplicada por um <strong>fator comum</strong>: $(Z_1, Z_2)\sqrt{\nu/W}$, com $W \sim \chi^2_\nu$ independente. Quando $W$ sai pequeno, os dois componentes são esticados ao mesmo tempo, e isso faz extremos acontecerem juntos.</p>
+    <div class="formula" data-ref-id="f-cop-t" data-ref-tipo="formula" data-ref-nome="Cópula t">
+      $$C^{t}_{\rho, \nu}(u, v) = t_{\rho, \nu}\bigl(t_\nu^{-1}(u),\ t_\nu^{-1}(v)\bigr)$$
+      <ul class="legenda">
+        <li>$t_{\rho,\nu}$: acumulada da t bivariada padrão</li>
+        <li>$t_\nu^{-1}$: quantil da t univariada</li>
+        <li>$\nu$: graus de liberdade</li>
+      </ul>
+    </div>
+    <p>Dois parâmetros: $\rho$ controla a associação (mesma relação com $\tau$ que na normal) e $\nu$ controla a dependência nos extremos, pela <span class="ref" data-ref="f-lambda-t">fórmula do λ da t</span>. Quando $\nu \to \infty$, o fator comum some e ela vira a cópula normal.</p>
+    <p>A t dá $\lambda &gt; 0$ <strong>nos quatro cantos</strong>, com o mesmo valor nos dois cantos de cada diagonal. Por isso ela não precisa "escolher" um canto.</p>
+    <div class="ideia">A cópula t põe dependência de cauda nos quatro cantos, mais forte quanto menor $\nu$; com $\nu \to \infty$ ela vira a normal.</div>
+   </div>
+   <aside class="apoio">
+    <div class="prever" data-sim="sim-normal-t">
+      <p>Mesma correlação $\rho = -0{,}3$ nas duas cópulas. Diminuindo $\nu$ da cópula t, o número de pares nos cantos fora da diagonal (quadradinhos de 5%)...</p>
+      <div class="alts">
+        <button data-op="a" data-certa>Aumenta</button>
+        <button data-op="b">Diminui</button>
+        <button data-op="c">Não muda</button>
+      </div>
+      <div class="explica" hidden><p>Aumenta, e os cantos da diagonal também ganham pares (menos). Com $\nu$ grande, os dois painéis ficam quase iguais. Com $\nu$ pequeno, o fator comum $\sqrt{\nu/W}$ empurra os pares para os quatro cantos ao mesmo tempo, mesmo com a mesma correlação.</p></div>
+    </div>
+    <div class="sim" id="sim-normal-t">
+      <label>$\nu$ da cópula t <input type="range" id="nt-slider" min="2" max="30" step="1" value="10"> <strong id="nt-valor">10</strong></label>
+      <svg viewBox="0 0 400 240" id="nt-svg" role="img" aria-label="Pares sorteados da cópula normal e da cópula t com a mesma correlação, com os cantos destacados"></svg>
+      <button class="btn pequeno" id="nt-nova">Nova amostra</button>
+    </div>
+   </aside>
+  </section>
+  </div>
+
+  <!-- ================= SEÇÃO 4.2 ================= -->
+  <div class="secao" data-numero="4.2" data-titulo="Arquimedianas" data-livro="Nelsen 4.1–4.2; projeto, Definição 3 e Lema 1">
+
+  <section class="passo" data-titulo="O gerador">
+   <div class="texto">
+    <h2>Uma cópula inteira a partir de uma função de uma variável</h2>
+    <p>As cópulas arquimedianas são construídas a partir de uma única função $\varphi$, o <strong>gerador</strong>: leva cada percentil a $[0, \infty]$, soma, e volta.</p>
+    <div class="definicao" data-ref-id="d-arquimediana" data-ref-tipo="definicao" data-ref-nome="Cópula arquimediana">
+      <p><strong>Gerador:</strong> $\varphi : [0, 1] \to [0, \infty]$ contínua, estritamente decrescente, convexa, com $\varphi(1) = 0$.</p>
+      <p><strong>Pseudo-inversa:</strong> $\varphi^{[-1]}(t) = \varphi^{-1}(t)$ se $0 \le t \le \varphi(0)$, e $0$ se $t \ge \varphi(0)$.</p>
+      <p><strong>Cópula arquimediana:</strong> $$C(u, v) = \varphi^{[-1]}\bigl(\varphi(u) + \varphi(v)\bigr).$$</p>
+    </div>
+    <p>Dois exemplos que você já conhece: $\varphi(t) = -\ln t$ dá $e^{-(-\ln u - \ln v)} = uv = \Pi$; e $\varphi(t) = 1 - t$ dá $\max(u + v - 1, 0) = W$.</p>
+    <p>No trabalho, cinco famílias desse tipo entram na comparação, todas com um único parâmetro $\theta$ dentro do gerador.</p>
+    <details class="demo">
+      <summary>Por que essa fórmula dá uma cópula</summary>
+      <p><strong>Bordas.</strong> $\varphi(0)$ pode ser finito ou infinito; em qualquer caso, $\varphi(u) + \varphi(0) \ge \varphi(0)$, logo $C(u, 0) = \varphi^{[-1]}(\cdot) = 0$. E $C(u, 1) = \varphi^{[-1]}(\varphi(u) + 0) = u$.</p>
+      <p><strong>2-crescente.</strong> Para $u_1 \le u_2$, a condição equivale a $C(u_2, v) - C(u_1, v)$ ser não decrescente em $v$. Com a mudança de variáveis $a = \varphi(u)$, isso se reduz a $\varphi^{[-1]}$ ser convexa, o que vale exatamente quando $\varphi$ é convexa. Portanto $C$ é cópula se e só se $\varphi$ é convexa.</p>
+    </details>
+    <div class="ideia">Uma cópula arquimediana é $\varphi^{[-1]}(\varphi(u) + \varphi(v))$: toda a dependência cabe numa função de uma variável.</div>
+   </div>
+   <aside class="apoio">
+    <div class="pare">
+      <p>Por que $\varphi(t) = -\ln t$ gera a independência? Pense no que acontece com $-\ln$ de um produto.</p>
+      <button class="btn" data-revelar>Ver resposta</button>
+      <div class="resposta" hidden><p>$-\ln(uv) = -\ln u - \ln v$: o gerador transforma produto em soma. Somar $\varphi(u) + \varphi(v)$ e voltar com $e^{-t}$ é o mesmo que multiplicar $u$ por $v$. Cada gerador define uma "soma" diferente, e é daí que vem cada tipo de dependência.</p></div>
+    </div>
+   </aside>
+  </section>
+
+  <section class="passo" data-titulo="Clayton">
+   <div class="texto">
+    <h2>Exemplo: a família de Clayton</h2>
+    <p>Com o gerador $\varphi(t) = (t^{-\theta} - 1)/\theta$, $\theta &gt; 0$, a inversa é $\varphi^{-1}(s) = (1 + \theta s)^{-1/\theta}$. Somando e voltando:</p>
+    <div class="formula" data-ref-id="f-clayton" data-ref-tipo="formula" data-ref-nome="Cópula de Clayton">
+      $$C_\theta(u, v) = \bigl(u^{-\theta} + v^{-\theta} - 1\bigr)^{-1/\theta}, \quad \theta &gt; 0$$
+    </div>
+    <p>Ela só descreve associação positiva, com $\tau = \theta/(\theta + 2)$, e concentra a dependência no canto <strong>inferior esquerdo</strong>: $\lambda_L = 2^{-1/\theta}$ e $\lambda_U = 0$. É uma cópula de "quedas juntas, altas independentes".</p>
+    <p>Com $\theta = 1$ aparece uma velha conhecida: $(u^{-1} + v^{-1} - 1)^{-1} = uv/(u + v - uv)$, a cópula da <span class="ref" data-ref="ex-sklar-ida">conjunta do exemplo da ida de Sklar</span>.</p>
+    <div class="ideia">A Clayton só tem associação positiva e põe toda a dependência de cauda no canto inferior esquerdo.</div>
+   </div>
+   <aside class="apoio">
+    <div class="lacunas">
+      <p>Clayton com $\theta = 2$:</p>
+      <p>$C(0{,}5;\ 0{,}5) =$ <input class="lacuna" data-resp="0.378" data-tol="0.002" aria-label="C"> (3 casas)</p>
+      <p>$\tau =$ <input class="lacuna" data-resp="0.5" data-tol="0.001" aria-label="tau"></p>
+      <p>$\lambda_L =$ <input class="lacuna" data-resp="0.707" data-tol="0.002" aria-label="lambda"> (3 casas)</p>
+      <button class="btn" data-conferir>Conferir</button>
+      <p class="dica" hidden>Dica: $0{,}5^{-2} = 4$, então $C = (4 + 4 - 1)^{-1/2}$.</p>
+      <div class="resolucao" hidden><p>$C = 7^{-1/2} = 0{,}378$, bem acima de $\Pi = 0{,}25$. $\tau = 2/4 = 0{,}5$. $\lambda_L = 2^{-1/2} = 0{,}707$: dependência forte nas quedas conjuntas.</p></div>
+    </div>
+   </aside>
+  </section>
+
+  <section class="passo" data-titulo="Cinco famílias">
+   <div class="texto">
+    <h2>As cinco arquimedianas do trabalho</h2>
+    <div class="definicao" data-ref-id="d-familias-arq" data-ref-tipo="definicao" data-ref-nome="As cinco famílias arquimedianas">
+      <ul>
+        <li><strong>Clayton:</strong> só associação positiva; cauda inferior, $\lambda_L = 2^{-1/\theta}$.</li>
+        <li><strong>Gumbel:</strong> só positiva; cauda superior, $\lambda_U = 2 - 2^{1/\theta}$.</li>
+        <li><strong>Joe:</strong> só positiva; cauda superior, $\lambda_U = 2 - 2^{1/\theta}$.</li>
+        <li><strong>Frank:</strong> positiva e negativa; sem dependência de cauda.</li>
+        <li><strong>Ali-Mikhail-Haq:</strong> $\tau$ entre $-0{,}1817$ e $1/3$; sem dependência de cauda.</li>
+      </ul>
+      <p>Geradores: Gumbel $(-\ln t)^\theta$, $\theta \ge 1$; Joe $-\ln\bigl(1 - (1 - t)^\theta\bigr)$, $\theta \ge 1$; Frank $-\ln\frac{e^{-\theta t} - 1}{e^{-\theta} - 1}$, $\theta \ne 0$; Ali-Mikhail-Haq $\ln\frac{1 - \theta(1 - t)}{t}$, $-1 \le \theta &lt; 1$.</p>
+    </div>
+    <p>Três delas (Clayton, Gumbel, Joe) têm dependência de cauda num canto só e só associação positiva. Frank e Ali-Mikhail-Haq (AMH) aceitam associação negativa, mas não têm dependência de cauda.</p>
+    <p>Na simulação, escolha a família e mova o parâmetro: veja onde os pares se apertam.</p>
+   </div>
+   <aside class="apoio">
+    <div class="prever" data-sim="sim-familias">
+      <p>Na Gumbel com $\theta$ grande, os pares se apertam mais em qual canto?</p>
+      <div class="alts">
+        <button data-op="a">Inferior esquerdo</button>
+        <button data-op="b" data-certa>Superior direito</button>
+        <button data-op="c">Nos dois igualmente</button>
+      </div>
+      <div class="explica" hidden><p>Superior direito: a Gumbel tem $\lambda_U = 2 - 2^{1/\theta} &gt; 0$ e $\lambda_L = 0$. A nuvem é mais "pontuda" em $(1, 1)$ e mais espalhada em $(0, 0)$. A Clayton faz o espelho disso, e a Frank é simétrica, sem aperto em ponta nenhuma.</p></div>
+    </div>
+    <div class="sim" id="sim-familias">
+      <div class="chips" id="fm-chips">
+        <button data-f="clayton">Clayton</button>
+        <button data-f="gumbel" class="on">Gumbel</button>
+        <button data-f="joe">Joe</button>
+        <button data-f="frank">Frank</button>
+        <button data-f="amh">AMH</button>
+      </div>
+      <label>Parâmetro $\theta$ <input type="range" id="fm-slider" min="0" max="100" step="1" value="40"> <strong id="fm-valor"></strong></label>
+      <svg viewBox="0 0 400 270" id="fm-svg" role="img" aria-label="Pares sorteados da família arquimediana escolhida, com tau e lambda"></svg>
+    </div>
+   </aside>
+  </section>
+
+  <section class="passo" data-titulo="O limite da AMH">
+   <div class="texto">
+    <h2>Uma família só alcança certos valores de τ</h2>
+    <p>Como o <span class="ref" data-ref="f-tau-copula">$\tau$ é uma função só da cópula</span>, cada família de um parâmetro percorre uma faixa de valores de $\tau$ quando $\theta$ varia. Se o $\tau$ dos dados está fora dessa faixa, a família não consegue reproduzir nem a associação média.</p>
+    <p>É o caso da AMH: o $\tau$ mais negativo que ela oferece é $-0{,}1817$, em $\theta = -1$. Nos dados, $\hat\tau = -0{,}1853$. A AMH fica presa na borda do seu espaço de parâmetros e termina em último lugar na comparação do trabalho, com $\hat\theta = -0{,}765$ e o pior ajuste das dez.</p>
+    <div class="ideia">Cada família só cobre uma faixa de $\tau$; a AMH não chega a $-0{,}185$ e por isso não consegue descrever nem a associação média dos dados.</div>
+   </div>
+   <aside class="apoio">
+    <div class="quiz" data-correta="a">
+      <p class="enunciado">Dados com $\hat\tau = -0{,}40$ são ajustados por várias famílias de cópulas de um parâmetro. Qual família <strong>não</strong> consegue reproduzir esse $\tau$ em nenhum valor do parâmetro, mesmo depois de qualquer reflexão de eixo?</p>
+      <div class="alts">
+        <button data-op="a">(a) Ali-Mikhail-Haq, cujo $\tau$ fica sempre entre $-0{,}1817$ e $1/3$.</button>
+        <button data-op="b">(b) Clayton, porque só descreve associação positiva.</button>
+        <button data-op="c">(c) Frank, porque não tem dependência de cauda.</button>
+        <button data-op="d">(d) Normal, porque o $\tau$ é menor que $\rho$ em módulo.</button>
+      </div>
+      <div class="fb" data-op="a">Isso. Mesmo espelhando, a AMH só chega a $|\tau| \le 1/3$ do lado espelhado e a $|\tau| \le 0{,}1817$ do lado negativo direto. $-0{,}40$ está fora nos dois casos.</div>
+      <div class="fb" data-op="b">A Clayton espelhada descreve associação negativa, e com $\theta = 4/3$ ela tem $\tau = 0{,}40$, que vira $-0{,}40$ após a reflexão.</div>
+      <div class="fb" data-op="c">A Frank cobre todo $\tau$ entre $-1$ e $1$. Não ter dependência de cauda não limita a associação média.</div>
+      <div class="fb" data-op="d">Basta $\rho = \sin(-0{,}40\pi/2) = -0{,}59$: a normal alcança qualquer $\tau$ entre $-1$ e $1$.</div>
+    </div>
+   </aside>
+  </section>
+  </div>
+
+  <!-- ================= SEÇÃO 4.3 ================= -->
+  <div class="secao" data-numero="4.3" data-titulo="Espelhamentos" data-livro="Nelsen 2.4; relatório 2.6 e Tabela 1">
+
+  <section class="passo" data-titulo="Virar o quadrado">
+   <div class="texto">
+    <h2>Para usar Clayton, Gumbel e Joe com associação negativa, espelhe um eixo</h2>
+    <p>Ibovespa e dólar têm associação negativa, e Clayton, Gumbel e Joe só descrevem a positiva. A saída é a <span class="ref" data-ref="f-reflexao">reflexão de uma variável</span>: ajustar a família aos pares espelhados, o que equivale a virar o quadrado para a nuvem subir em vez de descer. Há exatamente duas maneiras:</p>
+    <div class="definicao" data-ref-id="d-orientacoes" data-ref-tipo="definicao" data-ref-nome="As duas orientações espelhadas">
+      <p><strong>(i)</strong> ajustar a família aos pares $(u,\ 1 - v)$, espelhando o eixo vertical: cópula $u - C(u,\ 1 - v)$.</p>
+      <p><strong>(ii)</strong> ajustar a família aos pares $(1 - u,\ v)$, espelhando o eixo horizontal: cópula $v - C(1 - u,\ v)$.</p>
+    </div>
+    <p>As duas dão associação negativa, mas <strong>não são o mesmo modelo</strong>: levam a cauda da família para cantos opostos. A Gumbel tem cauda em $(1, 1)$. Em (i), os extremos vão para $u \to 1$ e $v \to 0$: canto <strong>inferior direito</strong>, o benigno. Em (ii), para $u \to 0$ e $v \to 1$: canto <strong>superior esquerdo</strong>, o de crise.</p>
+    <div class="ideia">Espelhar $v$ ou espelhar $u$ dá associação negativa nos dois casos, mas manda a cauda da família para cantos opostos.</div>
+   </div>
+   <aside class="apoio">
+    <div class="prever" data-sim="sim-espelho">
+      <p>A Gumbel tem a cauda no canto $(1, 1)$. Espelhando o eixo horizontal (pares $(1 - u, v)$), a cauda vai para...</p>
+      <div class="alts">
+        <button data-op="a" data-certa>Superior esquerdo</button>
+        <button data-op="b">Inferior direito</button>
+        <button data-op="c">Inferior esquerdo</button>
+      </div>
+      <div class="explica" hidden><p>Superior esquerdo: o $u$ que era perto de 1 vira perto de 0, e o $v$ continua perto de 1. É o canto de crise. Espelhando o eixo vertical, o $v$ é que vira, e a cauda vai para o inferior direito, o benigno.</p></div>
+    </div>
+    <div class="sim" id="sim-espelho">
+      <div class="chips" id="es-chips">
+        <button data-e="o" class="on">Original</button>
+        <button data-e="v">Espelhar $v$: (i)</button>
+        <button data-e="u">Espelhar $u$: (ii)</button>
+      </div>
+      <svg viewBox="0 0 400 270" id="es-svg" role="img" aria-label="Pares da Gumbel original e espelhada, com a contagem nos cantos de 5%"></svg>
+    </div>
+   </aside>
+  </section>
+
+  <section class="passo" data-titulo="Dez candidatas">
+   <div class="texto">
+    <h2>As dez cópulas que entram na comparação</h2>
+    <p>Normal, t, Frank e AMH entram uma vez cada. Clayton, Gumbel e Joe entram duas vezes, uma em cada orientação, rotuladas pelo canto que efetivamente ocupam ("sup-esq", o de crise, ou "inf-dir", o benigno). Total: dez.</p>
+    <div class="exemplo" data-ref-id="ex-dez-copulas" data-ref-tipo="exemplo" data-ref-nome="As dez cópulas candidatas">
+      <div class="escala"><table class="tab">
+        <tr><th>Família</th><th>Associação</th><th>Onde $\lambda &gt; 0$</th></tr>
+        <tr><td>Normal</td><td>$+$ e $-$</td><td>nenhum canto</td></tr>
+        <tr><td>t</td><td>$+$ e $-$</td><td>os quatro</td></tr>
+        <tr><td>Frank</td><td>$+$ e $-$</td><td>nenhum canto</td></tr>
+        <tr><td>AMH</td><td>$-$ fraca ou $+$</td><td>nenhum canto</td></tr>
+        <tr><td>Clayton (×2)</td><td>espelhada: $-$</td><td>um canto</td></tr>
+        <tr><td>Gumbel (×2)</td><td>espelhada: $-$</td><td>um canto</td></tr>
+        <tr><td>Joe (×2)</td><td>espelhada: $-$</td><td>um canto</td></tr>
+      </table></div>
+    </div>
+    <p>Isso deixa uma <strong>pergunta pendente</strong> para os dados: se as duas orientações de uma família se ajustarem igualmente bem, o canto da cauda foi imposto pela escolha do espelhamento, e não estimado. O cap. 5 responde com um teste.</p>
+    <div class="ideia">Dez candidatas: quatro famílias diretas e três espelhadas em duas orientações; o que as separa é o sinal da associação e o canto da cauda.</div>
+   </div>
+   <aside class="apoio">
+    <div class="quiz" data-correta="b">
+      <p class="enunciado">Ajustadas a dados com associação negativa, a Gumbel espelhada em $v$ e a Gumbel espelhada em $u$ têm verossimilhanças praticamente iguais. O que se conclui?</p>
+      <div class="alts">
+        <button data-op="a">(a) A dependência de cauda está nos dois cantos, já que as duas orientações se ajustam bem.</button>
+        <button data-op="b">(b) Os dados não informam em que canto está a cauda; usar uma delas impõe o canto em vez de estimá-lo.</button>
+        <button data-op="c">(c) As duas orientações são o mesmo modelo escrito de outro jeito.</button>
+        <button data-op="d">(d) A Gumbel é inadequada para esses dados e deve ser descartada.</button>
+      </div>
+      <div class="fb" data-op="a">Cada orientação põe cauda num canto só. Empatarem não significa que os dados tenham cauda nos dois, só que não distinguem os dois.</div>
+      <div class="fb" data-op="b">Isso. O empate mostra falta de informação sobre o canto. Uma família que tem cauda nos dois cantos, como a t, evita depender dessa escolha.</div>
+      <div class="fb" data-op="c">Não são: dão $\lambda$ em cantos opostos e, por isso, VaR diferentes nos cenários de crise.</div>
+      <div class="fb" data-op="d">Empatar entre si não diz nada sobre a adequação da Gumbel; isso depende de compará-la com outras famílias e com os dados.</div>
+    </div>
+   </aside>
+  </section>
+  </div>
+
+  <div class="nav">
+    <button id="anterior">Anterior</button>
+    <button id="proximo" class="primario">Próximo</button>
+  </div>
+</div>
+
+<!-- ============ RESUMO ============ -->
+<div id="resumo" hidden>
+  <h2>Resumo</h2>
+  <div class="revisao" id="revisao">
+    <h3>Antes de reler, teste-se</h3>
+    <p class="rev-info"></p>
+    <div id="rev-palco"></div>
+    <div class="rev-acoes">
+      <button class="btn primario" id="rev-iniciar">Começar</button>
+      <button class="btn" id="rev-proxima" hidden>Próxima</button>
+    </div>
+  </div>
+  <div class="resumo-grid">
+  <div>
+  <h3>Ideias centrais</h3>
+  <ul class="resumo-lista">
+    <li>Cópula normal: dependência da normal bivariada, qualquer sinal, $\lambda = 0$.</li>
+    <li>Cópula t: um fator comum gera $\lambda &gt; 0$ nos quatro cantos; $\nu \to \infty$ dá a normal.</li>
+    <li>Arquimedianas: $C = \varphi^{[-1]}(\varphi(u) + \varphi(v))$, com gerador convexo.</li>
+    <li>Clayton: positiva, cauda inferior; Gumbel e Joe: positivas, cauda superior.</li>
+    <li>Frank: qualquer sinal, sem cauda; AMH: $\tau \in [-0{,}1817;\ 1/3)$, sem cauda.</li>
+    <li>A AMH não alcança o $\tau = -0{,}185$ dos dados.</li>
+    <li>Espelhar $v$ ou $u$ dá associação negativa, com a cauda em cantos opostos.</li>
+    <li>Dez candidatas; empate entre orientações significa canto não identificado.</li>
+  </ul>
+  <h3>Fórmulas</h3>
+  <p>Normal: $C^N_\rho = \Phi_\rho(\Phi^{-1}(u), \Phi^{-1}(v))$. t: $C^t_{\rho,\nu} = t_{\rho,\nu}(t_\nu^{-1}(u), t_\nu^{-1}(v))$.</p>
+  <p>Arquimediana: $C(u, v) = \varphi^{[-1]}(\varphi(u) + \varphi(v))$.</p>
+  <p>Clayton: $(u^{-\theta} + v^{-\theta} - 1)^{-1/\theta}$, $\tau = \theta/(\theta + 2)$, $\lambda_L = 2^{-1/\theta}$.</p>
+  <p>Gumbel: $\tau = 1 - 1/\theta$, $\lambda_U = 2 - 2^{1/\theta}$.</p>
+  <p>Espelhamentos: (i) $u - C(u, 1 - v)$; (ii) $v - C(1 - u, v)$.</p>
+  </div>
+  <div>
+  <h3>Quando usar e quando não usar</h3>
+  <div class="lado">
+    <div><strong>t</strong><ul class="resumo-lista"><li>quando há extremos conjuntos e não se sabe o canto;</li><li>dependência simétrica entre crise e alívio.</li></ul></div>
+    <div><strong>Arquimedianas espelhadas</strong><ul class="resumo-lista"><li>quando há razão para cauda num canto só;</li><li>evite se as duas orientações empatam: o canto fica imposto.</li></ul></div>
+  </div>
+  <h3>Armadilhas</h3>
+  <ul class="resumo-lista">
+    <li>Achar que marginais de cauda pesada dão dependência de cauda: isso é da cópula.</li>
+    <li>Ler o $\rho$ da cópula como a correlação de Pearson dos retornos.</li>
+    <li>Tratar as duas orientações espelhadas como o mesmo modelo.</li>
+    <li>Concluir que há cauda nos dois cantos porque duas orientações empatam.</li>
+    <li>Esquecer que uma família de um parâmetro só cobre uma faixa de $\tau$.</li>
+  </ul>
+  </div>
+  </div>
+</div>
+
+<div id="painel" hidden>
+  <button class="btn pequeno" id="painel-voltar">← Voltar</button>
+  <h2 id="painel-titulo" style="margin-top:1rem"></h2>
+  <div id="painel-corpo"></div>
+</div>
+
+</div>
+
+<div class="balao" id="balao" role="dialog" aria-live="polite" hidden></div>
+<div class="gaveta" id="gaveta" role="dialog" aria-modal="false" hidden>
+  <div class="gaveta-interno">
+    <div class="gaveta-topo"><strong id="gaveta-titulo"></strong><button class="btn pequeno" id="gaveta-fechar" aria-label="Fechar">✕</button></div>
+    <div id="gaveta-corpo"></div>
+  </div>
+</div>
+
+<script src="../assets/site.js"></script>
+<script src="../assets/refs.js"></script>
+<script src="../assets/estudo.js"></script>
+<script src="../assets/dados-ic.js"></script>
+<script src="../assets/copulas-lib.js"></script>
+<script>
+/* Simulações do cap. 4. Utilitários: svgEl, corVar, fmt, tipografar (estudo.js) e CL (copulas-lib.js). */
+function ligarChips(id, aoMudar) {
+  var box = document.getElementById(id);
+  box.querySelectorAll('button').forEach(function (b) {
+    b.addEventListener('click', function () {
+      box.querySelectorAll('button').forEach(function (x) { x.classList.remove('on'); });
+      b.classList.add('on');
+      aoMudar(b);
+    });
+  });
+}
+function escolhido(id, attr) { return document.querySelector('#' + id + ' button.on').getAttribute(attr); }
+// quadrado com pares e os quatro cantos de 5% destacados
+function quadrado(svg, x, w, pares, cor, titulo) {
+  var e = CL.eixos(svg, { x: x, y: 24, w: w, h: w, xmin: 0, xmax: 1, ymin: 0, ymax: 1, xticks: [0, 1], yticks: [0, 1] });
+  var q = 0.05, cantos = { ie: 0, sd: 0, se: 0, id: 0 };
+  [[0, 0], [1 - q, 1 - q], [0, 1 - q], [1 - q, 0]].forEach(function (c) {
+    e.g.appendChild(svgEl('rect', { x: e.sx(c[0]), y: e.sy(c[1] + q), width: e.sx(q) - e.sx(0), height: e.sy(0) - e.sy(q), fill: corVar('--s1'), 'fill-opacity': 0.18 }));
+  });
+  pares.forEach(function (p) {
+    e.g.appendChild(svgEl('circle', { cx: e.sx(p[0]), cy: e.sy(p[1]), r: 1.7, fill: cor, 'fill-opacity': 0.55 }));
+    if (p[0] < q && p[1] < q) cantos.ie++;
+    if (p[0] > 1 - q && p[1] > 1 - q) cantos.sd++;
+    if (p[0] < q && p[1] > 1 - q) cantos.se++;
+    if (p[0] > 1 - q && p[1] < q) cantos.id++;
+  });
+  svg.appendChild(svgEl('text', { x: x, y: 14, 'font-size': 12, fill: corVar('--text'), 'font-weight': 600 }, titulo));
+  return cantos;
+}
+
+/* ===== Normal contra t com a mesma correlação ===== */
+(function () {
+  var sl = document.getElementById('nt-slider');
+  if (!sl) return;
+  var svg = document.getElementById('nt-svg'), semente = 3, N = 1000, rho = -0.3;
+  function desenhar() {
+    var nu = +sl.value;
+    document.getElementById('nt-valor').textContent = nu;
+    CL.limpar(svg);
+    var cn = quadrado(svg, 30, 160, CL.sortearNormal(rho, N, CL.rng(semente)), corVar('--muted'), 'Cópula normal');
+    var ct = quadrado(svg, 226, 160, CL.sortearT(rho, nu, N, CL.rng(semente)), corVar('--accent'), 'Cópula t, ν = ' + nu);
+    svg.appendChild(svgEl('text', { x: 30, y: 210, 'font-size': 11.5, fill: corVar('--muted') }, 'fora da diagonal: ' + (cn.se + cn.id)));
+    svg.appendChild(svgEl('text', { x: 30, y: 226, 'font-size': 11.5, fill: corVar('--muted') }, 'na diagonal: ' + (cn.ie + cn.sd)));
+    svg.appendChild(svgEl('text', { x: 226, y: 210, 'font-size': 11.5, fill: corVar('--accent'), 'font-weight': 600 }, 'fora da diagonal: ' + (ct.se + ct.id)));
+    svg.appendChild(svgEl('text', { x: 226, y: 226, 'font-size': 11.5, fill: corVar('--accent') }, 'na diagonal: ' + (ct.ie + ct.sd)));
+  }
+  sl.addEventListener('input', desenhar);
+  document.getElementById('nt-nova').addEventListener('click', function () { semente++; desenhar(); });
+  desenhar();
+})();
+
+/* ===== Explorador das arquimedianas ===== */
+(function () {
+  var sl = document.getElementById('fm-slider');
+  if (!sl) return;
+  var svg = document.getElementById('fm-svg');
+  var faixa = { clayton: [0.1, 6], gumbel: [1, 5], joe: [1, 5], frank: [-12, 12], amh: [-1, 0.95] };
+  function theta() {
+    var f = escolhido('fm-chips', 'data-f'), a = faixa[f], t = a[0] + (a[1] - a[0]) * (+sl.value) / 100;
+    if (f === 'frank' && Math.abs(t) < 0.05) t = 0.05;
+    return [f, t];
+  }
+  function lambdas(f, t) {
+    if (f === 'clayton') return [Math.pow(2, -1 / t), 0];
+    if (f === 'gumbel' || f === 'joe') return [0, 2 - Math.pow(2, 1 / t)];
+    return [0, 0];
+  }
+  function desenhar() {
+    var ft = theta(), f = ft[0], t = ft[1];
+    document.getElementById('fm-valor').textContent = fmt(t, 2);
+    CL.limpar(svg);
+    var pares = CL.sortearArq(f, t, 600, CL.rng(21));
+    quadrado(svg, 40, 210, pares, corVar('--accent'), '');
+    var l = lambdas(f, t), tx = corVar('--text');
+    svg.appendChild(svgEl('text', { x: 268, y: 50, 'font-size': 12.5, fill: tx, 'font-weight': 600 }, 'τ = ' + fmt(CL.familias[f].tau(t), 3)));
+    svg.appendChild(svgEl('text', { x: 268, y: 74, 'font-size': 12, fill: tx }, 'λ inferior: ' + fmt(l[0], 3)));
+    svg.appendChild(svgEl('text', { x: 268, y: 94, 'font-size': 12, fill: tx }, 'λ superior: ' + fmt(l[1], 3)));
+    svg.appendChild(svgEl('text', { x: 268, y: 124, 'font-size': 11, fill: corVar('--muted') }, 'quadradinhos:'));
+    svg.appendChild(svgEl('text', { x: 268, y: 140, 'font-size': 11, fill: corVar('--muted') }, 'cantos de 5%'));
+  }
+  ligarChips('fm-chips', desenhar);
+  sl.addEventListener('input', desenhar);
+  desenhar();
+})();
+
+/* ===== Espelhamentos da Gumbel ===== */
+(function () {
+  var svg = document.getElementById('es-svg');
+  if (!svg) return;
+  var base = CL.sortearArq('gumbel', 1.6, 800, CL.rng(8));
+  function desenhar() {
+    var e = escolhido('es-chips', 'data-e');
+    CL.limpar(svg);
+    var pares = e === 'o' ? base : CL.espelhar(base, e);
+    var c = quadrado(svg, 40, 210, pares, corVar('--accent'), '');
+    var tx = corVar('--text'), mu = corVar('--muted');
+    svg.appendChild(svgEl('text', { x: 268, y: 44, 'font-size': 12, fill: tx, 'font-weight': 600 }, 'pares nos cantos:'));
+    svg.appendChild(svgEl('text', { x: 268, y: 66, 'font-size': 12, fill: e === 'u' ? corVar('--s1') : tx }, 'sup-esq (crise): ' + c.se));
+    svg.appendChild(svgEl('text', { x: 268, y: 86, 'font-size': 12, fill: tx }, 'sup-dir: ' + c.sd));
+    svg.appendChild(svgEl('text', { x: 268, y: 106, 'font-size': 12, fill: tx }, 'inf-esq: ' + c.ie));
+    svg.appendChild(svgEl('text', { x: 268, y: 126, 'font-size': 12, fill: tx }, 'inf-dir (benigno): ' + c.id));
+    svg.appendChild(svgEl('text', { x: 268, y: 156, 'font-size': 11, fill: mu }, 'Gumbel, θ = 1,6'));
+    svg.appendChild(svgEl('text', { x: 268, y: 172, 'font-size': 11, fill: mu }, '800 pares'));
+  }
+  ligarChips('es-chips', desenhar);
+  desenhar();
+})();
+</script>
+</body>
+</html>

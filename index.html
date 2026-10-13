@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<!-- pagina-personalizada -->
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Cópulas: Ibovespa, dólar e VaR</title>
+<meta name="description" content="A teoria por trás da iniciação científica sobre cópulas aplicadas ao Ibovespa, ao dólar e ao Value at Risk.">
+<link rel="stylesheet" href="assets/estudo.css">
+<style>
+  .site { max-width: 980px; }
+  .selo { display: inline-block; font-size: .78rem; font-weight: 600; color: var(--accent); background: var(--accent-bg); border-radius: 999px; padding: .2rem .7rem; margin-bottom: .8rem; }
+  .site h1 { font-size: 1.75rem; line-height: 1.25; margin-bottom: .4rem; }
+  .autoria { color: var(--muted); font-size: .92rem; margin: 0 0 1.5rem; }
+  .bloco { background: var(--card); border: 1px solid var(--border); border-radius: 14px; padding: 1.25rem 1.4rem; margin: 0 0 1.25rem; }
+  .bloco > h2 { font-size: 1.15rem; margin: 0 0 .6rem; }
+  .pergunta { font-size: 1.12rem; line-height: 1.5; margin: 0 0 .4rem; }
+  .etapas { list-style: none; padding: 0; margin: .9rem 0 0; display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: .5rem; counter-reset: etapa; }
+  .etapas li { counter-increment: etapa; border: 1px solid var(--border); border-radius: 10px; padding: .6rem .7rem; font-size: .88rem; line-height: 1.4; background: var(--bg); }
+  .etapas li::before { content: counter(etapa); display: block; font-weight: 700; color: var(--accent); font-size: 1.05rem; }
+  .etapas strong { display: block; }
+  @media (max-width: 760px) { .etapas { grid-template-columns: 1fr; } .etapas li { display: grid; grid-template-columns: 1.6rem 1fr; } .etapas li::before { grid-row: span 2; } }
+  .numeros { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: .75rem; margin: .4rem 0 0; }
+  @media (max-width: 600px) { .numeros { grid-template-columns: 1fr; } }
+  .numero { border-left: 4px solid var(--accent); padding: .3rem 0 .3rem .9rem; }
+  .numero .valor { font-size: 1.35rem; font-weight: 700; line-height: 1.3; }
+  .numero p { margin: .15rem 0 0; font-size: .92rem; color: var(--muted); line-height: 1.5; }
+  .duas { display: grid; gap: 1.25rem; }
+  .duas svg { width: 100%; max-width: 560px; height: auto; display: block; margin: 0 auto; }
+  .legenda-fig { text-align: center; font-size: .85rem; color: var(--muted); margin: .3rem 0 0; }
+  .melhoria { border-left: 4px solid var(--warn); }
+  .site .cap-lista { margin-top: .5rem; }
+  .refs { font-size: .88rem; line-height: 1.55; padding-left: 1.2rem; margin: 0; }
+  .refs li { margin-bottom: .35rem; }
+  .rodape { color: var(--muted); font-size: .85rem; margin-top: 2rem; border-top: 1px solid var(--border); padding-top: 1rem; }
+  .comece { margin: .8rem 0 0; }
+</style>
+</head>
+<body>
+<main class="site">
+  <span class="selo">XXXIV Congresso de Iniciação Científica da Unicamp</span>
+  <h1>Modelagem da distribuição conjunta por cópulas: Ibovespa, dólar e Value at Risk</h1>
+  <p class="autoria">Gabriel de Andrade Belchior. Orientação: Profa. Dra. Verónica Andrea González-López. IMECC, Unicamp. Apoio: PIBIC/CNPq.</p>
+
+  <section class="bloco">
+    <h2>O trabalho em 1 minuto</h2>
+    <p class="pergunta">O dólar subiu 2% hoje. Quanto posso perder no Ibovespa, com 1% de probabilidade?</p>
+    <p>Responder exige a distribuição <strong>conjunta</strong> dos dois ativos. Com cópulas, a forma de cada ativo e a forma como eles se relacionam são escolhidas separadamente, e o teorema de Sklar garante que a recomposição é uma distribuição legítima. Os dados são 1205 dias de 2020 a 2025.</p>
+    <ol class="etapas">
+      <li><strong>Marginais</strong>t de Student para o Ibovespa, Johnson SU para o dólar</li>
+      <li><strong>Cópula</strong>a t vence nove concorrentes</li>
+      <li><strong>Conjunta</strong>recomposta pelo teorema de Sklar</li>
+      <li><strong>Value at Risk</strong>marginal, condicional ao dólar e de carteira</li>
+      <li><strong>Validação</strong>nos 20% finais dos dias, que o modelo não viu</li>
+    </ol>
+  </section>
+
+  <section class="bloco">
+    <h2>O que os dados mostraram</h2>
+    <div class="duas">
+      <div class="numeros">
+        <div class="numero"><div class="valor">λ = 0,16</div><p>Cerca de 16% dos dias de alta extrema do dólar continuam sendo de queda extrema da bolsa, por mais que se aperte o critério de "extremo".</p></div>
+        <div class="numero"><div class="valor">3,99% → 5,47%</div><p>Perda de 1% do Ibovespa sem olhar o dólar, e sabendo que ele subiu 2%: ignorar o dólar subestima o risco.</p></div>
+        <div class="numero"><div class="valor">2,06% × 2,32%</div><p>Carteira meio a meio: com a dependência negativa, um ativo protege o outro; supor independência superestima o risco.</p></div>
+        <div class="numero"><div class="valor">3,69% × 3,98%</div><p>Fora da amostra, zero violações nos dois métodos, mas a cópula pede menos capital que a regressão linear.</p></div>
+      </div>
+      <div>
+        <p class="legenda-fig"><strong>Perda de 1% do Ibovespa conforme o dólar do dia.</strong> A cópula reconhece que dólar parado indica dia calmo e dólar disparando, dia turbulento; a reta da regressão não muda de forma.</p>
+        <svg viewBox="0 0 400 280" id="fig-inicio" role="img" aria-label="VaR de 1% do Ibovespa em função da variação do dólar no dia: curva da cópula, reta da regressão e o VaR sem condição"></svg>
+      </div>
+    </div>
+  </section>
+
+  <section class="bloco melhoria">
+    <h2>A melhoria proposta</h2>
+    <p>Os retornos têm volatilidade em ondas: dias agitados vêm em grupos. Isso deixa os valores-p otimistas e faz o modelo dar o mesmo risco a um dia calmo e a um dia de crise. A proposta é descrever a volatilidade de cada ativo por um modelo GARCH e ajustar a cópula aos resíduos padronizados. É outro modelo, em que a cópula descreve os choques e não os retornos, e ainda não foi implementado. O <a href="capitulos/cap-07.html">capítulo 7</a> explica a ideia com simulações.</p>
+  </section>
+
+  <section class="bloco">
+    <h2>Para entender a teoria</h2>
+    <p>Sete capítulos curtos, com simulações, questões e demonstrações opcionais. Dá para ler só o que interessa: cada capítulo começa dizendo onde se encaixa.</p>
+    <nav class="site-nav">
+      <a class="btn primario" href="capitulos/cap-01.html">Começar pelo capítulo 1</a>
+      <a class="btn" href="revisao.html">Questões misturadas</a>
+      <a class="btn" href="formulas.html">Fórmulas e definições</a>
+    </nav>
+    <div class="cap-lista" id="capitulos"></div>
+  </section>
+
+  <section class="bloco">
+    <h2>Principais referências</h2>
+    <ol class="refs">
+      <li>SKLAR, A. Fonctions de répartition à n dimensions et leurs marges. <em>Publ. Inst. Statist. Univ. Paris</em>, 8, 229–231, 1959.</li>
+      <li>NELSEN, R. B. <em>An Introduction to Copulas</em>. 2. ed. Springer, 2006.</li>
+      <li>CHERUBINI, U.; LUCIANO, E.; VECCHIATO, W. <em>Copula Methods in Finance</em>. Wiley, 2004.</li>
+      <li>EMBRECHTS, P.; McNEIL, A. J.; STRAUMANN, D. Correlation and dependence in risk management: properties and pitfalls. In: <em>Risk Management: Value at Risk and Beyond</em>. Cambridge Univ. Press, 2002.</li>
+      <li>DEMARTA, S.; McNEIL, A. J. The t copula and related copulas. <em>International Statistical Review</em>, 73(1), 2005.</li>
+      <li>GENEST, C.; GHOUDI, K.; RIVEST, L.-P. A semiparametric estimation procedure of dependence parameters in multivariate families of distributions. <em>Biometrika</em>, 82(3), 1995.</li>
+      <li>GENEST, C.; RÉMILLARD, B.; BEAUDOIN, D. Goodness-of-fit tests for copulas: a review and a power study. <em>Insurance: Mathematics and Economics</em>, 44(2), 2009.</li>
+      <li>VUONG, Q. H. Likelihood ratio tests for model selection and non-nested hypotheses. <em>Econometrica</em>, 57(2), 1989.</li>
+      <li>KUPIEC, P. H. Techniques for verifying the accuracy of risk measurement models. <em>Journal of Derivatives</em>, 3(2), 1995.</li>
+      <li>ROSENBLATT, M. Remarks on a multivariate transformation. <em>Annals of Mathematical Statistics</em>, 23(3), 1952.</li>
+      <li>BOLLERSLEV, T. Generalized autoregressive conditional heteroskedasticity. <em>Journal of Econometrics</em>, 31(3), 1986.</li>
+      <li>CHEN, X.; FAN, Y. Estimation and model selection of semiparametric copula-based multivariate dynamic models under copula misspecification. <em>Journal of Econometrics</em>, 135, 2006.</li>
+      <li>CAMPBELL, J. Y.; LO, A. W.; MacKINLAY, A. C. <em>The Econometrics of Financial Markets</em>. Princeton Univ. Press, 1997.</li>
+      <li>AKAIKE, H. (1974); SCHWARZ, G. (1978): critérios de informação AIC e BIC.</li>
+    </ol>
+  </section>
+
+  <p class="rodape">Material de estudo feito a partir do relatório final da iniciação científica (PIBIC/CNPq, 2025–2026). Os números são os do relatório; as simulações do capítulo 7 usam dados artificiais. O progresso nos capítulos fica salvo só neste navegador.</p>
+</main>
+<script src="assets/site.js"></script>
+<script src="assets/estudo.js"></script>
+<script src="assets/dados-ic.js"></script>
+<script src="assets/copulas-lib.js"></script>
+<script>
+(function () {
+  var S = window.SITE || { slug: '', livro: { titulo: '' }, capitulos: [] };
+  var lista = document.getElementById('capitulos');
+  S.capitulos.forEach(function (c) {
+    var pronto = c.status === 'pronto';
+    var d = document.createElement('div'); d.className = 'cap ' + (pronto ? 'pronto' : 'pendente');
+    var num = document.createElement('div'); num.className = 'num'; num.textContent = c.numero;
+    var meio = document.createElement('div');
+    var h = document.createElement('h2');
+    if (pronto) { var a = document.createElement('a'); a.href = c.arquivo; a.textContent = c.titulo; h.appendChild(a); }
+    else h.textContent = c.titulo;
+    var sec = document.createElement('p'); sec.className = 'secoes';
+    sec.textContent = pronto ? (c.secoes || []).map(function (s) { return s.titulo; }).join('; ') : 'Ainda não preparado.';
+    meio.appendChild(h); meio.appendChild(sec);
+    var acao = document.createElement('div'); acao.className = 'acao';
+    if (pronto) {
+      var est = null;
+      try { est = JSON.parse(localStorage.getItem('estatistica-tdah:' + S.slug + '/' + c.id) || 'null'); } catch (e) {}
+      var link = document.createElement('a');
+      if (est && typeof est.atual === 'number') {
+        link.href = c.arquivo + '#passo-' + (est.atual + 1); link.textContent = 'Continuar →';
+        acao.appendChild(link);
+        if (est.onde) { var o = document.createElement('span'); o.className = 'onde'; o.textContent = est.onde; acao.appendChild(o); }
+      } else { link.href = c.arquivo; link.textContent = 'Começar →'; acao.appendChild(link); }
+    }
+    d.appendChild(num); d.appendChild(meio); d.appendChild(acao);
+    lista.appendChild(d);
+  });
+})();
+
+/* Figura: VaR de 1% do Ibovespa em função do dólar */
+(function () {
+  var svg = document.getElementById('fig-inicio'), D = window.DADOS_IC;
+  if (!svg || !D) return;
+  function desenhar() {
+    CL.limpar(svg);
+    var e = CL.eixos(svg, { x: 50, y: 12, w: 335, h: 190, xmin: -3, xmax: 3, ymin: 2, ymax: 8,
+      xticks: [-3, -2, -1, 0, 1, 2, 3], yticks: [2, 4, 6, 8], yfmt: function (t) { return fmt(t, 0) + '%'; },
+      xlab: 'variação do dólar no dia (%)', ylab: 'VaR 1% do Ibovespa', grade: true });
+    e.g.appendChild(svgEl('line', { x1: e.sx(-3), x2: e.sx(3), y1: e.sy(D.varMarg), y2: e.sy(D.varMarg), stroke: corVar('--muted'), 'stroke-dasharray': '5 4' }));
+    e.g.appendChild(svgEl('path', { d: CL.caminho(D.grade.map(function (g, i) { return [e.sx(g), e.sy(D.varReg[i])]; })), stroke: corVar('--muted'), 'stroke-width': 2.2, fill: 'none' }));
+    e.g.appendChild(svgEl('path', { d: CL.caminho(D.grade.map(function (g, i) { return [e.sx(g), e.sy(D.varCond[i])]; })), stroke: corVar('--s1'), 'stroke-width': 3, fill: 'none' }));
+    e.g.appendChild(svgEl('circle', { cx: e.sx(2), cy: e.sy(D.varCond[50]), r: 5.5, fill: corVar('--s1') }));
+    e.g.appendChild(svgEl('text', { x: e.sx(2) - 8, y: e.sy(D.varCond[50]) - 10, 'font-size': 12, 'text-anchor': 'end', fill: corVar('--s1'), 'font-weight': 600 }, '5,47%'));
+    svg.appendChild(svgEl('text', { x: 50, y: 252, 'font-size': 12, fill: corVar('--s1'), 'font-weight': 600 }, '— cópula t'));
+    svg.appendChild(svgEl('text', { x: 140, y: 252, 'font-size': 12, fill: corVar('--muted'), 'font-weight': 600 }, '— regressão linear'));
+    svg.appendChild(svgEl('text', { x: 50, y: 270, 'font-size': 11.5, fill: corVar('--muted') }, 'tracejada: VaR sem olhar o dólar (3,99%)'));
+  }
+  desenhar();
+  if (window.matchMedia) window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', desenhar);
+})();
+</script>
+</body>
+</html>

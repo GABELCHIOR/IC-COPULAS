@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Fórmulas e definições</title>
+<script>
+window.MathJax = {
+  tex: { inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath: [['$$', '$$'], ['\\[', '\\]']] },
+  svg: { fontCache: 'global' }
+};
+</script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/3.2.2/es5/tex-svg.min.js" defer></script>
+<link rel="stylesheet" href="assets/estudo.css">
+</head>
+<body>
+<main class="site">
+  <nav class="site-nav"><a class="btn pequeno" href="index.html">← Início</a></nav>
+  <h1>Fórmulas e definições</h1>
+  <p class="sub">Tudo o que os capítulos marcaram como fórmula ou definição, na notação do livro.</p>
+  <div class="chips" id="chips"></div>
+  <div id="lista"></div>
+</main>
+<script src="assets/site.js"></script>
+<script src="assets/banco.js"></script>
+<script src="assets/estudo.js"></script>
+<script>
+(function () {
+  var S = window.SITE || { capitulos: [] }, B = window.BANCO || { ancoras: [] };
+  var caps = S.capitulos.filter(function (c) { return B.ancoras.some(function (a) { return a.cap === c.id; }); });
+  var lista = document.getElementById('lista'), chips = document.getElementById('chips');
+  var filtro = null;
+  var nomes = { formula: 'Fórmula', definicao: 'Definição' };
+  function desenhar() {
+    lista.innerHTML = '';
+    caps.forEach(function (c) {
+      if (filtro && filtro !== c.id) return;
+      var g = document.createElement('section'); g.className = 'grupo-formulas';
+      var h = document.createElement('h2'); h.textContent = 'Cap. ' + c.numero + ' — ' + c.titulo; g.appendChild(h);
+      var secAtual = null;
+      B.ancoras.filter(function (a) { return a.cap === c.id; }).forEach(function (a) {
+        if (a.secao !== secAtual) { secAtual = a.secao; var h3 = document.createElement('h3'); h3.textContent = a.secao; g.appendChild(h3); }
+        var it = document.createElement('div'); it.className = 'item-formula';
+        var r = document.createElement('p'); r.className = 'rotulo-ref'; r.textContent = (nomes[a.tipo] || '') + (a.nome ? ' — ' + a.nome : '');
+        var corpo = document.createElement('div'); corpo.innerHTML = a.html;
+        var link = document.createElement('a'); link.href = c.arquivo + '#passo-' + a.passo; link.textContent = 'Ver no capítulo';
+        it.appendChild(r); it.appendChild(corpo); it.appendChild(link);
+        g.appendChild(it);
+      });
+      lista.appendChild(g);
+    });
+    if (!caps.length) lista.textContent = 'Ainda não há fórmulas. Prepare um capítulo primeiro.';
+    tipografar(lista);
+  }
+  function chip(rotulo, valor) {
+    var b = document.createElement('button'); b.type = 'button'; b.textContent = rotulo;
+    b.addEventListener('click', function () { filtro = valor; Array.prototype.forEach.call(chips.children, function (x) { x.classList.remove('on'); }); b.classList.add('on'); desenhar(); });
+    chips.appendChild(b); return b;
+  }
+  if (caps.length > 1) { chip('Todos', null).classList.add('on'); caps.forEach(function (c) { chip('Cap. ' + c.numero, c.id); }); }
+  desenhar();
+})();
+</script>
+</body>
+</html>

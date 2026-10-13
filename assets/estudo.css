@@ -1,0 +1,268 @@
+:root {
+  --bg: #faf9f6; --card: #ffffff; --text: #1f1e1c; --muted: #5f5e5a; --border: #e3e1da;
+  --accent: #185fa5; --accent-bg: #e6f1fb; --ok: #3b6d11; --ok-bg: #eaf3de;
+  --err: #a32d2d; --err-bg: #fcebeb; --warn: #854f0b; --warn-bg: #faeeda; --roxo: #534ab7;
+  --s1: #c2410c; --s2: #534ab7; --s3: #0f766e;
+  box-sizing: border-box;
+  padding-top: env(safe-area-inset-top, 0px);
+  padding-bottom: env(safe-area-inset-bottom, 0px);
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #1c1c1b; --card: #262625; --text: #eeede8; --muted: #b4b2a9; --border: #3a3a38;
+    --accent: #85b7eb; --accent-bg: #0c2a4a; --ok: #97c459; --ok-bg: #1f3310;
+    --err: #f09595; --err-bg: #3d1414; --warn: #ef9f27; --warn-bg: #3a2604; --roxo: #afa9ec;
+    --s1: #fb9a5b; --s2: #afa9ec; --s3: #5fd3c0;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #1c1c1b; --card: #262625; --text: #eeede8; --muted: #b4b2a9; --border: #3a3a38;
+  --accent: #85b7eb; --accent-bg: #0c2a4a; --ok: #97c459; --ok-bg: #1f3310;
+  --err: #f09595; --err-bg: #3d1414; --warn: #ef9f27; --warn-bg: #3a2604; --roxo: #afa9ec;
+  --s1: #fb9a5b; --s2: #afa9ec; --s3: #5fd3c0;
+}
+html { scroll-padding-top: env(safe-area-inset-top, 0px); }
+*, *::before, *::after { box-sizing: inherit; }
+body { margin: 0; background: var(--bg); color: var(--text); font-family: "Inter", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; font-size: 17px; line-height: 1.7; }
+.wrap { max-width: 1200px; margin: 0 auto; padding: 1.75rem 2rem 3rem; }
+@media (max-width: 700px) { .wrap { padding: 1.25rem 1rem 3rem; } }
+h1 { font-size: 1.5rem; font-weight: 600; margin: 0 0 .25rem; line-height: 1.3; }
+h2 { font-size: 1.25rem; font-weight: 600; margin: 0 0 .75rem; line-height: 1.35; }
+h3 { font-size: 1.05rem; font-weight: 600; margin: 1.25rem 0 .5rem; }
+h4 { font-size: .95rem; font-weight: 600; margin: 0 0 .4rem; }
+p { margin: 0 0 .9rem; }
+.contexto { color: var(--muted); font-size: .95rem; margin: 0 0 1rem; }
+.abas { display: flex; gap: .5rem; margin: 0 0 1.25rem; border-bottom: 1px solid var(--border); }
+.abas button { background: none; border: none; border-bottom: 2px solid transparent; padding: .6rem .9rem; font: inherit; font-size: .95rem; color: var(--muted); cursor: pointer; }
+.abas button[aria-selected="true"] { color: var(--accent); border-bottom-color: var(--accent); font-weight: 600; }
+.passo { background: var(--card); border: 1px solid var(--border); border-radius: 12px; padding: 1.25rem; max-width: 800px; margin: 0 auto; }
+.passo.com-apoio { max-width: none; }
+.texto > :first-child, .apoio > :first-child { margin-top: 0; }
+.texto > :last-child, .apoio > :last-child { margin-bottom: 0; }
+/* Sem barras de rolagem internas: a coluna de apoio nunca rola sozinha.
+   O topo do "sticky" é calculado no script: se o apoio couber na tela, fica preso no alto;
+   se for mais alto que a tela, rola com a página e prende pela base. */
+@media (min-width: 960px) {
+  .passo { padding: 1.75rem 2rem; }
+  .passo.com-apoio { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 2.5rem; align-items: start; }
+  .apoio { position: sticky; top: 1rem; }
+  .resumo-grid { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 2.5rem; align-items: start; }
+  .resumo-grid .lado { grid-template-columns: 1fr; }
+  .apoio .sim > svg { max-height: 40vh; }
+}
+@media (max-width: 959px) { .apoio { margin-top: 1rem; } }
+
+/* ---- Blocos de leitura ---- */
+.ideia { background: var(--accent-bg); color: var(--text); border-left: 4px solid var(--accent); padding: .75rem 1rem; margin: 1rem 0; }
+.ideia::before { content: "Ideia central"; display: block; font-size: .8rem; font-weight: 600; color: var(--accent); margin-bottom: .2rem; }
+.definicao { border-left: 4px solid var(--roxo); padding: .4rem 0 .4rem 1rem; margin: 1rem 0; }
+.exemplo { background: var(--bg); border: 1px solid var(--border); border-radius: 8px; padding: .8rem 1rem; margin: 1rem 0; }
+.exemplo::before { content: "Exemplo"; display: block; font-size: .8rem; font-weight: 600; color: var(--muted); margin-bottom: .2rem; }
+.confira { border-left: 4px solid var(--ok); padding: .4rem 0 .4rem 1rem; margin: 1rem 0; font-size: .95rem; }
+.confira::before { content: "Confira"; display: block; font-size: .8rem; font-weight: 600; color: var(--ok); margin-bottom: .1rem; }
+.confira ul { margin: 0; padding-left: 1.1rem; }
+.compara { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: .75rem; margin: 1rem 0; }
+.compara > div { border: 1px solid var(--border); border-radius: 8px; padding: .7rem .8rem; font-size: .95rem; }
+.compara > div > :last-child { margin-bottom: 0; }
+.compara ul { margin: 0; padding-left: 1.1rem; }
+.compara li { margin-bottom: .3rem; }
+@media (max-width: 600px) { .compara { grid-template-columns: 1fr; } }
+details.demo { border: 1px dashed var(--border); border-radius: 8px; padding: .5rem .9rem; margin: 1rem 0; }
+details.demo > summary { cursor: pointer; font-weight: 600; font-size: .95rem; color: var(--muted); }
+details.demo[open] > summary { margin-bottom: .6rem; }
+
+/* ---- Fórmulas: nunca rolam; encolhem para caber ---- */
+.formula { margin: 1rem 0; }
+mjx-container[jax="SVG"][display="true"] { margin: .6em 0 !important; max-width: 100%; }
+mjx-container[jax="SVG"][display="true"] > svg { max-width: 100%; height: auto; }
+.s1 { color: var(--s1); } .s2 { color: var(--s2); } .s3 { color: var(--s3); }
+.legenda { list-style: none; padding: 0; margin: .2rem 0 0; font-size: .93rem; display: flex; flex-wrap: wrap; column-gap: 1.25rem; row-gap: .1rem; }
+
+/* ---- Atividades (tudo que é "sua vez" usa o fundo âmbar) ---- */
+.pare, .prever, .lacunas, .acheerro { background: var(--warn-bg); border-radius: 8px; padding: .9rem 1rem; margin: 1rem 0; }
+.pare::before, .prever::before, .lacunas::before, .acheerro::before { display: block; font-size: .8rem; font-weight: 600; color: var(--warn); margin-bottom: .2rem; }
+.pare::before { content: "Pare e tente"; }
+.prever::before { content: "Preveja antes de mexer"; }
+.prever:not([data-sim])::before { content: "Preveja"; }
+.lacunas::before { content: "Complete"; }
+.acheerro::before { content: "Ache o erro"; }
+.pare .resposta, .prever .explica { border-top: 1px solid var(--border); padding-top: .6rem; margin-top: .6rem; }
+.pare > :last-child, .prever > :last-child, .lacunas > :last-child, .acheerro > :last-child { margin-bottom: 0; }
+.prever .alts { display: flex; flex-wrap: wrap; gap: .4rem; margin-bottom: .5rem; }
+.prever .alts button { font: inherit; font-size: .93rem; padding: .4rem .8rem; border: 1px solid var(--border); border-radius: 999px; background: var(--card); color: var(--text); cursor: pointer; }
+.prever .alts button.escolhida { border-color: var(--accent); box-shadow: inset 0 0 0 1px var(--accent); font-weight: 600; }
+.prever .alts button.certa { border-color: var(--ok); background: var(--ok-bg); }
+.prever .alts button.errada { border-color: var(--err); background: var(--err-bg); }
+.aviso-prever { font-size: .88rem; color: var(--muted); margin: 0 0 .4rem; }
+.aviso-prever:empty { display: none; }
+.sim.travada { opacity: .45; }
+input.lacuna { width: 6.5em; font: inherit; padding: .1rem .4rem; border: 1px solid var(--muted); border-radius: 6px; background: var(--card); color: var(--text); text-align: center; }
+input.lacuna.ok { border-color: var(--ok); background: var(--ok-bg); }
+input.lacuna.no { border-color: var(--err); background: var(--err-bg); }
+.res-lacunas { font-size: .93rem; margin: .5rem 0 0; }
+.res-lacunas:empty { display: none; }
+.res-lacunas.ok { color: var(--ok); } .res-lacunas.no { color: var(--err); }
+.lacunas .dica { font-size: .93rem; margin: .5rem 0 0; }
+.lacunas .resolucao { border-top: 1px solid var(--border); padding-top: .6rem; margin-top: .6rem; }
+.acheerro .linhas { list-style: none; padding: 0; margin: .4rem 0 0; display: grid; gap: .35rem; counter-reset: linha; }
+.acheerro .linhas li { counter-increment: linha; }
+.acheerro .linhas button { width: 100%; text-align: left; font: inherit; font-size: .95rem; line-height: 1.5; padding: .45rem .7rem; border: 1px solid var(--border); border-radius: 8px; background: var(--card); color: var(--text); cursor: pointer; }
+.acheerro .linhas button::before { content: counter(linha) ". "; color: var(--muted); }
+.acheerro .linhas button.achou { border-color: var(--ok); background: var(--ok-bg); }
+.acheerro .linhas button.correta { border-color: var(--err); background: var(--err-bg); }
+
+/* ---- Questões ---- */
+.quiz { margin: 1.25rem 0; }
+.quiz .enunciado { font-weight: 600; }
+.quiz .alts { display: grid; gap: .5rem; }
+.quiz .alts button { text-align: left; font: inherit; font-size: .97rem; line-height: 1.5; padding: .7rem .9rem; border: 1px solid var(--border); border-radius: 8px; background: var(--card); color: var(--text); cursor: pointer; }
+.quiz .alts button.certa { border-color: var(--ok); background: var(--ok-bg); }
+.quiz .alts button.errada { border-color: var(--err); background: var(--err-bg); }
+.fb { display: none; font-size: .93rem; padding: .6rem .9rem; border-radius: 8px; margin-top: .5rem; }
+.fb.mostrar { display: block; }
+.fb.ok { background: var(--ok-bg); color: var(--ok); }
+.fb.no { background: var(--err-bg); color: var(--err); }
+
+/* ---- Simulações ---- */
+.sim { border: 1px solid var(--border); border-radius: 8px; padding: .9rem; margin: 1rem 0; transition: opacity .2s; }
+.sim label { display: flex; flex-wrap: wrap; align-items: center; column-gap: .75rem; row-gap: .1rem; font-size: .9rem; color: var(--muted); margin-bottom: .35rem; }
+.sim input[type=range] { flex: 1 1 170px; min-width: 0; }
+.sim > svg { width: 100%; max-width: 460px; height: auto; display: block; margin: .5rem auto 0; }
+svg.fig { width: 100%; max-width: 420px; height: auto; display: block; margin: .5rem auto 0; }
+/* rede de segurança: um traço que passe 1–2 unidades do viewBox aparece em vez de ser cortado.
+   O desenho em si deve caber no viewBox (scripts/conferir_figuras.js confere). */
+.sim > svg, svg.fig { overflow: visible; }
+
+/* ---- Tabelas: cabem na largura, sem rolagem lateral ---- */
+.escala { max-width: 100%; }
+.tab { border-collapse: collapse; font-size: .92rem; width: 100%; font-variant-numeric: tabular-nums; }
+.tab th, .tab td { padding: .35rem .5rem; text-align: center; border-bottom: 1px solid var(--border); }
+.tab td { white-space: nowrap; }
+.tab th { font-weight: 600; color: var(--muted); }
+@media (max-width: 600px) { .tab { font-size: .8rem; } .tab th, .tab td { padding: .3rem .2rem; } }
+
+/* ---- Navegação ---- */
+.nav { display: flex; justify-content: space-between; gap: .75rem; margin-top: 1.25rem; }
+.nav button, .btn { font: inherit; font-size: .95rem; padding: .6rem 1.1rem; border-radius: 8px; border: 1px solid var(--border); background: var(--card); color: var(--text); cursor: pointer; }
+.btn.pequeno { padding: .35rem .8rem; font-size: .85rem; }
+.nav button.primario, .btn.primario { background: var(--accent); border-color: var(--accent); color: var(--bg); font-weight: 600; }
+/* ---- Passos da seção atual, no topo: só para percorrer a seção (sem ✓, sem o capítulo inteiro) ---- */
+.subtopicos { position: relative; display: flex; flex-wrap: wrap; align-items: baseline; column-gap: 1.2rem; row-gap: .15rem; margin: 0 0 1.1rem; padding-bottom: .3rem; border-bottom: 1px solid var(--border); }
+.subtopicos .sub-secao { font-size: .8rem; color: var(--muted); margin-right: .2rem; }
+.subtopicos button { background: none; border: none; font: inherit; font-size: .92rem; color: var(--muted); padding: .2rem 0 .3rem; cursor: pointer; transition: color .2s; }
+.subtopicos button:hover, .subtopicos button:focus-visible { color: var(--text); outline: none; }
+.subtopicos button.atual { color: var(--accent); }
+.sub-sublinhado { position: absolute; left: 0; top: 0; height: 2px; width: 0; border-radius: 2px; background: var(--accent); pointer-events: none; transition: transform .45s cubic-bezier(.22, 1, .36, 1), width .45s cubic-bezier(.22, 1, .36, 1); }
+@media (prefers-reduced-motion: reduce) { .sub-sublinhado, .subtopicos button { transition: none; } }
+
+/* ---- Trilho lateral: sumário do capítulo que só aparece quando chamado ----
+   Fechado: um traço por seção na borda esquerda. Ao passar o mouse, tocar ou focar,
+   o painel desliza, os itens entram em cascata e o marcador escorrega até o passo atual. */
+@media (max-width: 1300px) { .wrap { padding-left: calc(28px + 1.5rem); } }
+@media (max-width: 700px) { .wrap { padding-left: calc(28px + .5rem); } }
+.trilho { position: fixed; top: 0; bottom: 0; left: 0; width: 28px; z-index: 25; cursor: pointer; outline: none; }
+.trilho-tracos { position: absolute; left: 9px; top: 50%; transform: translateY(-50%); display: flex; flex-direction: column; gap: 9px; transition: opacity .2s ease, transform .35s cubic-bezier(.22, 1, .36, 1); }
+.trilho:not(.aberto):hover .trilho-tracos { transform: translate(2px, -50%); }
+.trilho.aberto .trilho-tracos { opacity: 0; transform: translate(10px, -50%); }
+.traco { width: 9px; height: 3px; border-radius: 2px; background: var(--border); transition: width .45s cubic-bezier(.22, 1, .36, 1), background-color .35s; }
+.traco.vista { background: var(--muted); }
+.traco.atual { width: 17px; background: var(--accent); }
+.trilho-painel { position: absolute; top: 0; bottom: 0; left: 0; width: min(300px, 85vw); padding: 1.25rem 1rem 1.25rem 1.1rem; display: flex; flex-direction: column; justify-content: center; gap: .7rem; background: var(--card); border-right: 1px solid var(--border); border-radius: 0 18px 18px 0; box-shadow: 8px 0 30px rgba(0,0,0,.14); transform: translateX(calc(-100% - 40px)); visibility: hidden; transition: transform .42s cubic-bezier(.22, 1, .36, 1), visibility 0s linear .42s; cursor: default; }
+.trilho.aberto .trilho-painel { transform: none; visibility: visible; transition: transform .42s cubic-bezier(.22, 1, .36, 1), visibility 0s; }
+.trilho-cap { font-size: .75rem; color: var(--muted); margin: 0; padding-left: .9rem; }
+.trilho-lista { position: relative; display: flex; flex-direction: column; }
+.trilho-lista button, .trilho-rodape { opacity: 0; transform: translateX(-14px); transition: opacity .15s ease, transform .2s ease, background-color .15s, color .15s; }
+.trilho.aberto .trilho-lista button, .trilho.aberto .trilho-rodape { opacity: 1; transform: none; transition: opacity .3s ease calc(var(--i, 0) * 28ms + 90ms), transform .45s cubic-bezier(.22, 1, .36, 1) calc(var(--i, 0) * 28ms + 90ms), background-color .15s, color .15s; }
+.trilho-lista button { text-align: left; background: none; border: none; font: inherit; font-size: .9rem; line-height: 1.35; color: var(--muted); padding: .32rem .5rem .32rem .9rem; border-radius: 8px; cursor: pointer; }
+.trilho-lista button:hover, .trilho-lista button:focus-visible { background: var(--accent-bg); color: var(--text); outline: none; }
+.trilho-secao.vista { color: var(--text); }
+.trilho-secao.atual { color: var(--accent); font-weight: 600; }
+.trilho-passo { font-size: .84rem !important; padding-left: 1.75rem !important; }
+.trilho-passo.atual { color: var(--text); font-weight: 600; }
+.trilho-marcador { position: absolute; left: .95rem; top: 0; width: 3px; height: 0; border-radius: 2px; background: var(--accent); transition: transform .5s cubic-bezier(.22, 1, .36, 1), height .5s cubic-bezier(.22, 1, .36, 1), opacity .3s; }
+.trilho-rodape { display: flex; flex-wrap: wrap; gap: .4rem; border-top: 1px solid var(--border); padding: .75rem 0 0 .9rem; }
+.trilho.compacto .trilho-lista button { font-size: .8rem; padding-top: .16rem; padding-bottom: .16rem; }
+@media (prefers-reduced-motion: reduce) {
+  .trilho *, .trilho *::before { transition-duration: 0s !important; transition-delay: 0s !important; }
+}
+.retomada { background: var(--card); border: 1px solid var(--accent); border-radius: 12px; padding: 1rem 1.25rem; max-width: 800px; margin: 0 auto 1rem; }
+.retomada::before { content: "De volta"; display: block; font-size: .8rem; font-weight: 600; color: var(--accent); margin-bottom: .2rem; }
+.retomada .item { border-top: 1px solid var(--border); padding: .6rem 0; }
+.retomada .item p { margin: 0 0 .4rem; }
+.retomada .ideia { margin: .5rem 0 0; }
+
+/* ---- Resumo ---- */
+.lado { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: .75rem; }
+.lado > div { background: var(--card); border: 1px solid var(--border); border-radius: 8px; padding: .8rem 1rem; }
+.resumo-lista { padding-left: 1.2rem; }
+.resumo-lista li { margin-bottom: .4rem; }
+.revisao { background: var(--card); border: 1px solid var(--border); border-radius: 12px; padding: 1rem 1.25rem; margin: 0 0 1.5rem; }
+.revisao h3 { margin-top: 0; }
+.rev-cabeca { font-size: .85rem; color: var(--muted); margin: 0 0 .3rem; }
+.rev-acoes { display: flex; flex-wrap: wrap; gap: .5rem; margin-top: .75rem; }
+
+/* ---- Referências: balão, gaveta e painel ---- */
+.ref { color: var(--accent); border-bottom: 1px dashed var(--accent); cursor: pointer; }
+.ref:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+.destaque { animation: piscar 1.6s ease-out; }
+@keyframes piscar { 0%, 30% { box-shadow: 0 0 0 3px var(--accent); } 100% { box-shadow: 0 0 0 3px transparent; } }
+.balao { position: absolute; z-index: 20; width: min(380px, calc(100vw - 24px)); background: var(--card); border: 1px solid var(--accent); border-radius: 10px; padding: .7rem .9rem; font-size: .93rem; box-shadow: 0 6px 20px rgba(0,0,0,.15); }
+.balao .formula, .balao .exemplo, .balao .definicao, .gaveta .formula, .gaveta .exemplo, #painel .formula, #painel .exemplo { margin: .3rem 0; }
+.rotulo-ref { font-size: .78rem; color: var(--muted); margin: 0 0 .2rem; }
+.ir-passo { display: inline-block; font: inherit; font-size: .85rem; background: none; border: none; color: var(--accent); padding: .3rem 0 0; cursor: pointer; text-decoration: underline; }
+/* A gaveta não tem rolagem própria: se o conteúdo não couber, ele abre como painel de página inteira. */
+.gaveta { position: fixed; left: 0; right: 0; bottom: 0; z-index: 30; background: var(--card); border-top: 1px solid var(--border); border-radius: 14px 14px 0 0; box-shadow: 0 -6px 24px rgba(0,0,0,.18); padding: .9rem 1rem calc(1rem + env(safe-area-inset-bottom, 0px)); }
+.gaveta-interno { max-width: 900px; margin: 0 auto; }
+.gaveta-topo { display: flex; justify-content: space-between; align-items: center; gap: .5rem; margin-bottom: .4rem; }
+.gaveta-topo strong { font-size: 1rem; }
+.gaveta-item { border-top: 1px solid var(--border); padding: .6rem 0; }
+.gaveta-item:first-of-type { border-top: none; }
+#painel { max-width: 900px; margin: 0 auto; }
+.painel-lista { display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 0 2rem; }
+.nota-painel { font-size: .88rem; color: var(--muted); margin-top: .75rem; }
+[hidden] { display: none !important; }
+
+/* ---- Integração com o site do livro ---- */
+.sub-livro { margin-left: auto; font-size: .78rem; color: var(--muted); }
+.fim-capitulo { display: flex; flex-wrap: wrap; justify-content: space-between; gap: .75rem; margin-top: 2rem; padding-top: 1.25rem; border-top: 1px solid var(--border); }
+.fim-capitulo a, a.btn { text-decoration: none; display: inline-block; }
+
+/* ---- Páginas gerais: início, revisão para prova, fórmulas ---- */
+.site { max-width: 900px; margin: 0 auto; padding: 2rem 1.25rem 4rem; }
+.site h1 { font-size: 1.6rem; margin-bottom: .2rem; }
+.site .sub { color: var(--muted); margin: 0 0 1.5rem; }
+.site-nav { display: flex; flex-wrap: wrap; gap: .5rem; margin: 0 0 2rem; }
+.site-nav a { text-decoration: none; }
+.cap-lista { display: grid; gap: .75rem; }
+.cap { display: grid; grid-template-columns: 3rem minmax(0, 1fr) auto; gap: 1rem; align-items: start; background: var(--card); border: 1px solid var(--border); border-radius: 12px; padding: 1rem 1.25rem; transition: border-color .2s, transform .25s cubic-bezier(.22, 1, .36, 1); }
+.cap.pronto:hover { border-color: var(--accent); transform: translateX(3px); }
+.cap .num { font-size: 1.6rem; font-weight: 600; color: var(--muted); line-height: 1.2; }
+.cap h2 { font-size: 1.05rem; margin: 0 0 .25rem; }
+.cap h2 a { color: var(--text); text-decoration: none; }
+.cap .secoes { font-size: .85rem; color: var(--muted); margin: 0; }
+.cap .acao { font-size: .85rem; text-align: right; white-space: nowrap; }
+.cap .acao a { color: var(--accent); text-decoration: none; }
+.cap .acao .onde { display: block; color: var(--muted); font-size: .78rem; white-space: normal; max-width: 14rem; }
+.cap.pendente { opacity: .55; }
+.cap.pendente .acao { color: var(--muted); }
+@media (max-width: 600px) { .cap { grid-template-columns: 2.2rem minmax(0, 1fr); } .cap .acao { grid-column: 2; text-align: left; } }
+.chips { display: flex; flex-wrap: wrap; gap: .4rem; margin: .5rem 0 1rem; }
+.chips button { font: inherit; font-size: .85rem; padding: .3rem .8rem; border-radius: 999px; border: 1px solid var(--border); background: var(--card); color: var(--muted); cursor: pointer; transition: all .2s; }
+.chips button.on { border-color: var(--accent); color: var(--accent); background: var(--accent-bg); }
+.config-rev { background: var(--card); border: 1px solid var(--border); border-radius: 12px; padding: 1rem 1.25rem; margin-bottom: 1.25rem; }
+.config-rev label { font-size: .9rem; color: var(--muted); }
+.config-rev select { font: inherit; font-size: .9rem; padding: .2rem .4rem; border-radius: 6px; border: 1px solid var(--border); background: var(--card); color: var(--text); }
+.questao-rev { background: var(--card); border: 1px solid var(--border); border-radius: 12px; padding: 1.25rem; }
+.placar { display: grid; gap: .3rem; margin: .5rem 0 1rem; font-size: .95rem; }
+.grupo-formulas { margin: 0 0 2rem; }
+.grupo-formulas h2 { font-size: 1.15rem; border-bottom: 1px solid var(--border); padding-bottom: .3rem; }
+.grupo-formulas h3 { font-size: .95rem; color: var(--muted); margin: 1rem 0 .3rem; }
+.item-formula { border-top: 1px solid var(--border); padding: .6rem 0; }
+.item-formula:first-of-type { border-top: none; }
+.item-formula a { font-size: .85rem; color: var(--accent); }
+
+/* ---- Proteção das fórmulas ----
+   O MathJax desenha cada fórmula como um <svg>. Regras de gráfico precisam usar "> svg" (filho direto);
+   esta regra, por último e mais específica, garante que fórmulas no meio do texto nunca herdem tamanho de gráfico. */
+mjx-container[jax="SVG"]:not([display="true"]) > svg { width: auto; height: auto; max-width: 100%; max-height: none; display: inline; margin: 0; }
+mjx-container[jax="SVG"][display="true"] > svg { width: auto; margin: 0 auto; }

@@ -1,0 +1,595 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="estudo-chave" content="ic-copulas/cap-01">
+<title>Cap. 1 — O problema: o risco de dois ativos juntos</title>
+<script>
+window.MathJax = {
+  tex: { inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath: [['$$', '$$'], ['\\[', '\\]']] },
+  svg: { fontCache: 'global' }
+};
+</script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/3.2.2/es5/tex-svg.min.js" defer></script>
+<link rel="stylesheet" href="../assets/estudo.css">
+</head>
+<body>
+<nav class="trilho" id="trilho" tabindex="0" aria-label="Sumário do capítulo" aria-expanded="false">
+  <div class="trilho-tracos" id="trilho-tracos" aria-hidden="true"></div>
+  <div class="trilho-painel">
+    <p class="trilho-cap" id="trilho-cap"></p>
+    <div class="trilho-lista" id="trilho-lista"></div>
+    <div class="trilho-rodape" id="trilho-rodape">
+      <button class="btn pequeno" id="btn-formulas">Fórmulas até aqui</button>
+      <button class="btn pequeno" id="btn-ir-resumo">Resumo</button>
+      <a class="btn pequeno" id="btn-inicio" href="../index.html" hidden>Início</a>
+    </div>
+  </div>
+</nav>
+
+<div class="wrap">
+
+<h1>Cap. 1 — O problema: o risco de dois ativos juntos</h1>
+<p class="contexto">Onde isso se encaixa: é o ponto de partida do trabalho. Basta saber o que são função de distribuição acumulada, densidade e quantil.</p>
+
+<div class="abas" role="tablist">
+  <button role="tab" aria-selected="true" data-aba="trilha">Trilha</button>
+  <button role="tab" aria-selected="false" data-aba="resumo">Resumo</button>
+</div>
+
+<div id="trilha">
+  <nav class="subtopicos" id="subtopicos" aria-label="Passos desta seção"></nav>
+  <div class="retomada" id="retomada" hidden></div>
+
+  <!-- ================= SEÇÃO 1.1 ================= -->
+  <div class="secao" data-numero="1.1" data-titulo="A pergunta" data-livro="Relatório final, Introdução">
+
+  <section class="passo" data-titulo="Dois ativos">
+   <div class="texto">
+    <h2>O dólar subiu 2% hoje. Seu risco no Ibovespa mudou?</h2>
+    <p>Um investidor tem dinheiro no Ibovespa (o índice da bolsa brasileira) e no dólar. A pergunta de todo dia é: <strong>quanto posso perder amanhã, e com que probabilidade?</strong></p>
+    <p>Olhando só para o Ibovespa, dá para responder. Mas os dois ativos se mexem juntos: em dias ruins para a economia brasileira, a bolsa costuma cair e o dólar costuma subir. Então saber o que o dólar fez deveria mudar a resposta.</p>
+    <div class="prever">
+      <p>Num dia em que o dólar sobe 2%, a perda que o Ibovespa só ultrapassa em 1% dos dias fica...</p>
+      <div class="alts">
+        <button data-op="a" data-certa>Maior</button>
+        <button data-op="b">Menor</button>
+        <button data-op="c">Igual</button>
+      </div>
+      <div class="explica" hidden><p>Maior. No gráfico ao lado, os dias de dólar em alta forte (destacados) ficam quase todos do lado esquerdo, o de queda do Ibovespa. O trabalho mede isso: a perda de 1% passa de 3,99% (sem olhar o dólar) para 5,47% (sabendo que ele subiu 2%). Chegar a esse número é o objetivo dos próximos capítulos.</p></div>
+    </div>
+    <div class="ideia">O risco de um ativo muda conforme o que o outro fez; para medir isso é preciso modelar os dois juntos.</div>
+   </div>
+   <aside class="apoio">
+    <div class="exemplo" data-ref-id="ex-dados" data-ref-tipo="exemplo" data-ref-nome="Os dados: Ibovespa e dólar">
+      <p>1205 dias de negociação, de janeiro de 2020 a junho de 2025. Em cada dia, a variação do Ibovespa ($x$, horizontal) e a do dólar em reais ($y$, vertical), em %. Os pontos destacados são os 47 dias em que o dólar subiu mais de 2%.</p>
+      <svg viewBox="0 0 400 290" class="fig" id="fig-dispersao" role="img" aria-label="Dispersão dos retornos diários do Ibovespa contra os do dólar, com os dias de alta forte do dólar destacados"></svg>
+    </div>
+   </aside>
+  </section>
+
+  <section class="passo" data-titulo="A conjunta">
+   <div class="texto">
+    <h2>Duas variáveis aleatórias, uma distribuição conjunta</h2>
+    <p>Chame de $X$ a variação de amanhã do Ibovespa e de $Y$ a do dólar. Antes de o dia acontecer, as duas são variáveis aleatórias. Tudo o que se pode perguntar sobre elas juntas está numa função:</p>
+    <div class="definicao" data-ref-id="d-conjunta" data-ref-tipo="definicao" data-ref-nome="Distribuição conjunta e marginais">
+      <p><strong>Distribuição conjunta:</strong> $H(x, y) = P(X \le x,\ Y \le y)$.</p>
+      <p><strong>Marginais:</strong> $F(x) = P(X \le x)$ e $G(y) = P(Y \le y)$. Elas saem da conjunta fazendo a outra variável ir a infinito: $F(x) = H(x, \infty)$ e $G(y) = H(\infty, y)$.</p>
+    </div>
+    <p>A marginal $F$ responde perguntas sobre o Ibovespa sozinho. Qualquer pergunta que envolva os dois ao mesmo tempo, ou um sabendo o outro, precisa de $H$.</p>
+    <div class="ideia">$F$ e $G$ descrevem cada ativo sozinho; só $H$ descreve como eles andam juntos.</div>
+   </div>
+   <aside class="apoio">
+    <div class="quiz" data-correta="a">
+      <p class="enunciado">Você conhece apenas a distribuição marginal $F$ do retorno do Ibovespa. Qual destas perguntas você consegue responder?</p>
+      <div class="alts">
+        <button data-op="a">(a) A probabilidade de o Ibovespa cair mais de 3% amanhã.</button>
+        <button data-op="b">(b) A probabilidade de o Ibovespa cair mais de 3% amanhã, sabendo que o dólar subiu 2%.</button>
+        <button data-op="c">(c) A probabilidade de o Ibovespa cair mais de 3% e o dólar subir mais de 2% no mesmo dia.</button>
+        <button data-op="d">(d) A perda de 1% de uma carteira com metade em Ibovespa e metade em dólar.</button>
+      </div>
+      <div class="fb" data-op="a">Isso. É $F(\ln 0{,}97)$: um evento só do Ibovespa, sem condição sobre o dólar.</div>
+      <div class="fb" data-op="b">Saber o que o dólar fez é uma condição sobre $Y$. Uma probabilidade condicional precisa de como $X$ e $Y$ se relacionam, ou seja, da conjunta.</div>
+      <div class="fb" data-op="c">Um evento sobre os dois ao mesmo tempo é exatamente o que $H$ (e não $F$) descreve.</div>
+      <div class="fb" data-op="d">O retorno da carteira mistura $X$ e $Y$. A distribuição de uma soma depende de como as duas parcelas se relacionam, não só de cada uma.</div>
+    </div>
+   </aside>
+  </section>
+
+  <section class="passo" data-titulo="O dilema">
+   <div class="texto">
+    <h2>As distribuições bivariadas prontas amarram tudo junto</h2>
+    <p>O caminho clássico é escolher uma família de distribuições bivariadas, por exemplo a normal bivariada. O problema: ao escolher a família, você escolhe <strong>três coisas de uma vez</strong>, a marginal de $X$, a de $Y$ e a forma da dependência.</p>
+    <p>Com a normal bivariada, as duas marginais são normais e a dependência fica resumida numa correlação. Só que o Ibovespa tem dias extremos demais para uma normal (você vai ver isso na seção 1.3), e a dependência em dias de crise pode ser diferente da dependência em dias comuns. Não dá para consertar uma parte sem trocar o modelo inteiro.</p>
+    <p>O que se quer é escolher cada peça separadamente: a melhor distribuição para o Ibovespa, a melhor para o dólar e, à parte, a melhor descrição de como eles se relacionam. É isso que a <strong>teoria de cópulas</strong> permite.</p>
+    <div class="ideia">Cópulas separam a escolha das marginais da escolha da dependência, que passam a ser decisões independentes.</div>
+    <div class="pare">
+      <p>Se você ajustasse uma normal bivariada aos dados, o que estaria assumindo sobre o Ibovespa sozinho, mesmo sem querer?</p>
+      <button class="btn" data-revelar>Ver resposta</button>
+      <div class="resposta" hidden><p>Que o retorno do Ibovespa é normal. Na normal bivariada as marginais são normais por construção. Se os dados têm caudas mais pesadas que a normal, o modelo erra justamente nas perdas grandes, que são as que interessam.</p></div>
+    </div>
+   </div>
+  </section>
+  </div>
+
+  <!-- ================= SEÇÃO 1.2 ================= -->
+  <div class="secao" data-numero="1.2" data-titulo="Log-retorno" data-livro="Campbell, Lo e MacKinlay (1997), cap. 1; relatório 2.1">
+
+  <section class="passo" data-titulo="Preço × retorno">
+   <div class="texto">
+    <h2>Não se modela o preço, e sim quanto ele variou</h2>
+    <p>O preço do Ibovespa passeia sem voltar a um nível fixo: em 2020 estava perto de 115 mil pontos, caiu para 63 mil e depois passou de 130 mil. Não faz sentido tratar esses valores como sorteios de uma mesma distribuição. Já a <strong>variação diária</strong> oscila em torno de uma média quase constante, perto de zero.</p>
+    <div class="formula" data-ref-id="f-logret" data-ref-tipo="formula" data-ref-nome="Retorno simples e log-retorno">
+      $$\class{s1}{R_t} = \frac{P_t - P_{t-1}}{P_{t-1}}$$ $$\class{s2}{r_t} = \ln\frac{P_t}{P_{t-1}} = \ln(1 + \class{s1}{R_t})$$
+      <ul class="legenda">
+        <li><span class="s1">$R_t$</span>: retorno simples do dia $t$</li>
+        <li><span class="s2">$r_t$</span>: log-retorno do dia $t$</li>
+        <li>$P_t$: preço de fechamento no dia $t$</li>
+      </ul>
+    </div>
+    <p>O trabalho usa o log-retorno $r_t$. No resto do site, $X$ e $Y$ são os log-retornos do dia do Ibovespa e do dólar.</p>
+    <div class="ideia">A variável estudada é o log-retorno diário $r_t = \ln(P_t / P_{t-1})$, não o preço.</div>
+   </div>
+   <aside class="apoio">
+    <div class="lacunas">
+      <p>O Ibovespa fechou em 100 mil pontos ontem e em 96 mil hoje.</p>
+      <p>$R_t =$ <input class="lacuna" data-resp="-0.04" data-tol="0.0005" aria-label="retorno simples"></p>
+      <p>$r_t =$ <input class="lacuna" data-resp="-0.0408" data-tol="0.0005" aria-label="log-retorno"> (4 casas)</p>
+      <button class="btn" data-conferir>Conferir</button>
+      <p class="dica" hidden>Dica: $r_t = \ln(96/100) = \ln(0{,}96)$.</p>
+      <div class="resolucao" hidden><p>$R_t = (96 - 100)/100 = -0{,}04$. $r_t = \ln 0{,}96 = -0{,}0408$. O log-retorno é um pouco mais negativo que o retorno simples.</p></div>
+    </div>
+   </aside>
+  </section>
+
+  <section class="passo" data-titulo="Por que o log">
+   <div class="texto">
+    <h2>Três motivos para usar o log-retorno</h2>
+    <p><strong>1. Soma no tempo.</strong> O log-retorno de dois dias é a soma dos dois log-retornos diários: $r_t + r_{t+1} = \ln(P_{t+1}/P_{t-1})$. Com retornos simples isso não vale.</p>
+    <p><strong>2. Parece o retorno usual.</strong> Como $\ln(1 + R) \approx R$ para $R$ pequeno, um log-retorno de $-0{,}0408$ é lido como "caiu uns 4%".</p>
+    <p><strong>3. Média estável.</strong> Os log-retornos oscilam em torno de uma média quase constante, condição para tratar os dias como observações da mesma distribuição.</p>
+    <p>A aproximação do motivo 2 piora longe de zero. Isso importa no risco, que mora justamente nos dias extremos.</p>
+    <details class="demo">
+      <summary>Demonstração: o log-retorno soma no tempo</summary>
+      <p>$$\begin{aligned} r_t + r_{t+1} &= \ln\frac{P_t}{P_{t-1}} + \ln\frac{P_{t+1}}{P_t} \\ &= \ln\left(\frac{P_t}{P_{t-1}} \cdot \frac{P_{t+1}}{P_t}\right) \\ &= \ln\frac{P_{t+1}}{P_{t-1}}. \end{aligned}$$</p>
+      <p>Com retornos simples, o retorno de dois dias é $(1 + R_t)(1 + R_{t+1}) - 1$ $= R_t + R_{t+1} + R_t R_{t+1}$, que só é a soma quando o produto $R_t R_{t+1}$ é desprezível.</p>
+    </details>
+    <div class="ideia">O log-retorno soma no tempo e se parece com o retorno percentual quando a variação é pequena.</div>
+   </div>
+   <aside class="apoio">
+    <div class="prever" data-sim="sim-logret">
+      <p>Em março de 2020 houve um dia de queda de quase 15% no preço. Nesse dia, o log-retorno foi...</p>
+      <div class="alts">
+        <button data-op="a">Quase igual</button>
+        <button data-op="b" data-certa>Mais negativo</button>
+        <button data-op="c">Menos negativo</button>
+      </div>
+      <div class="explica" hidden><p>Mais negativo: $\ln(0{,}852) = -0{,}160$, contra $R = -0{,}148$. A curva $\ln(1 + R)$ fica sempre abaixo da reta $r = R$, e a distância cresce rápido para quedas grandes. Em alta, o log-retorno é menor que o simples; em queda, mais negativo.</p></div>
+    </div>
+    <div class="sim" id="sim-logret">
+      <label>Retorno simples $R$ <input type="range" id="lr-slider" min="-30" max="30" step="1" value="-4"> <strong id="lr-valor">−4%</strong></label>
+      <svg viewBox="0 0 400 250" id="lr-svg" role="img" aria-label="Curva do log-retorno em função do retorno simples, comparada com a reta identidade"></svg>
+    </div>
+   </aside>
+  </section>
+
+  <section class="passo" data-titulo="Entre ativos">
+   <div class="texto">
+    <h2>No tempo o log soma; entre ativos, não</h2>
+    <p>Uma carteira com metade do dinheiro em cada ativo rende a <strong>média ponderada dos retornos simples</strong>: se o Ibovespa rende $R_1$ e o dólar $R_2$, a carteira rende $0{,}5\,R_1 + 0{,}5\,R_2$. Isso vem direto da conta de quanto dinheiro há em cada parte.</p>
+    <p>A média dos log-retornos não tem esse significado. A propriedade de somar vale <strong>ao longo do tempo para um mesmo ativo</strong>, não entre ativos diferentes no mesmo dia.</p>
+    <p>Por isso, quando o trabalho calcula o risco de uma carteira (cap. 6), ele volta dos log-retornos para os retornos simples, $R = e^{r} - 1$, antes de combinar os dois ativos.</p>
+    <div class="ideia">Retorno de carteira é a média ponderada dos retornos simples; log-retornos só se somam ao longo do tempo.</div>
+   </div>
+   <aside class="apoio">
+    <div class="acheerro">
+      <p>Num dia, o Ibovespa caiu 10% e o dólar subiu 10%. Uma colega calculou o retorno de uma carteira 50/50. Toque na linha com erro.</p>
+      <ol class="linhas">
+        <li data-fb="Certo: ln(0,9) = −0,1054 é o log-retorno do Ibovespa.">Log-retorno do Ibovespa: $\ln 0{,}9 = -0{,}1054$</li>
+        <li data-fb="Certo: ln(1,1) = 0,0953 é o log-retorno do dólar.">Log-retorno do dólar: $\ln 1{,}1 = 0{,}0953$</li>
+        <li data-errada data-fb="Aqui está o erro: a média dos log-retornos não é o retorno da carteira. A carteira rende 0,5 × (−0,10) + 0,5 × 0,10 = 0, ou seja, não ganhou nem perdeu. A conta dela diria que perdeu 0,5%.">Carteira: $\tfrac12(-0{,}1054 + 0{,}0953) = -0{,}005$, uma perda de 0,5%</li>
+      </ol>
+    </div>
+   </aside>
+  </section>
+  </div>
+
+  <!-- ================= SEÇÃO 1.3 ================= -->
+  <div class="secao" data-numero="1.3" data-titulo="Os dados" data-livro="Relatório 2.1 e 3.1">
+
+  <section class="passo" data-titulo="O pareamento">
+   <div class="texto">
+    <h2>Só entram os dias em que os dois mercados abriram</h2>
+    <p>As séries são o fechamento ajustado do Ibovespa e da cotação dólar/real, de janeiro de 2020 a junho de 2025. Para um dia entrar na análise, ele precisa:</p>
+    <ul>
+      <li>ter negociação <strong>nos dois mercados na mesma data</strong> (o câmbio funciona em feriados em que a bolsa fecha);</li>
+      <li>não ter dado faltante: dias incompletos são <strong>descartados, não interpolados</strong>, porque um preço inventado cria um retorno artificial, e ele contaminaria justamente a relação entre os dois;</li>
+      <li>ter o dia anterior também pareado, já que o retorno usa dois preços.</li>
+    </ul>
+    <p>Nenhum dia foi tirado por ser extremo: medir perdas extremas é o objetivo.</p>
+    <div class="ideia">Pareia-se por data e descarta-se o incompleto, sem interpolar e sem tirar extremos.</div>
+   </div>
+   <aside class="apoio">
+    <div class="lacunas">
+      <p>O Ibovespa tem 1365 pregões no período e o dólar 1434. Há 1207 datas em comum; uma delas tem fechamento ausente.</p>
+      <p>Datas com os dois preços: <input class="lacuna" data-resp="1206" data-tol="0" aria-label="datas com preço"></p>
+      <p>Log-retornos bivariados: <input class="lacuna" data-resp="1205" data-tol="0" aria-label="número de retornos"></p>
+      <button class="btn" data-conferir>Conferir</button>
+      <p class="dica" hidden>Dica: o retorno de um dia usa o preço dele e o do dia anterior.</p>
+      <div class="resolucao" hidden><p>$1207 - 1 = 1206$ datas completas. O primeiro dia não tem anterior, então sobram $1206 - 1 = 1205$ retornos, de 3/1/2020 a 26/6/2025.</p></div>
+    </div>
+   </aside>
+  </section>
+
+  <section class="passo" data-titulo="Caudas pesadas">
+   <div class="texto">
+    <h2>O Ibovespa tem dias extremos demais para uma normal</h2>
+    <p>Nos 1205 dias, a média do log-retorno do Ibovespa é praticamente zero e o desvio-padrão é 1,67%. O dólar oscila menos: 1,12%.</p>
+    <p>A forma da distribuição do Ibovespa foge da normal de dois jeitos. A <strong>assimetria</strong> é $-1{,}49$: as quedas extremas são maiores que as altas extremas. A <strong>curtose em excesso</strong> é 20,8 (na normal, é 0): muitos dias calmos e, ao mesmo tempo, dias extremos muito além do que a normal prevê.</p>
+    <p>O dia mais extremo ficou 9,6 desvios-padrão abaixo da média. Numa normal, um afastamento assim praticamente não acontece.</p>
+    <div class="ideia">Os retornos do Ibovespa têm caudas pesadas: extremos frequentes demais para a normal, justamente na região que importa para o risco.</div>
+   </div>
+   <aside class="apoio">
+    <div class="prever" data-sim="sim-caudas">
+      <p>Conforme o limiar $k$ (em desvios-padrão) aumenta, a razão entre os dias observados além de $k$ e os que a normal esperaria...</p>
+      <div class="alts">
+        <button data-op="a">Diminui</button>
+        <button data-op="b">Fica perto de 1</button>
+        <button data-op="c" data-certa>Cresce muito</button>
+      </div>
+      <div class="explica" hidden><p>Cresce muito. Perto do centro a normal até exagera (36 dias além de 2 desvios, contra 55 esperados). Mas além de 4 desvios há 11 dias, quando a normal esperaria menos de um décimo de dia. Quanto mais longe na cauda, pior a normal descreve os dados.</p></div>
+    </div>
+    <div class="sim" id="sim-caudas">
+      <label>Limiar $k$ <input type="range" id="cd-slider" min="1.5" max="5" step="0.5" value="2"> <strong id="cd-valor">2</strong></label>
+      <svg viewBox="0 0 400 270" id="cd-svg" role="img" aria-label="Histograma dos retornos padronizados do Ibovespa com a curva normal e as caudas além do limiar destacadas"></svg>
+    </div>
+   </aside>
+  </section>
+
+  <section class="passo" data-titulo="Duas amostras">
+   <div class="texto">
+    <h2>Tudo é feito duas vezes: com e sem 2020</h2>
+    <p>Em março de 2020, no início da pandemia, o Ibovespa teve um log-retorno de $-16\%$ num único dia, magnitude que não se repete em nenhum outro ponto da série. O segundo semestre foi de recuperação, o mesmo choque com o sinal trocado.</p>
+    <p>Por isso o trabalho roda a análise inteira duas vezes, com o mesmo procedimento: na amostra completa ($n = 1205$) e na que começa em janeiro de 2021 ($n = 986$). No fim, dá para separar as conclusões que dependem do cenário de crise das que não dependem.</p>
+    <div class="ideia">Repetir tudo sem 2020 mostra quais conclusões sobrevivem fora do choque da pandemia.</div>
+   </div>
+   <aside class="apoio">
+    <div class="quiz" data-correta="c">
+      <p class="enunciado">Uma análise de risco com retornos de 2020 a 2025 é repetida sem o ano de 2020. Qual é o objetivo correto dessa repetição?</p>
+      <div class="alts">
+        <button data-op="a">(a) Remover os dias extremos de 2020, que são erros de medição e distorcem as estimativas.</button>
+        <button data-op="b">(b) Escolher a amostra com melhor ajuste e usar só ela nas conclusões.</button>
+        <button data-op="c">(c) Ver quais conclusões continuam valendo quando o choque de 2020 sai da amostra.</button>
+        <button data-op="d">(d) Aumentar o número de observações independentes, já que 2020 tinha dias dependentes.</button>
+      </div>
+      <div class="fb" data-op="a">Os dias de 2020 não são erro: aconteceram, e perdas extremas são o que se quer medir. Eles continuam na amostra principal.</div>
+      <div class="fb" data-op="b">Escolher a amostra pelo ajuste seria selecionar o resultado. As duas são reportadas lado a lado.</div>
+      <div class="fb" data-op="c">Isso. É um teste de robustez: o que muda pouco entre as duas amostras não depende do cenário de crise.</div>
+      <div class="fb" data-op="d">Tirar dias diminui $n$; não cria observações independentes.</div>
+    </div>
+   </aside>
+  </section>
+  </div>
+
+  <!-- ================= SEÇÃO 1.4 ================= -->
+  <div class="secao" data-numero="1.4" data-titulo="Value at Risk" data-livro="Relatório 2.9 (VaR marginal); projeto, Definição 4">
+
+  <section class="passo" data-titulo="Definição">
+   <div class="texto">
+    <h2>VaR: a perda que só é ultrapassada com probabilidade α</h2>
+    <p>O Value at Risk (VaR) resume o risco num número. Fixa-se uma probabilidade pequena $\alpha$ e um horizonte, aqui $\alpha = 1\%$ e um dia.</p>
+    <div class="definicao" data-ref-id="d-var" data-ref-tipo="definicao" data-ref-nome="Value at Risk (VaR)">
+      <p><strong>VaR de nível $\alpha$:</strong> a perda $\text{VaR}$ tal que $P(L > \text{VaR}) = \alpha$, em que $L$ é a perda do dia, contada como número positivo.</p>
+    </div>
+    <p>Em palavras: em 99 de cada 100 dias, a perda fica abaixo do VaR de 1%; em cerca de 1 dia, passa dele. O VaR não diz <strong>quanto</strong> se perde nesse 1 dia ruim, só onde ele começa.</p>
+    <p>Se o log-retorno do dia é $X$, o preço vai de $P$ para $P e^{X}$ e a perda percentual é $L = 1 - e^{X}$.</p>
+    <div class="ideia">O VaR de 1% é a perda que só é ultrapassada em 1% dos dias; não é a pior perda possível.</div>
+   </div>
+   <aside class="apoio">
+    <div class="lacunas">
+      <p>Numa posição de R\$ 100.000 no Ibovespa, o VaR de 1% de um dia é 3,99%.</p>
+      <p>VaR em reais: R\$ <input class="lacuna" data-resp="3990" data-tol="1" aria-label="VaR em reais"></p>
+      <p>Em 250 pregões (um ano), número esperado de dias com perda maior que isso: <input class="lacuna" data-resp="2.5" data-tol="0.01" aria-label="dias esperados"></p>
+      <button class="btn" data-conferir>Conferir</button>
+      <p class="dica" hidden>Dica: cada dia ultrapassa o VaR com probabilidade 0,01.</p>
+      <div class="resolucao" hidden><p>$0{,}0399 \times 100.000 = 3.990$ reais. Em 250 dias, $250 \times 0{,}01 = 2{,}5$ dias devem passar do VaR. Se fossem 10, o VaR estaria subestimando o risco.</p></div>
+    </div>
+   </aside>
+  </section>
+
+  <section class="passo" data-titulo="Do quantil ao VaR">
+   <div class="texto">
+    <h2>O VaR sai de um quantil da distribuição do retorno</h2>
+    <p>Perder mais é ter log-retorno menor, porque $e^{X}$ é crescente. Então um dia está entre os 1% piores em perda exatamente quando está entre os 1% piores em retorno. Se $q$ é o quantil de ordem $\alpha$ do retorno, $P(X \le q) = \alpha$:</p>
+    <div class="formula" data-ref-id="f-var-marg" data-ref-tipo="formula" data-ref-nome="VaR marginal">
+      $$\text{VaR} = 100\,\bigl(1 - e^{\class{s1}{q}}\bigr), \qquad \class{s1}{q} = \class{s2}{F}^{-1}(\class{s3}{\alpha})$$
+      <ul class="legenda">
+        <li><span class="s1">$q$</span>: quantil de ordem $\alpha$ do log-retorno</li>
+        <li><span class="s2">$F$</span>: distribuição do log-retorno</li>
+        <li><span class="s3">$\alpha$</span>: nível do VaR (1%)</li>
+      </ul>
+    </div>
+    <p>O VaR depende muito de como a cauda de $F$ foi modelada. Na simulação, compare a distribuição ajustada ao Ibovespa no trabalho (uma t de Student, de cauda pesada) com uma normal de mesma média e mesmo desvio.</p>
+    <details class="demo">
+      <summary>Demonstração: por que essa perda é ultrapassada com probabilidade α</summary>
+      <p>Como $e^{x}$ é crescente: $$L > 1 - e^{q} \iff e^{X} < e^{q} \iff X < q.$$ Logo $P(L > 1 - e^{q}) = P(X < q) = \alpha$, que é a definição de VaR. Como $q < 0$, $e^{q} < 1$ e o VaR sai positivo. O quantil <em>inferior</em> do retorno vira o quantil <em>superior</em> da perda.</p>
+    </details>
+   </div>
+   <aside class="apoio">
+    <div class="prever" data-sim="sim-var">
+      <p>Com $\alpha = 1\%$, comparado com a normal de mesmo desvio, o VaR da t de cauda pesada é...</p>
+      <div class="alts">
+        <button data-op="a" data-certa>Maior</button>
+        <button data-op="b">Menor</button>
+        <button data-op="c">Igual</button>
+      </div>
+      <div class="explica" hidden><p>Maior a 1% (3,99% contra 3,81%). Mas mova $\alpha$ para 5%: a ordem se inverte (2,20% contra 2,70%). A t põe mais massa no centro e nas pontas extremas, e menos na região intermediária. Uma normal pode até exagerar riscos moderados e subestimar os extremos, que são o foco.</p></div>
+    </div>
+    <div class="sim" id="sim-var">
+      <label>Nível $\alpha$ <input type="range" id="var-slider" min="0.5" max="10" step="0.5" value="1"> <strong id="var-valor">1%</strong></label>
+      <svg viewBox="0 0 400 260" id="var-svg" role="img" aria-label="Densidade do retorno do Ibovespa, t de Student e normal, com a cauda de probabilidade alfa destacada"></svg>
+    </div>
+   </aside>
+  </section>
+
+  <section class="passo" data-titulo="Três VaR">
+   <div class="texto">
+    <h2>Três perguntas, três formas de VaR</h2>
+    <p>O trabalho calcula o VaR de 1% de três formas, e cada uma responde uma pergunta diferente:</p>
+    <div class="definicao" data-ref-id="d-tres-var" data-ref-tipo="definicao" data-ref-nome="As três formas de VaR do trabalho">
+      <p><strong>Marginal:</strong> "quanto posso perder no Ibovespa hoje?", ignorando o dólar. Usa só $F$.<br>
+      <strong>Condicional:</strong> "quanto posso perder no Ibovespa sabendo que o dólar subiu 2% hoje?". Usa a distribuição de $X$ dado $Y = y$.<br>
+      <strong>De carteira:</strong> "quanto posso perder com metade em cada ativo?". Usa a distribuição de uma combinação de $X$ e $Y$.</p>
+    </div>
+    <p>A primeira serve de referência. As outras duas só existem com um modelo para os dois juntos, e é para elas que o trabalho precisa de cópulas.</p>
+    <div class="ideia">O VaR marginal usa só uma variável; o condicional e o de carteira exigem a distribuição conjunta.</div>
+   </div>
+   <aside class="apoio">
+    <div class="quiz" data-correta="d">
+      <p class="enunciado">Um gestor quer o VaR de 1% do Ibovespa para o dia seguinte e tem dois modelos: um só para o Ibovespa e outro conjunto, com o dólar. Em que situação os dois modelos devem dar o mesmo VaR?</p>
+      <div class="alts">
+        <button data-op="a">(a) Sempre, porque o VaR é uma medida de um único ativo.</button>
+        <button data-op="b">(b) Quando o VaR é condicional ao dólar, porque o modelo conjunto contém o marginal.</button>
+        <button data-op="c">(c) Nunca, porque o modelo conjunto sempre corrige o VaR para cima.</button>
+        <button data-op="d">(d) Quando o VaR é marginal e o modelo conjunto usa a mesma distribuição para o Ibovespa.</button>
+      </div>
+      <div class="fb" data-op="a">O VaR condicional também é de um único ativo, mas depende do que o outro fez. Ele muda com o dólar.</div>
+      <div class="fb" data-op="b">É o contrário: o condicional usa a informação do dólar e em geral difere do marginal. Coincidência só ocorreria sem dependência.</div>
+      <div class="fb" data-op="c">O condicional pode ficar menor (num dia de dólar em queda) ou maior (dólar em alta). E o de carteira pode cair por causa da compensação entre os ativos.</div>
+      <div class="fb" data-op="d">Isso. O VaR marginal só usa $F$. Se os dois modelos têm a mesma $F$ para o Ibovespa, dão o mesmo número; a conjunta só faz diferença nas outras duas perguntas.</div>
+    </div>
+   </aside>
+  </section>
+  </div>
+
+  <!-- ================= SEÇÃO 1.5 ================= -->
+  <div class="secao" data-numero="1.5" data-titulo="O roteiro" data-livro="Relatório 1, Figura 1">
+
+  <section class="passo" data-titulo="Cinco etapas">
+   <div class="texto">
+    <h2>O trabalho em cinco etapas</h2>
+    <p>Cada etapa usa o resultado da anterior, e o site segue a mesma ordem:</p>
+    <ol>
+      <li><strong>Marginais:</strong> ajustar uma distribuição $F$ ao Ibovespa e outra $G$ ao dólar, separadamente (cap. 5).</li>
+      <li><strong>Cópula:</strong> ajustar $C$, que descreve só a dependência entre os dois (caps. 2 a 5).</li>
+      <li><strong>Conjunta:</strong> recompor $H$ a partir de $F$, $G$ e $C$ (caps. 2 e 6).</li>
+      <li><strong>VaR:</strong> extrair da conjunta as três formas de VaR (cap. 6).</li>
+      <li><strong>Validação:</strong> reestimar tudo nos primeiros 80% dos dias e avaliar nos 20% finais, que o modelo não viu (cap. 6).</li>
+    </ol>
+    <p>O cap. 7 mostra a melhoria proposta no fim do trabalho e ainda não implementada: tratar a volatilidade que muda com o tempo.</p>
+    <div class="ideia">Marginais, cópula, conjunta, VaR e validação fora da amostra, nessa ordem.</div>
+    <div class="pare">
+      <p>Por que a validação usa dias que ficaram fora da estimação, em vez dos mesmos 1205 dias?</p>
+      <button class="btn" data-revelar>Ver resposta</button>
+      <div class="resposta" hidden><p>Porque um modelo sempre se ajusta bem, por construção, aos dados de que foi tirado. Só dias que ele não viu medem se ele prevê. Por isso todas as escolhas (marginais, família da cópula, parâmetros) são refeitas só com o período de treino.</p></div>
+    </div>
+   </div>
+  </section>
+  </div>
+
+  <div class="nav">
+    <button id="anterior">Anterior</button>
+    <button id="proximo" class="primario">Próximo</button>
+  </div>
+</div>
+
+<!-- ============ RESUMO ============ -->
+<div id="resumo" hidden>
+  <h2>Resumo</h2>
+  <div class="revisao" id="revisao">
+    <h3>Antes de reler, teste-se</h3>
+    <p class="rev-info"></p>
+    <div id="rev-palco"></div>
+    <div class="rev-acoes">
+      <button class="btn primario" id="rev-iniciar">Começar</button>
+      <button class="btn" id="rev-proxima" hidden>Próxima</button>
+    </div>
+  </div>
+  <div class="resumo-grid">
+  <div>
+  <h3>Ideias centrais</h3>
+  <ul class="resumo-lista">
+    <li>O risco de um ativo muda conforme o que o outro fez; é preciso modelar os dois juntos.</li>
+    <li>$F$ e $G$ descrevem cada ativo sozinho; só a conjunta $H$ descreve como andam juntos.</li>
+    <li>Famílias bivariadas prontas fixam marginais e dependência de uma vez; cópulas separam as duas escolhas.</li>
+    <li>A variável é o log-retorno diário, que soma no tempo e se parece com o retorno percentual.</li>
+    <li>Retorno de carteira é a média ponderada dos retornos simples, não dos log-retornos.</li>
+    <li>Pareamento por data, sem interpolar e sem tirar extremos: 1205 dias.</li>
+    <li>O Ibovespa tem caudas pesadas: assimetria $-1{,}49$ e curtose em excesso 20,8.</li>
+    <li>A análise é repetida sem 2020 para separar o que depende da crise.</li>
+    <li>O VaR de 1% é a perda ultrapassada em 1% dos dias, tirada de um quantil.</li>
+    <li>Três VaR: marginal (só $F$), condicional e de carteira (precisam da conjunta).</li>
+  </ul>
+  <h3>Fórmulas</h3>
+  <p>Log-retorno: $r_t = \ln(P_t / P_{t-1}) = \ln(1 + R_t)$, com $R_t$ o retorno simples.</p>
+  <p>Conjunta e marginais: $H(x, y) = P(X \le x, Y \le y)$, $F(x) = H(x, \infty)$, $G(y) = H(\infty, y)$.</p>
+  <p>VaR marginal: $\text{VaR} = 100\,(1 - e^{q})$, $q = F^{-1}(\alpha)$.</p>
+  </div>
+  <div>
+  <h3>Quando usar e quando não usar</h3>
+  <div class="lado">
+    <div><strong>Use a conjunta quando</strong><ul class="resumo-lista"><li>a pergunta condiciona num ativo ("dado o dólar");</li><li>o risco é de uma combinação (carteira);</li><li>interessa a ocorrência simultânea de extremos.</li></ul></div>
+    <div><strong>Basta a marginal quando</strong><ul class="resumo-lista"><li>a pergunta é sobre um ativo sozinho, sem condição;</li><li>o VaR é incondicional.</li></ul></div>
+  </div>
+  <h3>Armadilhas</h3>
+  <ul class="resumo-lista">
+    <li>Fazer média de log-retornos de ativos diferentes como se fosse o retorno da carteira.</li>
+    <li>Ler o VaR como pior perda possível: ele é só o começo da cauda.</li>
+    <li>Achar que a normal sempre subestima o risco: a 5% ela pode até exagerar; o problema é na cauda extrema.</li>
+    <li>Tirar dias extremos como se fossem erro: em risco, eles são o assunto.</li>
+    <li>Achar que saber a marginal basta para uma pergunta condicional.</li>
+  </ul>
+  </div>
+  </div>
+</div>
+
+<div id="painel" hidden>
+  <button class="btn pequeno" id="painel-voltar">← Voltar</button>
+  <h2 id="painel-titulo" style="margin-top:1rem"></h2>
+  <div id="painel-corpo"></div>
+</div>
+
+</div>
+
+<div class="balao" id="balao" role="dialog" aria-live="polite" hidden></div>
+<div class="gaveta" id="gaveta" role="dialog" aria-modal="false" hidden>
+  <div class="gaveta-interno">
+    <div class="gaveta-topo"><strong id="gaveta-titulo"></strong><button class="btn pequeno" id="gaveta-fechar" aria-label="Fechar">✕</button></div>
+    <div id="gaveta-corpo"></div>
+  </div>
+</div>
+
+<script src="../assets/site.js"></script>
+<script src="../assets/refs.js"></script>
+<script src="../assets/estudo.js"></script>
+<script src="../assets/dados-ic.js"></script>
+<script src="../assets/copulas-lib.js"></script>
+<script>
+/* Simulações do cap. 1. Utilitários: svgEl, corVar, fmt, tipografar (estudo.js) e CL (copulas-lib.js). */
+var D = window.DADOS_IC;
+
+/* ===== Dispersão dos dados, com os dias de dólar > +2% destacados ===== */
+(function () {
+  var svg = document.getElementById('fig-dispersao');
+  if (!svg) return;
+  function desenhar() {
+    CL.limpar(svg);
+    var e = CL.eixos(svg, { x: 46, y: 10, w: 340, h: 236, xmin: -17, xmax: 14, ymin: -7, ymax: 6,
+      xticks: [-15, -10, -5, 0, 5, 10], yticks: [-6, -3, 0, 3, 6], xlab: 'Ibovespa (%)', ylab: 'dólar (%)', grade: true });
+    var lim = 100 * Math.log(1.02), dest = [];
+    for (var i = 0; i < D.n; i++) {
+      if (D.y[i] > lim) { dest.push(i); continue; }
+      e.g.appendChild(svgEl('circle', { cx: e.sx(D.x[i]), cy: e.sy(D.y[i]), r: 1.8, fill: corVar('--muted'), 'fill-opacity': 0.35 }));
+    }
+    dest.forEach(function (i) {
+      e.g.appendChild(svgEl('circle', { cx: e.sx(D.x[i]), cy: e.sy(D.y[i]), r: 3, fill: corVar('--accent'), 'fill-opacity': 0.9 }));
+    });
+  }
+  desenhar();
+  if (window.matchMedia) window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', desenhar);
+})();
+
+/* ===== Log-retorno contra retorno simples ===== */
+(function () {
+  var sl = document.getElementById('lr-slider');
+  if (!sl) return;
+  var svg = document.getElementById('lr-svg');
+  function desenhar() {
+    var R = +sl.value / 100, r = Math.log(1 + R);
+    document.getElementById('lr-valor').textContent = fmt(100 * R, 0) + '%';
+    CL.limpar(svg);
+    var e = CL.eixos(svg, { x: 52, y: 12, w: 330, h: 180, xmin: -30, xmax: 30, ymin: -40, ymax: 30,
+      xticks: [-30, -15, 0, 15, 30], yticks: [-40, -20, 0, 20], xlab: 'retorno simples R (%)', ylab: 'log-retorno r (%)', grade: true });
+    e.g.appendChild(svgEl('path', { d: CL.caminho([[e.sx(-30), e.sy(-30)], [e.sx(30), e.sy(30)]]), stroke: corVar('--muted'), 'stroke-dasharray': '5 4', fill: 'none' }));
+    var pts = [];
+    for (var k = -30; k <= 30; k += 0.5) pts.push([e.sx(k), e.sy(100 * Math.log(1 + k / 100))]);
+    e.g.appendChild(svgEl('path', { d: CL.caminho(pts), stroke: corVar('--accent'), 'stroke-width': 2.5, fill: 'none' }));
+    e.g.appendChild(svgEl('line', { x1: e.sx(100 * R), x2: e.sx(100 * R), y1: e.sy(100 * R), y2: e.sy(100 * r), stroke: corVar('--s1'), 'stroke-width': 2 }));
+    e.g.appendChild(svgEl('circle', { cx: e.sx(100 * R), cy: e.sy(100 * r), r: 5, fill: corVar('--accent') }));
+    svg.appendChild(svgEl('text', { x: 60, y: 240, 'font-size': 12.5, fill: corVar('--text'), 'xml:space': 'preserve' },
+      'R = ' + fmt(100 * R, 1) + '%;  r = ' + fmt(100 * r, 2) + '%;  diferença: ' + fmt(100 * (r - R), 2) + ' p.p.'));
+  }
+  sl.addEventListener('input', desenhar);
+  desenhar();
+})();
+
+/* ===== Caudas: observados além de k desvios contra a normal ===== */
+(function () {
+  var sl = document.getElementById('cd-slider');
+  if (!sl) return;
+  var svg = document.getElementById('cd-svg');
+  var n = D.n, m = 0, s = 0, i;
+  for (i = 0; i < n; i++) m += D.x[i];
+  m /= n;
+  for (i = 0; i < n; i++) s += (D.x[i] - m) * (D.x[i] - m);
+  s = Math.sqrt(s / (n - 1));
+  var z = D.x.map(function (v) { return (v - m) / s; });
+  var larg = 0.25, bins = {};
+  z.forEach(function (v) { var b = Math.floor(Math.max(-6, Math.min(6, v)) / larg); bins[b] = (bins[b] || 0) + 1; });
+  function desenhar() {
+    var k = +sl.value;
+    document.getElementById('cd-valor').textContent = fmt(k, 1);
+    CL.limpar(svg);
+    var e = CL.eixos(svg, { x: 40, y: 10, w: 345, h: 160, xmin: -6, xmax: 6, ymin: 0, ymax: 0.65,
+      xticks: [-6, -4, -2, 0, 2, 4, 6], yticks: [], xlab: 'retorno padronizado (desvios-padrão)' });
+    for (var b in bins) {
+      var x0 = +b * larg, alt = bins[b] / (n * larg), fora = Math.abs(x0 + larg / 2) > k;
+      e.g.appendChild(svgEl('rect', { x: e.sx(x0) + 0.5, y: e.sy(Math.min(alt, 0.65)), width: Math.max(1, e.sx(x0 + larg) - e.sx(x0) - 1), height: e.sy(0) - e.sy(Math.min(alt, 0.65)),
+        fill: fora ? corVar('--s1') : corVar('--muted'), 'fill-opacity': fora ? 0.9 : 0.35 }));
+    }
+    var pts = [];
+    for (var t = -6; t <= 6; t += 0.05) pts.push([e.sx(t), e.sy(CL.dnorm(t))]);
+    e.g.appendChild(svgEl('path', { d: CL.caminho(pts), stroke: corVar('--accent'), 'stroke-width': 2, fill: 'none' }));
+    [-k, k].forEach(function (t) { e.g.appendChild(svgEl('line', { x1: e.sx(t), x2: e.sx(t), y1: e.sy(0), y2: e.sy(0.65), stroke: corVar('--s1'), 'stroke-dasharray': '4 3' })); });
+    var obs = z.filter(function (v) { return Math.abs(v) > k; }).length, esp = n * 2 * (1 - CL.pnorm(k));
+    var tx = corVar('--text');
+    svg.appendChild(svgEl('text', { x: 40, y: 220, 'font-size': 12.5, fill: tx }, 'Dias além de ' + fmt(k, 1) + ' desvios: observados ' + obs + ';  normal esperaria ' + (esp < 0.1 ? fmt(esp, 3) : fmt(esp, 1))));
+    svg.appendChild(svgEl('text', { x: 40, y: 242, 'font-size': 12.5, fill: corVar('--s1'), 'font-weight': 600 }, 'Razão observado / esperado: ' + (obs / esp > 1000 ? 'mais de 1000' : fmt(obs / esp, obs / esp < 10 ? 2 : 0))));
+    svg.appendChild(svgEl('text', { x: 40, y: 262, 'font-size': 11, fill: corVar('--muted') }, 'Curva: densidade normal padrão. Barras laranja: além de ±k.'));
+  }
+  sl.addEventListener('input', desenhar);
+  desenhar();
+})();
+
+/* ===== VaR: t de Student ajustada contra normal de mesmo desvio ===== */
+(function () {
+  var sl = document.getElementById('var-slider');
+  if (!sl) return;
+  var svg = document.getElementById('var-svg');
+  var mx = D.margX, T = CL.margT(mx.media, mx.dp, mx.nu);
+  var mN = 0, sN = 0, i;
+  for (i = 0; i < D.n; i++) mN += D.x[i] / 100;
+  mN /= D.n;
+  for (i = 0; i < D.n; i++) sN += (D.x[i] / 100 - mN) * (D.x[i] / 100 - mN);
+  sN = Math.sqrt(sN / (D.n - 1));
+  function qN(a) { return mN + sN * CL.qnorm(a); }
+  function desenhar() {
+    var a = +sl.value / 100;
+    document.getElementById('var-valor').textContent = fmt(100 * a, 1) + '%';
+    var qt = T.q(a), qn = qN(a);
+    CL.limpar(svg);
+    var e = CL.eixos(svg, { x: 40, y: 10, w: 345, h: 160, xmin: -9, xmax: 5, ymin: 0, ymax: 0.4,
+      xticks: [-8, -6, -4, -2, 0, 2, 4], yticks: [], xlab: 'log-retorno do Ibovespa (%)' });
+    var cauda = [[e.sx(-9), e.sy(0)]], pt = [], pn = [];
+    for (var x = -9; x <= 5; x += 0.05) {
+      var dt = T.d(x / 100) / 100, dn = CL.dnorm((x / 100 - mN) / sN) / sN / 100;
+      pt.push([e.sx(x), e.sy(Math.min(dt, 0.4))]); pn.push([e.sx(x), e.sy(Math.min(dn, 0.4))]);
+      if (x <= 100 * qt) cauda.push([e.sx(x), e.sy(Math.min(dt, 0.4))]);
+    }
+    cauda.push([e.sx(100 * qt), e.sy(0)]);
+    e.g.appendChild(svgEl('path', { d: CL.caminho(cauda) + ' Z', fill: corVar('--s1'), 'fill-opacity': 0.35 }));
+    e.g.appendChild(svgEl('path', { d: CL.caminho(pn), stroke: corVar('--muted'), 'stroke-width': 2, 'stroke-dasharray': '5 4', fill: 'none' }));
+    e.g.appendChild(svgEl('path', { d: CL.caminho(pt), stroke: corVar('--accent'), 'stroke-width': 2.5, fill: 'none' }));
+    e.g.appendChild(svgEl('line', { x1: e.sx(100 * qt), x2: e.sx(100 * qt), y1: e.sy(0), y2: e.sy(0.4), stroke: corVar('--s1'), 'stroke-width': 1.5 }));
+    e.g.appendChild(svgEl('line', { x1: e.sx(100 * qn), x2: e.sx(100 * qn), y1: e.sy(0), y2: e.sy(0.4), stroke: corVar('--muted'), 'stroke-dasharray': '3 3' }));
+    var vt = 100 * (1 - Math.exp(qt)), vn = 100 * (1 - Math.exp(qn));
+    svg.appendChild(svgEl('text', { x: 40, y: 222, 'font-size': 12.5, fill: corVar('--accent'), 'font-weight': 600 }, 't de Student (ajustada): VaR = ' + fmt(vt, 2) + '%'));
+    svg.appendChild(svgEl('text', { x: 40, y: 242, 'font-size': 12.5, fill: corVar('--muted') }, 'normal de mesmo desvio (tracejada): VaR = ' + fmt(vn, 2) + '%'));
+  }
+  sl.addEventListener('input', desenhar);
+  desenhar();
+})();
+</script>
+</body>
+</html>

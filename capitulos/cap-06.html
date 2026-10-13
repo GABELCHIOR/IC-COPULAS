@@ -1,0 +1,640 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="estudo-chave" content="ic-copulas/cap-06">
+<title>Cap. 6 — Da cópula ao Value at Risk</title>
+<script>
+window.MathJax = {
+  tex: { inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath: [['$$', '$$'], ['\\[', '\\]']] },
+  svg: { fontCache: 'global' }
+};
+</script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/3.2.2/es5/tex-svg.min.js" defer></script>
+<link rel="stylesheet" href="../assets/estudo.css">
+</head>
+<body>
+<nav class="trilho" id="trilho" tabindex="0" aria-label="Sumário do capítulo" aria-expanded="false">
+  <div class="trilho-tracos" id="trilho-tracos" aria-hidden="true"></div>
+  <div class="trilho-painel">
+    <p class="trilho-cap" id="trilho-cap"></p>
+    <div class="trilho-lista" id="trilho-lista"></div>
+    <div class="trilho-rodape" id="trilho-rodape">
+      <button class="btn pequeno" id="btn-formulas">Fórmulas até aqui</button>
+      <button class="btn pequeno" id="btn-ir-resumo">Resumo</button>
+      <a class="btn pequeno" id="btn-inicio" href="../index.html" hidden>Início</a>
+    </div>
+  </div>
+</nav>
+
+<div class="wrap">
+
+<h1>Cap. 6 — Da cópula ao Value at Risk</h1>
+<p class="contexto">Onde isso se encaixa: com as marginais e a cópula escolhidas no cap. 5, falta usar o modelo. Aqui ele responde às <span class="ref" data-ref="d-tres-var">três perguntas de VaR do cap. 1</span> e é testado em dias que não viu.</p>
+
+<div class="abas" role="tablist">
+  <button role="tab" aria-selected="true" data-aba="trilha">Trilha</button>
+  <button role="tab" aria-selected="false" data-aba="resumo">Resumo</button>
+</div>
+
+<div id="trilha">
+  <nav class="subtopicos" id="subtopicos" aria-label="Passos desta seção"></nav>
+  <div class="retomada" id="retomada" hidden></div>
+
+  <!-- ================= SEÇÃO 6.1 ================= -->
+  <div class="secao" data-numero="6.1" data-titulo="A conjunta" data-livro="Relatório 2.9 e 3.3–3.4">
+
+  <section class="passo" data-titulo="O modelo final">
+   <div class="texto">
+    <h2>As três peças do modelo</h2>
+    <div class="exemplo" data-ref-id="ex-modelo" data-ref-tipo="exemplo" data-ref-nome="O modelo final do trabalho">
+      <p><strong>Ibovespa:</strong> $F$ é uma t de Student com média 0,059%, desvio-padrão 1,554% e $\nu = 3{,}63$.</p>
+      <p><strong>Dólar:</strong> $G$ é uma Johnson SU, a família em que $\gamma + \delta\,\operatorname{arsinh}\bigl((y - \xi)/\lambda\bigr)$ é normal padrão, com $\gamma = -0{,}126$, $\delta = 1{,}642$, $\xi = -0{,}114\%$, $\lambda = 1{,}511\%$.</p>
+      <p><strong>Dependência:</strong> cópula t com $\rho = -0{,}2935$ e $\nu = 4$.</p>
+      <p>Conjunta: $H(x, y) = C(F(x), G(y))$, pelo teorema de Sklar.</p>
+    </div>
+    <p>A cópula foi estimada com $\nu$ livre ($\hat\nu = 3{,}93$) e depois reajustada com $\nu = 4$ fixo, porque a função de distribuição da cópula t só está implementada no pacote usado para graus de liberdade inteiros, e ela é necessária na conjunta, na condicional e no teste de aderência.</p>
+    <p>O modelo implica $\tau = -0{,}190$, contra $-0{,}185$ observado, e $\lambda = 0{,}159$ no canto de crise.</p>
+   </div>
+   <aside class="apoio">
+    <div class="pare">
+      <p>Arredondar $\nu$ de 3,93 para 4 muda muito a dependência de cauda? Use a <span class="ref" data-ref="f-lambda-t">fórmula do λ da t</span>: com $\nu = 3{,}93$ ela dá 0,163.</p>
+      <button class="btn" data-revelar>Ver resposta</button>
+      <div class="resposta" hidden><p>Não: com $\nu = 4$, $\lambda = 0{,}159$, uma diferença de 0,004, muito menor que a incerteza de estimar $\nu$ com 1205 dias. O arredondamento é uma concessão computacional que não muda a conclusão.</p></div>
+    </div>
+   </aside>
+  </section>
+
+  <section class="passo" data-titulo="Verificações">
+   <div class="texto">
+    <h2>Duas conferências antes de usar a conjunta</h2>
+    <p><strong>Estrutural:</strong> fazendo $y \to \infty$, a conjunta tem de devolver a marginal, $\hat H(x, \infty) = \hat F(x)$. Reproduzida com erro da ordem de $10^{-8}$, compatível com arredondamento numérico.</p>
+    <p><strong>Empírica:</strong> a probabilidade que $\hat H$ dá a um retângulo $\{X \le a,\ Y \le b\}$ deve se parecer com a frequência com que esse retângulo ocorreu nos dados. A concordância vale do centro à cauda:</p>
+    <div class="escala"><table class="tab">
+      <tr><th>Retângulo</th><th>modelo</th><th>dados</th><th>dias</th></tr>
+      <tr><td>$X \le 1\%$, $Y \le 1\%$</td><td>0,6516</td><td>0,6465</td><td>779</td></tr>
+      <tr><td>$X \le -1\%$, $Y \le -0{,}5\%$</td><td>0,0358</td><td>0,0398</td><td>48</td></tr>
+      <tr><td>$X \le -2\%$, $Y \le 0\%$</td><td>0,0192</td><td>0,0191</td><td>23</td></tr>
+      <tr><td>$X \le -3\%$, $Y \le 1\%$</td><td>0,0121</td><td>0,0124</td><td>15</td></tr>
+    </table></div>
+    <p>Essa conferência é descritiva, não um teste: regiões com poucas dezenas de dias têm flutuação considerável.</p>
+   </div>
+   <aside class="apoio">
+    <div class="lacunas">
+      <p>Pelo modelo, quantos dos 1205 dias deveriam cair no retângulo $\{X \le -3\%,\ Y \le 1\%\}$? (1 casa)</p>
+      <p><input class="lacuna" data-resp="14.6" data-tol="0.1" aria-label="dias esperados"> dias</p>
+      <button class="btn" data-conferir>Conferir</button>
+      <p class="dica" hidden>Dica: probabilidade do modelo vezes $n$.</p>
+      <div class="resolucao" hidden><p>$0{,}0121 \times 1205 = 14{,}6$ dias, contra 15 observados. Para uma região de cauda, é uma concordância muito boa.</p></div>
+    </div>
+   </aside>
+  </section>
+  </div>
+
+  <!-- ================= SEÇÃO 6.2 ================= -->
+  <div class="secao" data-numero="6.2" data-titulo="VaR marginal" data-livro="Relatório 2.9 e 3.5">
+
+  <section class="passo" data-titulo="Sem o dólar">
+   <div class="texto">
+    <h2>VaR marginal: 3,99% do valor da posição</h2>
+    <p>A primeira das três perguntas ignora o dólar. Basta o quantil de 1% da marginal ajustada e a <span class="ref" data-ref="f-var-marg">fórmula do VaR marginal</span>.</p>
+    <p>Com a t de Student do Ibovespa, $q = \hat F^{-1}(0{,}01) = -0{,}04072$. O VaR é $100(1 - e^{-0{,}04072}) = 3{,}99\%$: numa posição de R\$ 100.000, R\$ 3.990,43.</p>
+    <p>Esse cálculo não usa a cópula. Ele serve de termo de comparação para os dois VaR seguintes: tudo o que mudar a partir daqui vem da dependência com o dólar.</p>
+    <div class="ideia">O VaR marginal do Ibovespa é 3,99%; é a referência sem dólar para medir o que a dependência acrescenta.</div>
+   </div>
+   <aside class="apoio">
+    <div class="lacunas">
+      <p>Sem 2020, a marginal do Ibovespa dá $q = -0{,}03243$.</p>
+      <p>VaR $=$ <input class="lacuna" data-resp="3.19" data-tol="0.01" aria-label="VaR sem 2020"> % (2 casas)</p>
+      <button class="btn" data-conferir>Conferir</button>
+      <p class="dica" hidden>Dica: $100\,(1 - e^{-0{,}03243})$.</p>
+      <div class="resolucao" hidden><p>$e^{-0{,}03243} = 0{,}9681$, então o VaR é $3{,}19\%$. Um regime mais calmo, sem o choque de 2020, dá um VaR marginal menor.</p></div>
+    </div>
+   </aside>
+  </section>
+  </div>
+
+  <!-- ================= SEÇÃO 6.3 ================= -->
+  <div class="secao" data-numero="6.3" data-titulo="VaR condicional" data-livro="Nelsen 2.9; Cherubini et al. (2004) 6.3; Burden e Faires (2011) 4.1; relatório 2.9 e 3.5">
+
+  <section class="passo" data-titulo="Condicional = derivada">
+   <div class="texto">
+    <h2>A distribuição de X dado Y sai de uma derivada da cópula</h2>
+    <div class="formula" data-ref-id="f-cond" data-ref-tipo="formula" data-ref-nome="Distribuição condicional pela cópula">
+      $$P(X \le x \mid Y = y) = \left.\frac{\partial C(u, v)}{\partial v}\right|_{u = F(x),\ v = G(y)}$$
+    </div>
+    <p>A razão é geométrica. Condicionar em $Y = y$ é olhar só uma faixa fina do quadrado em torno de $v = G(y)$. Derivar $C$ em $v$ mede quanta probabilidade se acumula nessa faixa até a altura $u$. Como as marginais da cópula são uniformes, a faixa tem largura e probabilidade iguais, e a derivada já sai normalizada: é diretamente a acumulada condicional.</p>
+    <details class="demo">
+      <summary>Demonstração</summary>
+      <p>Para $h &gt; 0$ pequeno, com $v = G(y)$ e $v_h = G(y + h)$: $$\begin{aligned} &P(X \le x \mid y &lt; Y \le y + h) \\ &= \frac{C(u, v_h) - C(u, v)}{v_h - v}. \end{aligned}$$ Quando $h \to 0$, $v_h \to v$ e a razão tende a $\partial C(u, v)/\partial v$. A derivada existe para quase todo $v$ porque $C$ é crescente em $v$; nas cópulas usadas no trabalho ela existe em todo ponto interior.</p>
+    </details>
+    <div class="ideia">A acumulada de $X$ dado $Y = y$ é a derivada da cópula em $v$, avaliada nos percentis $F(x)$ e $G(y)$.</div>
+   </div>
+   <aside class="apoio">
+    <div class="pare">
+      <p>Sob independência, $C = \Pi = uv$. O que a fórmula dá para $P(X \le x \mid Y = y)$? Faz sentido?</p>
+      <button class="btn" data-revelar>Ver resposta</button>
+      <div class="resposta" hidden><p>$\partial(uv)/\partial v = u = F(x)$: a condicional é igual à marginal, qualquer que seja $y$. Faz sentido: sob independência, saber o dólar não muda nada sobre o Ibovespa.</p></div>
+    </div>
+   </aside>
+  </section>
+
+  <section class="passo" data-titulo="Cair ou não">
+   <div class="texto">
+    <h2>O dólar muda a chance de o Ibovespa cair</h2>
+    <p>Aplicando a <span class="ref" data-ref="f-cond">condicional pela cópula</span> com $x = 0$: sem olhar o dólar, a chance de o Ibovespa fechar em queda é $F(0) = 47{,}9\%$. Sabendo que o dólar recuou 2%, cai para 29,3%. Sabendo que subiu 2%, sobe para 67,2%.</p>
+    <p>É a primeira resposta que só um modelo conjunto dá. Na simulação, mova a variação do dólar e veja a probabilidade de queda do Ibovespa acompanhar.</p>
+   </div>
+   <aside class="apoio">
+    <div class="prever" data-sim="sim-pcair">
+      <p>Com o dólar subindo 3% no dia, a probabilidade de o Ibovespa fechar em queda fica perto de...</p>
+      <div class="alts">
+        <button data-op="a">50%</button>
+        <button data-op="b" data-certa>70%</button>
+        <button data-op="c">95%</button>
+      </div>
+      <div class="explica" hidden><p>Perto de 70% (70,2%). Ela sobe com o dólar, mas devagar perto das pontas: a associação é moderada ($\tau = -0{,}19$), então um dólar em alta torna a queda provável, não certa. A curva quase achata entre +2% e +3%.</p></div>
+    </div>
+    <div class="sim" id="sim-pcair">
+      <label>Variação do dólar <input type="range" id="pc-slider" min="0" max="60" step="1" value="30"> <strong id="pc-valor">0%</strong></label>
+      <svg viewBox="0 0 400 240" id="pc-svg" role="img" aria-label="Probabilidade de o Ibovespa cair em função da variação do dólar no dia"></svg>
+    </div>
+   </aside>
+  </section>
+
+  <section class="passo" data-titulo="VaR condicional">
+   <div class="texto">
+    <h2>VaR condicional: inverta a condicional no nível α</h2>
+    <p>Fixada a variação $y_0$ do dólar, procure o percentil $u^*$ que resolve $$\frac{\partial C}{\partial v}\bigl(u^*,\ G(y_0)\bigr) = \alpha,$$ leve-o à escala dos retornos com $x^* = \hat F^{-1}(u^*)$ e converta em perda com $100(1 - e^{x^*})$.</p>
+    <p>Resultado: <strong>4,18%</strong> com o dólar em queda de 2% e <strong>5,47%</strong> com o dólar em alta de 2%, contra 3,99% sem condição. No cenário de alta, o VaR marginal subestima a perda em 1,48 ponto percentual, 37% do valor que ele mesmo reporta.</p>
+    <p>Repare que até com o dólar <strong>caindo</strong> 2% o VaR passa de 3,99%. Na cópula t, a distribuição condicional fica mais espalhada quando o dólar vai para qualquer extremo: um movimento grande do dólar, para cima ou para baixo, sinaliza um dia turbulento. A chance de cair diminui, mas a cauda engorda.</p>
+    <div class="ideia">O VaR condicional responde "quanto posso perder dado o dólar de hoje"; na cópula t ele cresce quando o dólar se move muito em qualquer sentido, e mais na alta.</div>
+   </div>
+   <aside class="apoio">
+    <div class="prever" data-sim="sim-varcond">
+      <p>Num dia em que o dólar <strong>cai</strong> 3%, o VaR de 1% do Ibovespa pela cópula fica, comparado aos 3,99% sem condição...</p>
+      <div class="alts">
+        <button data-op="a">Bem menor</button>
+        <button data-op="b">Quase igual</button>
+        <button data-op="c" data-certa>Maior</button>
+      </div>
+      <div class="explica" hidden><p>Maior: 5,88%. Parece contraintuitivo, já que o dólar em queda costuma ser bom para a bolsa. A chance de queda do Ibovespa diminui, mas, na cópula t, condicionar num valor extremo do dólar alarga a distribuição condicional, e o quantil de 1% vai mais para baixo. É consequência da forma da cópula t, simétrica entre os cantos; os dados têm poucos dias desse tipo para confirmar ou negar isso diretamente.</p></div>
+    </div>
+    <div class="sim" id="sim-varcond">
+      <label>Variação do dólar <input type="range" id="vc-slider" min="0" max="60" step="1" value="50"> <strong id="vc-valor">+2%</strong></label>
+      <svg viewBox="0 0 400 250" id="vc-svg" role="img" aria-label="VaR de 1% do Ibovespa condicional à variação do dólar, com o VaR incondicional como referência"></svg>
+    </div>
+   </aside>
+  </section>
+
+  <section class="passo" data-titulo="Diferença central">
+   <div class="texto">
+    <h2>A derivada é calculada numericamente, pela diferença central</h2>
+    <div class="formula" data-ref-id="f-dif-central" data-ref-tipo="formula" data-ref-nome="Diferença central">
+      $$\frac{\partial C}{\partial v}(u, v) \approx \frac{C(u, v + \varepsilon) - C(u, v - \varepsilon)}{2\varepsilon}$$
+      <p>com $\varepsilon = 10^{-5}$.</p>
+    </div>
+    <p><strong>Por que numérica:</strong> a fórmula exata muda de família para família e conforme o espelhamento, e são dez candidatas. A diferença só pede avaliar a própria $C$, então uma rotina serve a todas.</p>
+    <p><strong>Por que central:</strong> na diferença lateral, $[C(u, v + \varepsilon) - C(u, v)]/\varepsilon$, o erro é proporcional a $\varepsilon$. Na central, os termos de segunda ordem são iguais dos dois lados e se cancelam: o erro cai para a ordem de $\varepsilon^2$, pelo mesmo custo de duas avaliações.</p>
+    <p><strong>Por que $10^{-5}$:</strong> passos menores fazem a subtração de dois números quase iguais perder dígitos por arredondamento. O equilíbrio entre os dois erros fica perto da raiz cúbica da precisão da máquina, cerca de $6 \times 10^{-6}$. Junto às bordas do quadrado, o ponto que sairia de $[0, 1]$ é trocado pela borda, e divide-se pelo comprimento efetivo.</p>
+    <details class="demo">
+      <summary>Demonstração: erro de ordem ε² pela série de Taylor</summary>
+      <p>$$\begin{aligned} C(u, v \pm \varepsilon) = {} &C \pm \varepsilon C_v + \tfrac{\varepsilon^2}{2} C_{vv} \\ &\pm \tfrac{\varepsilon^3}{6} C_{vvv} + \dots \end{aligned}$$ Subtraindo, os termos pares cancelam: $$\begin{aligned} &\frac{C(u, v + \varepsilon) - C(u, v - \varepsilon)}{2\varepsilon} \\ &= C_v + \frac{\varepsilon^2}{6} C_{vvv} + \dots \end{aligned}$$ Na lateral, sobra $\tfrac{\varepsilon}{2} C_{vv}$, de ordem $\varepsilon$.</p>
+    </details>
+   </div>
+   <aside class="apoio">
+    <div class="quiz" data-correta="b">
+      <p class="enunciado">Com $\varepsilon = 10^{-5}$, qual é a ordem de grandeza do erro de truncamento da diferença central, comparada à da diferença lateral?</p>
+      <div class="alts">
+        <button data-op="a">(a) As duas têm erro de ordem $10^{-5}$; a central só é mais estável perto das bordas.</button>
+        <button data-op="b">(b) Central: ordem de $10^{-10}$; lateral: ordem de $10^{-5}$.</button>
+        <button data-op="c">(c) Central: ordem de $10^{-5}$; lateral: ordem de $10^{-10}$.</button>
+        <button data-op="d">(d) As duas têm erro desprezível, e reduzir $\varepsilon$ para $10^{-12}$ seria ainda melhor.</button>
+      </div>
+      <div class="fb" data-op="a">Na central, o termo de ordem $\varepsilon$ se cancela; sobra ordem $\varepsilon^2$.</div>
+      <div class="fb" data-op="b">Isso. Erro proporcional a $\varepsilon^2 = 10^{-10}$ contra $\varepsilon = 10^{-5}$, pelo mesmo custo. Invisível diante da incerteza dos parâmetros.</div>
+      <div class="fb" data-op="c">Invertido: a central é a de erro menor, porque os termos pares da série de Taylor se cancelam.</div>
+      <div class="fb" data-op="d">Com $\varepsilon$ muito pequeno, o arredondamento da subtração de dois números quase iguais domina. O ótimo fica perto de $6 \times 10^{-6}$.</div>
+    </div>
+   </aside>
+  </section>
+  </div>
+
+  <!-- ================= SEÇÃO 6.4 ================= -->
+  <div class="secao" data-numero="6.4" data-titulo="VaR de carteira" data-livro="Cherubini et al. (2004) 2.7, 5.5, 6.2; relatório 2.9 e 3.5">
+
+  <section class="passo" data-titulo="Monte Carlo">
+   <div class="texto">
+    <h2>A distribuição de uma soma depende da cópula, e se resolve sorteando</h2>
+    <p>O retorno de uma carteira é uma <span class="ref" data-ref="f-logret">soma ponderada de retornos simples</span>. Sua distribuição não sai das marginais: depende da cópula, e exige integrar a <span class="ref" data-ref="f-densidade">densidade conjunta</span> numa região sem fórmula fechada. A saída usual é o <strong>método de Monte Carlo</strong>: gerar muitos dias artificiais com a mesma dependência dos dados e ler o quantil na amostra gerada. É a recíproca de Sklar percorrida ao contrário: montar dias a partir das peças.</p>
+    <ol>
+      <li>Sorteie $(u, v)$ da cópula ajustada: é ele que carrega toda a dependência.</li>
+      <li>Converta em log-retornos pelas inversas das marginais: $Q_X(u) = \hat F^{-1}(u)$, $Q_Y(v) = \hat G^{-1}(v)$.</li>
+      <li>Converta em retornos simples, $e^{r} - 1$ (log-retornos não somam entre ativos).</li>
+      <li>Combine com os pesos 50/50: $$\begin{aligned} R = {} &0{,}5\,\bigl(e^{Q_X(u)} - 1\bigr) \\ &+ 0{,}5\,\bigl(e^{Q_Y(v)} - 1\bigr). \end{aligned}$$</li>
+    </ol>
+    <p>Repita $10^5$ vezes. O VaR é o quantil de 1% dos $R$, com o sinal trocado.</p>
+   </div>
+   <aside class="apoio">
+    <div class="prever" data-sim="sim-carteira">
+      <p>Refazendo o cálculo com $u$ e $v$ sorteados de forma <strong>independente</strong> (mesmas marginais), o VaR da carteira 50/50 fica, comparado ao da cópula...</p>
+      <div class="alts">
+        <button data-op="a">Menor</button>
+        <button data-op="b" data-certa>Maior</button>
+        <button data-op="c">Igual</button>
+      </div>
+      <div class="explica" hidden><p>Maior. Com associação negativa, quando o Ibovespa cai o dólar tende a subir, e uma metade da carteira compensa a outra. Sob independência essa proteção natural some. No trabalho: 2,06% com a cópula contra 2,32% sob independência, 0,26 ponto percentual a mais. Com poucos sorteios, os números oscilam bastante.</p></div>
+    </div>
+    <div class="sim" id="sim-carteira">
+      <div class="chips" id="ct-chips">
+        <button data-n="2000">2 mil dias</button>
+        <button data-n="20000" class="on">20 mil</button>
+        <button data-n="100000">100 mil</button>
+      </div>
+      <svg viewBox="0 0 400 230" id="ct-svg" role="img" aria-label="Cauda esquerda da distribuição simulada do retorno da carteira, com a cópula e sob independência"></svg>
+      <button class="btn pequeno" id="ct-nova">Nova semente</button>
+    </div>
+   </aside>
+  </section>
+
+  <section class="passo" data-titulo="O sinal do erro">
+   <div class="texto">
+    <h2>Ignorar a dependência erra, e o sinal do erro depende da pergunta</h2>
+    <div class="compara">
+      <div><h4>VaR condicional</h4><p>Ignorar o dólar <strong>subestima</strong> o risco: com o dólar em alta de 2%, 3,99% em vez de 5,47%, 1,48 p.p. a menos.</p></div>
+      <div><h4>VaR de carteira</h4><p>Ignorar a dependência <strong>superestima</strong> o risco: 2,32% em vez de 2,06%, 0,26 p.p. a mais, porque a associação negativa protege.</p></div>
+    </div>
+    <p>Os dois resultados só aparecem porque a cópula preserva a dependência tanto ao condicionar quanto ao simular. Um modelo que trata os ativos separadamente erra nos dois casos, para lados opostos.</p>
+    <div class="ideia">Sem a dependência, o risco condicional fica subestimado e o de carteira, superestimado.</div>
+   </div>
+   <aside class="apoio">
+    <div class="quiz" data-correta="c">
+      <p class="enunciado">Um gestor calcula o VaR de uma carteira com Ibovespa e dólar supondo que os dois são independentes. Comparado a um modelo que inclui a associação negativa entre eles, o VaR dele tende a ser:</p>
+      <div class="alts">
+        <button data-op="a">(a) Menor, porque a independência elimina a dependência de cauda do canto de crise.</button>
+        <button data-op="b">(b) Igual, porque as marginais são as mesmas e o VaR é um quantil.</button>
+        <button data-op="c">(c) Maior, porque ignora a compensação entre os ativos que a associação negativa produz.</button>
+        <button data-op="d">(d) Maior ou menor ao acaso, porque o Monte Carlo tem erro de simulação.</button>
+      </div>
+      <div class="fb" data-op="a">A dependência de cauda no canto de crise junta quedas da bolsa com <em>altas</em> do dólar, o que, numa carteira com os dois, também compensa. Tirá-la não reduz o risco da carteira.</div>
+      <div class="fb" data-op="b">A distribuição de uma soma depende da cópula, não só das marginais.</div>
+      <div class="fb" data-op="c">Isso. Na carteira, a associação negativa funciona como proteção natural; ignorá-la superestima o risco (2,32% contra 2,06% no trabalho).</div>
+      <div class="fb" data-op="d">Com $10^5$ sorteios o erro de simulação é pequeno perto de 0,26 p.p.; a diferença é sistemática.</div>
+    </div>
+   </aside>
+  </section>
+  </div>
+
+  <!-- ================= SEÇÃO 6.5 ================= -->
+  <div class="secao" data-numero="6.5" data-titulo="Fora da amostra" data-livro="Kupiec (1995); Rosenblatt (1952); relatório 2.10 e 3.6">
+
+  <section class="passo" data-titulo="Kupiec">
+   <div class="texto">
+    <h2>Treino em 80% dos dias, teste nos 20% finais</h2>
+    <p>Todos os diagnósticos até aqui usam os mesmos dados da estimação, e um modelo sempre se ajusta bem ao que o gerou. Para medir previsão, a divisão é temporal: os primeiros 964 pregões formam o treino e os 241 finais, o teste. <strong>Tudo é refeito só no treino</strong>, da escolha das marginais ao ajuste da cópula. O procedimento escolhe as mesmas famílias: t e Johnson SU nas marginais, cópula t.</p>
+    <p><strong>Frequência de violações.</strong> Se o VaR de 1% está bem calibrado, cada dia passa dele com probabilidade 0,01, e o número $V$ de violações em $m$ dias segue $\text{Binomial}(m;\ 0{,}01)$. O teste binomial exato, na linha de Kupiec (1995), compara o observado com essa distribuição.</p>
+    <p>Resultado: <strong>zero violações</strong> contra 2,41 esperadas, valor-p 0,185. Não há evidência de má calibração; no período, o modelo foi um pouco conservador.</p>
+   </div>
+   <aside class="apoio">
+    <div class="lacunas">
+      <p>Com $m = 241$ dias de teste e $\alpha = 1\%$:</p>
+      <p>Violações esperadas: <input class="lacuna" data-resp="2.41" data-tol="0.01" aria-label="esperadas"></p>
+      <p>$P(V = 0) =$ <input class="lacuna" data-resp="0.0887" data-tol="0.0005" aria-label="P de zero"> (4 casas)</p>
+      <button class="btn" data-conferir>Conferir</button>
+      <p class="dica" hidden>Dica: $P(V = 0) = 0{,}99^{241}$.</p>
+      <div class="resolucao" hidden><p>$241 \times 0{,}01 = 2{,}41$. $0{,}99^{241} = 0{,}0887$: um modelo bem calibrado passaria um período desses sem violações em quase 9% das vezes. O valor-p bilateral exato soma as probabilidades dos resultados tão ou menos prováveis que zero, e dá 0,185.</p></div>
+    </div>
+   </aside>
+  </section>
+
+  <section class="passo" data-titulo="Rosenblatt">
+   <div class="texto">
+    <h2>A transformada de Rosenblatt testa a condicional inteira</h2>
+    <p>Kupiec olha só o quantil de 1%. Para avaliar a distribuição condicional inteira, em cada dia de teste calcula-se a probabilidade que o modelo dava, antes de saber o resultado, ao retorno que de fato ocorreu:</p>
+    <div class="formula" data-ref-id="f-rosenblatt" data-ref-tipo="formula" data-ref-nome="Transformada de Rosenblatt">
+      $$w_t = P\bigl(X \le x_t \mid Y = y_t\bigr)$$
+    </div>
+    <p>Se o modelo está certo, os $w_t$ são uniformes em $(0, 1)$, pela mesma razão da <span class="ref" data-ref="d-integral">transformada integral</span>, aplicada agora à condicional. A uniformidade é testada por Kolmogorov-Smirnov.</p>
+    <p>Resultado: <strong>valor-p 0,020</strong>, rejeição a 5%. É o diagnóstico mais desfavorável do trabalho e não deve ser minimizado: o quantil de 1% está bem coberto, mas a distribuição condicional como um todo, avaliada em todos os quantis de uma vez, é rejeitada. Sem 2020, o valor-p sobe para 0,370 (seção 6.6).</p>
+    <div class="ideia">Bom no quantil de 1% (Kupiec) não é o mesmo que bom na distribuição condicional inteira (Rosenblatt).</div>
+   </div>
+   <aside class="apoio">
+    <div class="quiz" data-correta="b">
+      <p class="enunciado">No período de teste, o VaR de 1% teve zero violações (Kupiec não rejeita), mas a transformada de Rosenblatt rejeita a uniformidade dos $w_t$. Qual leitura é coerente?</p>
+      <div class="alts">
+        <button data-op="a">(a) Os dois testes se contradizem, então um deles tem erro de cálculo.</button>
+        <button data-op="b">(b) O quantil de 1% está adequado, mas a distribuição condicional erra sistematicamente em alguma faixa.</button>
+        <button data-op="c">(c) O modelo subestima o risco extremo, porque Rosenblatt é mais sensível às caudas.</button>
+        <button data-op="d">(d) O VaR está errado, porque zero violações é menos que as 2,41 esperadas.</button>
+      </div>
+      <div class="fb" data-op="a">Testam coisas diferentes: um só o quantil de 1%, o outro todos os quantis de uma vez. Um modelo pode acertar um e errar o outro.</div>
+      <div class="fb" data-op="b">Isso. Kupiec avalia um ponto da distribuição; Rosenblatt, a forma inteira. A rejeição aponta erro em alguma região, não necessariamente na cauda de 1%.</div>
+      <div class="fb" data-op="c">Zero violações indica o contrário no quantil de 1%: no período, o modelo foi conservador. A rejeição não diz em que faixa está o erro.</div>
+      <div class="fb" data-op="d">Zero contra 2,41 tem valor-p 0,185: compatível com um modelo bem calibrado.</div>
+    </div>
+   </aside>
+  </section>
+
+  <section class="passo" data-titulo="Contra a regressão">
+   <div class="texto">
+    <h2>Contra a regressão linear: mesma proteção, menos capital</h2>
+    <p>Vale a pena a complexidade? O concorrente natural responde à mesma pergunta com uma reta, $x_t = \beta_0 + \beta_1 y_t + \varepsilon_t$, estimada no treino:</p>
+    <div class="formula" data-ref-id="f-var-reg" data-ref-tipo="formula" data-ref-nome="VaR condicional pela regressão">
+      $$\text{VaR}_t = \hat\beta_0 + \hat\beta_1 y_t + \class{s1}{\hat q_\alpha}$$
+      <ul class="legenda">
+        <li><span class="s1">$\hat q_\alpha$</span>: quantil empírico de 1% dos resíduos (não um quantil normal suposto, para a comparação ser justa)</li>
+      </ul>
+    </div>
+    <p>Na reta, a única coisa que muda de um dia para outro é $\hat\beta_1 y_t$: a distância até o limiar é sempre $\hat q_\alpha$. A distribuição condicional se desloca com o dólar <strong>sem mudar de forma</strong>, e a fronteira de VaR é uma reta. Na cópula, a fronteira se encurva, porque a dispersão condicional muda.</p>
+    <p>Nos 241 dias de teste, os dois métodos têm zero violações. Mas o VaR de 1% da cópula é em média <strong>3,69%</strong>, contra <strong>3,98%</strong> da regressão: a mesma proteção com 0,29 p.p. a menos de capital reservado. O $R^2$ da regressão no treino é 0,075.</p>
+   </div>
+   <aside class="apoio">
+    <div class="prever" data-sim="sim-fronteiras">
+      <p>Num dia de dólar estável (variação 0%), qual método pede um VaR maior?</p>
+      <div class="alts">
+        <button data-op="a">Cópula</button>
+        <button data-op="b" data-certa>Regressão</button>
+        <button data-op="c">Iguais</button>
+      </div>
+      <div class="explica" hidden><p>A regressão: 3,83% contra 3,02% da cópula. A reta precisa de um único $\hat q_\alpha$ que sirva para dias calmos e turbulentos, então exagera nos calmos. A cópula reconhece que um dólar parado indica dia calmo e pede menos; nos extremos do dólar, pede mais. Como a maioria dos dias é calma, a média sai menor. As curvas aqui foram ajustadas aos 1205 dias, para ilustrar a forma.</p></div>
+    </div>
+    <div class="sim" id="sim-fronteiras">
+      <label>Variação do dólar <input type="range" id="fr-slider" min="0" max="60" step="1" value="30"> <strong id="fr-valor">0%</strong></label>
+      <svg viewBox="0 0 400 250" id="fr-svg" role="img" aria-label="Fronteiras de VaR de 1% da cópula e da regressão linear em função da variação do dólar"></svg>
+    </div>
+   </aside>
+  </section>
+  </div>
+
+  <!-- ================= SEÇÃO 6.6 ================= -->
+  <div class="secao" data-numero="6.6" data-titulo="Robustez" data-livro="Relatório 3.7 e 4">
+
+  <section class="passo" data-titulo="Sem 2020">
+   <div class="texto">
+    <h2>O que muda sem 2020, e o que não muda</h2>
+    <p>A análise inteira repetida a partir de janeiro de 2021 ($n = 986$) separa três grupos de resultados.</p>
+    <p><strong>Muda muito</strong>, como se espera de um regime calmo: desvio-padrão do Ibovespa de 1,67% para 1,23%; curtose em excesso de 20,8 para 2,23; assimetria de $-1{,}49$ para $-0{,}10$; VaR marginal de 3,99% para 3,19%.</p>
+    <p><strong>Muda pouco</strong>, e é o que sustenta as conclusões: $\tau$ de $-0{,}185$ para $-0{,}182$; a cópula continua sendo a t; $\lambda$ no canto de crise de 0,159 para 0,158. O excesso do VaR condicional (dólar +2%) sobre o marginal passa de 1,48 para 1,10 p.p., e a redução do VaR de carteira, de 0,26 para 0,22 p.p.</p>
+    <p><strong>Muda de qualidade</strong>, um único item: o valor-p de Rosenblatt passa de 0,020 para 0,370. A especificação condicional é adequada em regime normal e insuficiente sob choque extremo.</p>
+    <div class="ideia">A dependência de cauda no canto de crise não é artefato de 2020; a falha da condicional, sim, aparece só com o choque.</div>
+   </div>
+   <aside class="apoio">
+    <div class="quiz" data-correta="d">
+      <p class="enunciado">Ao tirar o ano de 2020, o VaR marginal do Ibovespa cai de 3,99% para 3,19%, mas o $\lambda$ no canto de crise quase não muda (0,159 para 0,158). Qual interpretação é a mais adequada?</p>
+      <div class="alts">
+        <button data-op="a">(a) O modelo é instável, porque o VaR mudou 20%.</button>
+        <button data-op="b">(b) A dependência de cauda era causada pela pandemia e sumiria com mais anos calmos.</button>
+        <button data-op="c">(c) As marginais e a cópula deveriam ter mudado juntas; o $\lambda$ estável indica erro.</button>
+        <button data-op="d">(d) O tamanho dos movimentos depende do regime, mas a forma como os dois ativos se acompanham nos extremos não.</button>
+      </div>
+      <div class="fb" data-op="a">É esperado que o VaR marginal acompanhe a volatilidade do período. Isso mostra que o modelo responde aos dados, não que seja instável.</div>
+      <div class="fb" data-op="b">Se fosse causada pela pandemia, $\lambda$ cairia ao tirar 2020. Ele não se moveu.</div>
+      <div class="fb" data-op="c">Marginais e cópula são peças separadas (é a ideia de Sklar); uma pode mudar sem a outra.</div>
+      <div class="fb" data-op="d">Isso. As marginais captam o tamanho dos movimentos, que encolhe num regime calmo; a cópula capta a dependência, que se manteve.</div>
+    </div>
+   </aside>
+  </section>
+
+  <section class="passo" data-titulo="Conclusões">
+   <div class="texto">
+    <h2>As três conclusões do trabalho</h2>
+    <p><strong>1. A dependência persiste nos extremos.</strong> $\lambda = 0{,}159$ no canto de crise, e as famílias sem dependência de cauda são rejeitadas pelo teste de Vuong e pelo de aderência. Um modelo com $\lambda = 0$ diria que quedas extremas da bolsa e altas extremas do dólar deixam de andar juntas na cauda, o que é incompatível com os 16 dias observados no canto de 5%.</p>
+    <p><strong>2. A modelagem conjunta muda a avaliação de risco, e o sinal do erro depende da pergunta.</strong> Ignorar o dólar subestima a perda condicional em 1,48 p.p.; ignorar a dependência na carteira superestima o risco em 0,26 p.p.</p>
+    <p><strong>3. Contra a regressão, a mesma proteção por menos capital</strong>: 3,69% contra 3,98% em média, com zero violações nos dois. E as conclusões sobrevivem à retirada de 2020.</p>
+    <div class="pare">
+      <p>Qual é a principal limitação que o próprio trabalho registra, e por que ela afeta os valores-p?</p>
+      <button class="btn" data-revelar>Ver resposta</button>
+      <div class="resposta" hidden><p>A dependência ao longo do tempo: os retornos têm volatilidade agrupada, então há menos informação independente do que $n = 1205$ sugere, e todos os valores-p ficam otimistas. A rejeição de Rosenblatt com 2020 é a consequência visível. O cap. 7 mostra a melhoria proposta para isso.</p></div>
+    </div>
+   </div>
+  </section>
+  </div>
+
+  <div class="nav">
+    <button id="anterior">Anterior</button>
+    <button id="proximo" class="primario">Próximo</button>
+  </div>
+</div>
+
+<!-- ============ RESUMO ============ -->
+<div id="resumo" hidden>
+  <h2>Resumo</h2>
+  <div class="revisao" id="revisao">
+    <h3>Antes de reler, teste-se</h3>
+    <p class="rev-info"></p>
+    <div id="rev-palco"></div>
+    <div class="rev-acoes">
+      <button class="btn primario" id="rev-iniciar">Começar</button>
+      <button class="btn" id="rev-proxima" hidden>Próxima</button>
+    </div>
+  </div>
+  <div class="resumo-grid">
+  <div>
+  <h3>Ideias centrais</h3>
+  <ul class="resumo-lista">
+    <li>Modelo: t no Ibovespa, Johnson SU no dólar, cópula t ($\rho = -0{,}2935$, $\nu = 4$).</li>
+    <li>A conjunta reproduz probabilidades de retângulos do centro à cauda.</li>
+    <li>VaR marginal: 3,99%.</li>
+    <li>Condicional = derivada da cópula em $v$; VaR condicional: 4,18% (dólar −2%) e 5,47% (dólar +2%).</li>
+    <li>Na cópula t, o VaR condicional cresce com movimentos grandes do dólar nos dois sentidos.</li>
+    <li>Derivada numérica por diferença central, erro de ordem $\varepsilon^2$.</li>
+    <li>VaR de carteira por Monte Carlo: 2,06% com a cópula contra 2,32% sob independência.</li>
+    <li>Sem dependência, o risco condicional é subestimado e o de carteira, superestimado.</li>
+    <li>Fora da amostra: zero violações (Kupiec, valor-p 0,185), Rosenblatt rejeita (0,020).</li>
+    <li>Contra a regressão: mesma proteção com VaR médio 3,69% contra 3,98%.</li>
+    <li>Sem 2020: marginais mudam muito, dependência quase nada; Rosenblatt deixa de rejeitar.</li>
+  </ul>
+  <h3>Fórmulas</h3>
+  <p>Condicional: $P(X \le x \mid Y = y) = \partial C(u, v)/\partial v$ em $u = F(x)$, $v = G(y)$.</p>
+  <p>VaR condicional: resolver $\partial_v C(u^*, G(y_0)) = \alpha$; VaR $= 100(1 - e^{F^{-1}(u^*)})$.</p>
+  <p>Diferença central: $[C(u, v + \varepsilon) - C(u, v - \varepsilon)]/(2\varepsilon)$.</p>
+  <p>Carteira: $R = 0{,}5(e^{Q_X(u)} - 1) + 0{,}5(e^{Q_Y(v)} - 1)$.</p>
+  <p>Kupiec: $V \sim \text{Binomial}(m, \alpha)$. Rosenblatt: $w_t = P(X \le x_t \mid Y = y_t)$, uniforme se o modelo está certo.</p>
+  <p>Regressão: $\text{VaR}_t = \hat\beta_0 + \hat\beta_1 y_t + \hat q_\alpha$.</p>
+  </div>
+  <div>
+  <h3>Quando usar e quando não usar</h3>
+  <div class="lado">
+    <div><strong>Cópula</strong><ul class="resumo-lista"><li>quando a dispersão condicional muda com o outro ativo;</li><li>para carteiras, onde a dependência protege ou expõe;</li><li>quando os extremos andam juntos.</li></ul></div>
+    <div><strong>Regressão</strong><ul class="resumo-lista"><li>só desloca a distribuição, sem mudar a forma;</li><li>exagera em dias calmos e subestima em turbulentos.</li></ul></div>
+  </div>
+  <h3>Armadilhas</h3>
+  <ul class="resumo-lista">
+    <li>Achar que dólar em queda sempre reduz o VaR condicional do Ibovespa.</li>
+    <li>Combinar log-retornos de ativos diferentes na carteira.</li>
+    <li>Achar que tirar a dependência sempre reduz o risco estimado.</li>
+    <li>Ler zero violações como modelo errado, ou Kupiec bom como condicional inteira boa.</li>
+    <li>Reduzir $\varepsilon$ indefinidamente na diferença numérica.</li>
+    <li>Interpretar a mudança das marginais sem 2020 como instabilidade do modelo.</li>
+  </ul>
+  </div>
+  </div>
+</div>
+
+<div id="painel" hidden>
+  <button class="btn pequeno" id="painel-voltar">← Voltar</button>
+  <h2 id="painel-titulo" style="margin-top:1rem"></h2>
+  <div id="painel-corpo"></div>
+</div>
+
+</div>
+
+<div class="balao" id="balao" role="dialog" aria-live="polite" hidden></div>
+<div class="gaveta" id="gaveta" role="dialog" aria-modal="false" hidden>
+  <div class="gaveta-interno">
+    <div class="gaveta-topo"><strong id="gaveta-titulo"></strong><button class="btn pequeno" id="gaveta-fechar" aria-label="Fechar">✕</button></div>
+    <div id="gaveta-corpo"></div>
+  </div>
+</div>
+
+<script src="../assets/site.js"></script>
+<script src="../assets/refs.js"></script>
+<script src="../assets/estudo.js"></script>
+<script src="../assets/dados-ic.js"></script>
+<script src="../assets/copulas-lib.js"></script>
+<script>
+/* Simulações do cap. 6. Utilitários: svgEl, corVar, fmt, tipografar (estudo.js) e CL (copulas-lib.js). */
+var D = window.DADOS_IC;
+// posição 0..60 do controle → variação do dólar de −3% a +3% (a grade do R tem passo de 0,1)
+function dolarDe(pos) { return -3 + pos * 0.1; }
+function rotuloDolar(g) { return (g > 0.001 ? '+' : '') + fmt(g, 1) + '%'; }
+function ligarChips(id, aoMudar) {
+  var box = document.getElementById(id);
+  box.querySelectorAll('button').forEach(function (b) {
+    b.addEventListener('click', function () {
+      box.querySelectorAll('button').forEach(function (x) { x.classList.remove('on'); });
+      b.classList.add('on');
+      aoMudar(b);
+    });
+  });
+}
+
+/* ===== Probabilidade de o Ibovespa cair, dado o dólar ===== */
+(function () {
+  var sl = document.getElementById('pc-slider');
+  if (!sl) return;
+  var svg = document.getElementById('pc-svg');
+  function desenhar() {
+    var pos = +sl.value, g = dolarDe(pos), p = D.pCair[pos];
+    document.getElementById('pc-valor').textContent = rotuloDolar(g);
+    CL.limpar(svg);
+    var e = CL.eixos(svg, { x: 50, y: 10, w: 335, h: 160, xmin: -3, xmax: 3, ymin: 0.2, ymax: 0.8,
+      xticks: [-3, -2, -1, 0, 1, 2, 3], yticks: [0.2, 0.4, 0.6, 0.8], yfmt: function (v) { return fmt(100 * v, 0) + '%'; },
+      xlab: 'variação do dólar no dia (%)', grade: true });
+    var m = D.grade.map(function (gg, i) { return [e.sx(gg), e.sy(D.pCair[i])]; });
+    var marg = CL.margT(D.margX.media, D.margX.dp, D.margX.nu).p(0);
+    e.g.appendChild(svgEl('line', { x1: e.sx(-3), x2: e.sx(3), y1: e.sy(marg), y2: e.sy(marg), stroke: corVar('--muted'), 'stroke-dasharray': '5 4' }));
+    e.g.appendChild(svgEl('path', { d: CL.caminho(m), stroke: corVar('--accent'), 'stroke-width': 2.5, fill: 'none' }));
+    e.g.appendChild(svgEl('circle', { cx: e.sx(g), cy: e.sy(p), r: 5.5, fill: corVar('--accent') }));
+    svg.appendChild(svgEl('text', { x: 50, y: 216, 'font-size': 12.5, fill: corVar('--accent'), 'font-weight': 600 }, 'P(Ibovespa cair | dólar ' + rotuloDolar(g) + ') = ' + fmt(100 * p, 1) + '%'));
+    svg.appendChild(svgEl('text', { x: 50, y: 234, 'font-size': 12, fill: corVar('--muted') }, 'tracejada: sem olhar o dólar, ' + fmt(100 * marg, 1) + '%'));
+  }
+  sl.addEventListener('input', desenhar);
+  desenhar();
+})();
+
+/* ===== VaR condicional da cópula ===== */
+(function () {
+  var sl = document.getElementById('vc-slider');
+  if (!sl) return;
+  var svg = document.getElementById('vc-svg');
+  function desenhar() {
+    var pos = +sl.value, g = dolarDe(pos), v = D.varCond[pos];
+    document.getElementById('vc-valor').textContent = rotuloDolar(g);
+    CL.limpar(svg);
+    var e = CL.eixos(svg, { x: 50, y: 10, w: 335, h: 165, xmin: -3, xmax: 3, ymin: 2, ymax: 8,
+      xticks: [-3, -2, -1, 0, 1, 2, 3], yticks: [2, 4, 6, 8], yfmt: function (t) { return fmt(t, 0) + '%'; },
+      xlab: 'variação do dólar no dia (%)', ylab: 'VaR 1% (perda)', grade: true });
+    e.g.appendChild(svgEl('line', { x1: e.sx(-3), x2: e.sx(3), y1: e.sy(D.varMarg), y2: e.sy(D.varMarg), stroke: corVar('--muted'), 'stroke-dasharray': '5 4' }));
+    e.g.appendChild(svgEl('path', { d: CL.caminho(D.grade.map(function (gg, i) { return [e.sx(gg), e.sy(D.varCond[i])]; })), stroke: corVar('--s1'), 'stroke-width': 2.5, fill: 'none' }));
+    e.g.appendChild(svgEl('circle', { cx: e.sx(g), cy: e.sy(v), r: 5.5, fill: corVar('--s1') }));
+    svg.appendChild(svgEl('text', { x: 50, y: 222, 'font-size': 12.5, fill: corVar('--s1'), 'font-weight': 600 }, 'VaR 1% | dólar ' + rotuloDolar(g) + ': ' + fmt(v, 2) + '%  (R\$ ' + fmt(1000 * v, 0) + ' em R\$ 100 mil)'));
+    svg.appendChild(svgEl('text', { x: 50, y: 240, 'font-size': 12, fill: corVar('--muted') }, 'tracejada: VaR sem olhar o dólar, ' + fmt(D.varMarg, 2) + '%'));
+  }
+  sl.addEventListener('input', desenhar);
+  desenhar();
+})();
+
+/* ===== Monte Carlo da carteira 50/50 ===== */
+(function () {
+  var svg = document.getElementById('ct-svg');
+  if (!svg) return;
+  var mx = D.margX, my = D.margY, rho = D.copula.rho, nu = D.copula.nu;
+  var X = CL.margT(mx.media, mx.dp, mx.nu), Y = CL.margJSU(my.gamma, my.delta, my.xi, my.lambda);
+  // tabela do quantil da marginal t do Ibovespa, em escala logit, para sortear rápido
+  var NT = 3000, lo = -16, hi = 16, tab = [];
+  for (var k = 0; k <= NT; k++) { var s = lo + (hi - lo) * k / NT; tab.push(X.q(1 / (1 + Math.exp(-s)))); }
+  function Qx(u) {
+    var s = Math.log(u / (1 - u)), p = (s - lo) / (hi - lo) * NT;
+    if (p <= 0) return tab[0];
+    if (p >= NT) return tab[NT];
+    var i = Math.floor(p), f = p - i;
+    return tab[i] + f * (tab[i + 1] - tab[i]);
+  }
+  var semente = 2026;
+  function simular(n) {
+    var r = CL.rng(semente), sq = Math.sqrt(1 - rho * rho), Rc = new Float64Array(n), Ri = new Float64Array(n);
+    for (var i = 0; i < n; i++) {
+      var z1 = CL.rnorm(r), z2 = rho * z1 + sq * CL.rnorm(r), w = Math.sqrt(nu / (2 * CL.rgamma(r, nu / 2)));
+      var u = Math.min(Math.max(CL.pt(z1 * w, nu), 1e-9), 1 - 1e-9), v = Math.min(Math.max(CL.pt(z2 * w, nu), 1e-9), 1 - 1e-9);
+      Rc[i] = 0.5 * (Math.exp(Qx(u)) - 1) + 0.5 * (Math.exp(Y.q(v)) - 1);
+      var a = Math.min(Math.max(r(), 1e-9), 1 - 1e-9), b = Math.min(Math.max(r(), 1e-9), 1 - 1e-9);
+      Ri[i] = 0.5 * (Math.exp(Qx(a)) - 1) + 0.5 * (Math.exp(Y.q(b)) - 1);
+    }
+    return [Rc, Ri];
+  }
+  function desenhar() {
+    var n = +document.querySelector('#ct-chips button.on').getAttribute('data-n');
+    var res = simular(n), Rc = Array.from(res[0]).sort(function (a, b) { return a - b; }), Ri = Array.from(res[1]).sort(function (a, b) { return a - b; });
+    var vc = -100 * Rc[Math.floor(0.01 * n)], vi = -100 * Ri[Math.floor(0.01 * n)];
+    CL.limpar(svg);
+    var e = CL.eixos(svg, { x: 46, y: 10, w: 340, h: 140, xmin: -6, xmax: -1, ymin: 0, ymax: 0.05,
+      xticks: [-6, -5, -4, -3, -2, -1], yticks: [0.01, 0.03, 0.05], yfmt: function (t) { return fmt(100 * t, 0) + '%'; },
+      xlab: 'retorno da carteira 50/50 (%), só a cauda esquerda', grade: true });
+    // acumulada empírica da cauda (fração de dias abaixo de cada retorno)
+    function curva(arr) {
+      var pts = [], j = 0;
+      for (var x = -6; x <= -0.9; x += 0.05) { while (j < arr.length && 100 * arr[j] <= x) j++; pts.push([e.sx(x), e.sy(Math.min(j / arr.length, 0.06))]); }
+      return pts;
+    }
+    e.g.appendChild(svgEl('line', { x1: e.sx(-6), x2: e.sx(-1), y1: e.sy(0.01), y2: e.sy(0.01), stroke: corVar('--muted'), 'stroke-dasharray': '3 3' }));
+    e.g.appendChild(svgEl('path', { d: CL.caminho(curva(Ri)), stroke: corVar('--muted'), 'stroke-width': 2.5, fill: 'none' }));
+    e.g.appendChild(svgEl('path', { d: CL.caminho(curva(Rc)), stroke: corVar('--accent'), 'stroke-width': 2.5, fill: 'none' }));
+    e.g.appendChild(svgEl('line', { x1: e.sx(-vc), x2: e.sx(-vc), y1: e.sy(0), y2: e.sy(0.01), stroke: corVar('--accent'), 'stroke-width': 2 }));
+    e.g.appendChild(svgEl('line', { x1: e.sx(-vi), x2: e.sx(-vi), y1: e.sy(0), y2: e.sy(0.01), stroke: corVar('--muted'), 'stroke-width': 2 }));
+    svg.appendChild(svgEl('text', { x: e.sx(-6) + 4, y: e.sy(0.01) - 5, 'font-size': 10.5, fill: corVar('--muted') }, 'fração acumulada de dias; tracejada: 1%'));
+    svg.appendChild(svgEl('text', { x: 46, y: 196, 'font-size': 12.5, fill: corVar('--accent'), 'font-weight': 600 }, 'com a cópula: VaR = ' + fmt(vc, 2) + '%'));
+    svg.appendChild(svgEl('text', { x: 46, y: 214, 'font-size': 12.5, fill: corVar('--muted'), 'font-weight': 600 }, 'independentes: VaR = ' + fmt(vi, 2) + '%;  diferença ' + fmt(vi - vc, 2) + ' p.p.'));
+  }
+  ligarChips('ct-chips', desenhar);
+  document.getElementById('ct-nova').addEventListener('click', function () { semente++; desenhar(); });
+  desenhar();
+})();
+
+/* ===== Fronteiras: cópula contra regressão ===== */
+(function () {
+  var sl = document.getElementById('fr-slider');
+  if (!sl) return;
+  var svg = document.getElementById('fr-svg');
+  function desenhar() {
+    var pos = +sl.value, g = dolarDe(pos), vc = D.varCond[pos], vr = D.varReg[pos];
+    document.getElementById('fr-valor').textContent = rotuloDolar(g);
+    CL.limpar(svg);
+    var e = CL.eixos(svg, { x: 50, y: 10, w: 335, h: 165, xmin: -3, xmax: 3, ymin: 2, ymax: 8,
+      xticks: [-3, -2, -1, 0, 1, 2, 3], yticks: [2, 4, 6, 8], yfmt: function (t) { return fmt(t, 0) + '%'; },
+      xlab: 'variação do dólar no dia (%)', ylab: 'VaR 1% (perda)', grade: true });
+    e.g.appendChild(svgEl('path', { d: CL.caminho(D.grade.map(function (gg, i) { return [e.sx(gg), e.sy(D.varReg[i])]; })), stroke: corVar('--muted'), 'stroke-width': 2.5, fill: 'none' }));
+    e.g.appendChild(svgEl('path', { d: CL.caminho(D.grade.map(function (gg, i) { return [e.sx(gg), e.sy(D.varCond[i])]; })), stroke: corVar('--s1'), 'stroke-width': 2.5, fill: 'none' }));
+    e.g.appendChild(svgEl('circle', { cx: e.sx(g), cy: e.sy(vc), r: 5.5, fill: corVar('--s1') }));
+    e.g.appendChild(svgEl('circle', { cx: e.sx(g), cy: e.sy(vr), r: 5.5, fill: corVar('--muted') }));
+    svg.appendChild(svgEl('text', { x: 50, y: 222, 'font-size': 12.5, fill: corVar('--s1'), 'font-weight': 600 }, 'cópula: ' + fmt(vc, 2) + '%'));
+    svg.appendChild(svgEl('text', { x: 200, y: 222, 'font-size': 12.5, fill: corVar('--muted'), 'font-weight': 600 }, 'regressão: ' + fmt(vr, 2) + '%'));
+    svg.appendChild(svgEl('text', { x: 50, y: 240, 'font-size': 11.5, fill: corVar('--muted') }, 'dólar ' + rotuloDolar(g) + ' no dia'));
+  }
+  sl.addEventListener('input', desenhar);
+  desenhar();
+})();
+</script>
+</body>
+</html>

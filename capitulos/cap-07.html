@@ -1,0 +1,551 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="estudo-chave" content="ic-copulas/cap-07">
+<title>Cap. 7 — A melhoria proposta: volatilidade que muda</title>
+<script>
+window.MathJax = {
+  tex: { inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath: [['$$', '$$'], ['\\[', '\\]']] },
+  svg: { fontCache: 'global' }
+};
+</script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/3.2.2/es5/tex-svg.min.js" defer></script>
+<link rel="stylesheet" href="../assets/estudo.css">
+</head>
+<body>
+<nav class="trilho" id="trilho" tabindex="0" aria-label="Sumário do capítulo" aria-expanded="false">
+  <div class="trilho-tracos" id="trilho-tracos" aria-hidden="true"></div>
+  <div class="trilho-painel">
+    <p class="trilho-cap" id="trilho-cap"></p>
+    <div class="trilho-lista" id="trilho-lista"></div>
+    <div class="trilho-rodape" id="trilho-rodape">
+      <button class="btn pequeno" id="btn-formulas">Fórmulas até aqui</button>
+      <button class="btn pequeno" id="btn-ir-resumo">Resumo</button>
+      <a class="btn pequeno" id="btn-inicio" href="../index.html" hidden>Início</a>
+    </div>
+  </div>
+</nav>
+
+<div class="wrap">
+
+<h1>Cap. 7 — A melhoria proposta: volatilidade que muda</h1>
+<p class="contexto">Onde isso se encaixa: o trabalho termina apontando sua principal limitação, a dependência ao longo do tempo, e propõe um caminho para tratá-la. Este capítulo explica esse caminho. <strong>Ele não foi implementado no trabalho</strong>: as simulações daqui usam dados artificiais, para mostrar o mecanismo.</p>
+
+<div class="abas" role="tablist">
+  <button role="tab" aria-selected="true" data-aba="trilha">Trilha</button>
+  <button role="tab" aria-selected="false" data-aba="resumo">Resumo</button>
+</div>
+
+<div id="trilha">
+  <nav class="subtopicos" id="subtopicos" aria-label="Passos desta seção"></nav>
+  <div class="retomada" id="retomada" hidden></div>
+
+  <!-- ================= SEÇÃO 7.1 ================= -->
+  <div class="secao" data-numero="7.1" data-titulo="O que ficou de fora" data-livro="Ljung e Box (1978); relatório 3.1, 4 e 5">
+
+  <section class="passo" data-titulo="Em grupos">
+   <div class="texto">
+    <h2>Dias agitados vêm em grupos</h2>
+    <p>Todos os testes do trabalho supõem que os dias são independentes entre si. Para conferir, usa-se o <strong>teste de Ljung-Box</strong>, que verifica se as primeiras $h$ autocorrelações de uma série são todas nulas:</p>
+    <div class="formula" data-ref-id="f-ljung-box" data-ref-tipo="formula" data-ref-nome="Estatística de Ljung-Box">
+      $$Q(h) = n(n + 2) \sum_{k=1}^{h} \frac{\hat\rho_k^2}{n - k}$$
+      <ul class="legenda">
+        <li>$\hat\rho_k$: autocorrelação amostral na defasagem $k$</li>
+        <li>sob independência, $Q(h)$ é aproximadamente $\chi^2_h$</li>
+      </ul>
+    </div>
+    <p>Com $h = 10$: nos retornos do dólar a independência sobrevive ($Q = 13{,}7$, valor-p 0,188); nos do Ibovespa, não ($Q = 90{,}5$, valor-p $4 \times 10^{-15}$). E nos <strong>quadrados</strong> dos retornos das duas séries ela é rejeitada com folga (valor-p $&lt; 2 \times 10^{-16}$).</p>
+    <p>Retorno ao quadrado mede o tamanho do movimento. Autocorrelação nos quadrados quer dizer: dia agitado tende a ser seguido de dia agitado. É o <strong>agrupamento de volatilidade</strong>.</p>
+    <div class="ideia">Os retornos ao quadrado são autocorrelacionados: a volatilidade vem em ondas, e os dias não são independentes.</div>
+   </div>
+   <aside class="apoio">
+    <div class="prever" data-sim="sim-ondas">
+      <p>Nos 1205 dias reais, os dias de variação grande do Ibovespa aparecem...</p>
+      <div class="alts">
+        <button data-op="a">Espalhados ao acaso</button>
+        <button data-op="b" data-certa>Em grupos</button>
+        <button data-op="c">Um por mês</button>
+      </div>
+      <div class="explica" hidden><p>Em grupos. Março e abril de 2020 concentram os maiores, mas há outras ondas menores, como no fim de 2022. A linha do desvio-padrão em janelas de 21 pregões sobe e desce em ondas lentas: a volatilidade de hoje diz algo sobre a de amanhã. Se os dias fossem independentes, ela ficaria quase plana.</p></div>
+    </div>
+    <div class="sim" id="sim-ondas">
+      <div class="chips" id="on-chips">
+        <button data-s="x" class="on">Ibovespa</button>
+        <button data-s="y">Dólar</button>
+      </div>
+      <svg viewBox="0 0 400 230" id="on-svg" role="img" aria-label="Retornos diários reais ao longo do tempo com o desvio-padrão em janelas móveis"></svg>
+    </div>
+   </aside>
+  </section>
+
+  <section class="passo" data-titulo="Por que importa">
+   <div class="texto">
+    <h2>Duas consequências da volatilidade em ondas</h2>
+    <p><strong>1. Valores-p otimistas.</strong> Com dependência ao longo do tempo, há menos informação independente do que $n = 1205$ sugere. As estimativas pontuais continuam consistentes sob dependência fraca (Chen e Fan, 2006), mas intervalos e valores-p saem estreitos demais. Vale para todos os testes dos caps. 5 e 6.</p>
+    <p><strong>2. Uma condicional que não sabe o que aconteceu ontem.</strong> No modelo do trabalho, a distribuição do Ibovespa num dia depende só do dólar <em>daquele dia</em>. Um dia depois de uma semana de crash e um dia depois de uma semana calma recebem o mesmo VaR, se o dólar se mover igual. Em março de 2020 isso falha: a <span class="ref" data-ref="f-rosenblatt">transformada de Rosenblatt</span> rejeita a condicional com 2020 (valor-p 0,020) e não a rejeita sem 2020 (0,370).</p>
+    <div class="ideia">Ignorar a volatilidade em ondas deixa os valores-p otimistas e dá o mesmo risco a dias calmos e a dias de crise.</div>
+   </div>
+   <aside class="apoio">
+    <div class="quiz" data-correta="c">
+      <p class="enunciado">Os retornos de um ativo não têm autocorrelação, mas os retornos ao quadrado têm autocorrelação forte. O que isso indica?</p>
+      <div class="alts">
+        <button data-op="a">(a) Os dias são independentes, porque o que importa para a independência é a autocorrelação dos retornos.</button>
+        <button data-op="b">(b) Os retornos são previsíveis: dá para saber se amanhã sobe ou desce.</button>
+        <button data-op="c">(c) O sinal do retorno de amanhã é imprevisível, mas o tamanho do movimento depende do que veio antes.</button>
+        <button data-op="d">(d) O teste nos quadrados está errado, porque elevar ao quadrado cria correlação artificial.</button>
+      </div>
+      <div class="fb" data-op="a">Autocorrelação nula não é independência: se os quadrados se correlacionam, os dias são dependentes.</div>
+      <div class="fb" data-op="b">Sem autocorrelação nos retornos, o sinal não é previsível linearmente. O que se prevê é a agitação.</div>
+      <div class="fb" data-op="c">Isso. É o retrato do agrupamento de volatilidade, e o que os modelos GARCH descrevem.</div>
+      <div class="fb" data-op="d">Se os dias fossem independentes, os quadrados também seriam, e a autocorrelação deles seria nula. Ela aparecer é informação, não artefato.</div>
+    </div>
+   </aside>
+  </section>
+  </div>
+
+  <!-- ================= SEÇÃO 7.2 ================= -->
+  <div class="secao" data-numero="7.2" data-titulo="O modelo GARCH" data-livro="Bollerslev (1986); relatório 5">
+
+  <section class="passo" data-titulo="A equação">
+   <div class="texto">
+    <h2>GARCH(1,1): a variância de hoje depende de ontem</h2>
+    <div class="formula" data-ref-id="f-garch" data-ref-tipo="formula" data-ref-nome="Modelo GARCH(1,1)">
+      $$r_t = \mu + \sigma_t z_t$$ $$\sigma_t^2 = \omega + \class{s1}{\alpha}\, (r_{t-1} - \mu)^2 + \class{s2}{\beta}\, \sigma_{t-1}^2$$
+      <ul class="legenda">
+        <li>$z_t$: choques independentes, média 0 e variância 1</li>
+        <li>$\sigma_t$: volatilidade do dia $t$, conhecida na véspera</li>
+        <li><span class="s1">$\alpha$</span>: reação ao choque de ontem</li>
+        <li><span class="s2">$\beta$</span>: memória da volatilidade de ontem</li>
+      </ul>
+    </div>
+    <p>Com $\omega &gt; 0$, $\alpha, \beta \ge 0$ e $\alpha + \beta &lt; 1$, a série é estacionária e a variância de longo prazo é $\omega/(1 - \alpha - \beta)$. Um dia de choque grande aumenta $\sigma$ no dia seguinte, e o efeito se dissipa aos poucos, a uma taxa $\alpha + \beta$ por dia.</p>
+    <p>Os retornos $r_t$ continuam sem autocorrelação, mas os quadrados não: é o padrão dos dados. E dividindo por $\sigma_t$, os <strong>resíduos padronizados</strong> $z_t = (r_t - \mu)/\sigma_t$ voltam a ser independentes.</p>
+    <details class="demo">
+      <summary>Demonstração: variância de longo prazo</summary>
+      <p>Se a série é estacionária, $E[\sigma_t^2] = E[(r_t - \mu)^2] = \bar\sigma^2$ para todo $t$. Tirando a esperança na equação: $\bar\sigma^2 = \omega + \alpha\bar\sigma^2 + \beta\bar\sigma^2$, então $\bar\sigma^2 = \omega/(1 - \alpha - \beta)$, positivo e finito só se $\alpha + \beta &lt; 1$.</p>
+    </details>
+   </div>
+   <aside class="apoio">
+    <div class="lacunas">
+      <p>Em unidades de $\%^2$: $\omega = 0{,}05$, $\alpha = 0{,}08$, $\beta = 0{,}90$.</p>
+      <p>Variância de longo prazo: <input class="lacuna" data-resp="2.5" data-tol="0.01" aria-label="variância"> $\%^2$</p>
+      <p>Ontem $\sigma_{t-1} = 1{,}5\%$ e houve um choque de $-5\%$ (com $\mu = 0$). Hoje, $\sigma_t^2 =$ <input class="lacuna" data-resp="4.075" data-tol="0.01" aria-label="sigma ao quadrado"></p>
+      <button class="btn" data-conferir>Conferir</button>
+      <p class="dica" hidden>Dica: $0{,}05 + 0{,}08 \times 25 + 0{,}90 \times 2{,}25$.</p>
+      <div class="resolucao" hidden><p>Longo prazo: $0{,}05/0{,}02 = 2{,}5$, ou seja, $\bar\sigma = 1{,}58\%$. Depois do choque: $0{,}05 + 2 + 2{,}025 = 4{,}075$, $\sigma_t = 2{,}02\%$. Um único dia ruim deixa o dia seguinte quase 30% mais volátil que o normal ($2{,}02/1{,}58 = 1{,}28$).</p></div>
+    </div>
+   </aside>
+  </section>
+
+  <section class="passo" data-titulo="Simule">
+   <div class="texto">
+    <h2>α decide o tamanho do susto; β, quanto ele dura</h2>
+    <p>Na simulação, a variância de longo prazo fica fixa em 1 (então $\omega = 1 - \alpha - \beta$) e você controla $\alpha$ e $\beta$. São 750 dias artificiais, com choques normais.</p>
+    <p>Uma medida útil é a <strong>meia-vida</strong> de um choque: em quantos dias o excesso de variância cai pela metade, $\ln 0{,}5 / \ln(\alpha + \beta)$. Em séries diárias de ações, $\alpha + \beta$ costuma ficar perto de 0,98: meia-vida de mais de um mês.</p>
+    <div class="ideia">No GARCH, $\alpha$ mede a reação ao choque de ontem e $\alpha + \beta$ mede quanto tempo a agitação persiste.</div>
+   </div>
+   <aside class="apoio">
+    <div class="prever" data-sim="sim-garch">
+      <p>Com $\alpha$ fixo, aumentar $\beta$ deixa os períodos agitados...</p>
+      <div class="alts">
+        <button data-op="a">Mais curtos</button>
+        <button data-op="b" data-certa>Mais longos</button>
+        <button data-op="c">Iguais</button>
+      </div>
+      <div class="explica" hidden><p>Mais longos: $\beta$ é a memória, e $\alpha + \beta$ perto de 1 faz um choque reverberar por semanas. Com $\alpha = \beta = 0$, os dias são independentes e a faixa de $\sigma_t$ fica reta. Com $\alpha$ grande e $\beta$ pequeno, surgem picos súbitos que somem rápido.</p></div>
+    </div>
+    <div class="sim" id="sim-garch">
+      <label>$\alpha$ <input type="range" id="gc-a" min="0" max="0.3" step="0.01" value="0.08"> <strong id="gc-av">0,08</strong></label>
+      <label>$\beta$ <input type="range" id="gc-b" min="0" max="0.97" step="0.01" value="0.5"> <strong id="gc-bv">0,50</strong></label>
+      <svg viewBox="0 0 400 240" id="gc-svg" role="img" aria-label="Retornos simulados por um GARCH e a volatilidade condicional"></svg>
+      <button class="btn pequeno" id="gc-nova">Nova amostra</button>
+    </div>
+   </aside>
+  </section>
+  </div>
+
+  <!-- ================= SEÇÃO 7.3 ================= -->
+  <div class="secao" data-numero="7.3" data-titulo="Cópula nos resíduos" data-livro="Chen e Fan (2006); Bollerslev (1986); relatório 5">
+
+  <section class="passo" data-titulo="O procedimento">
+   <div class="texto">
+    <h2>Primeiro tirar a volatilidade de cada série; depois a cópula</h2>
+    <p>A proposta do trabalho: descrever a volatilidade explicitamente e ajustar a cópula ao que sobra.</p>
+    <ol>
+      <li>Ajustar um GARCH a cada série: $\hat\sigma_{X,t}$ para o Ibovespa, $\hat\sigma_{Y,t}$ para o dólar.</li>
+      <li>Calcular os resíduos padronizados $\hat z_{X,t} = (x_t - \hat\mu_X)/\hat\sigma_{X,t}$ e o análogo do dólar. Eles ficam muito mais próximos de dias independentes.</li>
+      <li>Ajustar as marginais $F_z$ e $G_z$ aos resíduos e passar para pseudo-observações, como no cap. 5.</li>
+      <li>Ajustar a cópula aos pares de resíduos.</li>
+    </ol>
+    <p>A conjunta de amanhã passa a depender do que aconteceu até hoje, por meio das volatilidades:</p>
+    <div class="formula" data-ref-id="f-cop-garch" data-ref-tipo="formula" data-ref-nome="Conjunta condicional cópula-GARCH">
+      $$\begin{aligned} H_t(x, y) = C\Bigl(&F_z\bigl((x - \mu_X)/\class{s1}{\sigma_{X,t}}\bigr), \\ &G_z\bigl((y - \mu_Y)/\class{s2}{\sigma_{Y,t}}\bigr)\Bigr) \end{aligned}$$
+      <ul class="legenda">
+        <li><span class="s1">$\sigma_{X,t}$</span>, <span class="s2">$\sigma_{Y,t}$</span>: volatilidades previstas para o dia, pelos GARCH</li>
+      </ul>
+    </div>
+    <p>Chen e Fan (2006) estudam exatamente esse tipo de modelo, com a cópula estimada sobre os postos dos resíduos, e mostram que a estimação continua consistente.</p>
+    <div class="ideia">Na proposta, cada série tem sua volatilidade descrita por um GARCH, e a cópula é ajustada aos resíduos padronizados.</div>
+   </div>
+   <aside class="apoio">
+    <div class="pare">
+      <p>Pelo <span class="ref" data-ref="f-sklar">teorema de Sklar</span>, a fórmula de $H_t$ ainda é "cópula aplicada às marginais". O que mudou em relação ao modelo do trabalho?</p>
+      <button class="btn" data-revelar>Ver resposta</button>
+      <div class="resposta" hidden><p>As marginais agora mudam de dia para dia: a marginal do Ibovespa no dia $t$ é $F_z((x - \mu_X)/\sigma_{X,t})$, uma distribuição fixa reescalada pela volatilidade prevista. A cópula $C$ continua fixa. Sklar se aplica a cada dia, à conjunta condicional ao passado.</p></div>
+    </div>
+   </aside>
+  </section>
+
+  <section class="passo" data-titulo="Inovações">
+   <div class="texto">
+    <h2>A cópula passa a descrever choques, não retornos</h2>
+    <p>Isso não é um refinamento do modelo do trabalho: é <strong>outro modelo</strong>. A cópula dos resíduos descreve a dependência entre os <strong>choques</strong> $z$ (as inovações), e não entre os retornos.</p>
+    <p>A diferença pode ser grande. Se a volatilidade dos dois ativos sobe junta em períodos de turbulência, os retornos ficam grandes juntos mesmo que os choques sejam pouco dependentes. Parte dos extremos conjuntos que se veem nos retornos vem da <strong>volatilidade comum</strong>, não da cópula dos choques.</p>
+    <p>Na simulação, dois ativos artificiais seguem um GARCH. Os choques têm uma cópula normal (sem dependência de cauda) com correlação $\rho$. Compare a fração de extremos conjuntos (a mesma do <span class="ref" data-ref="d-lambda">coeficiente de cauda</span>, em $q = 5\%$) nos retornos e nos resíduos. São 50 mil dias, para o ruído ficar pequeno.</p>
+    <div class="ideia">Volatilidade que sobe junta cria extremos conjuntos nos retornos; a cópula dos resíduos separa esse efeito da dependência entre os choques.</div>
+   </div>
+   <aside class="apoio">
+    <div class="prever" data-sim="sim-comum">
+      <p>Choques <strong>independentes</strong> ($\rho = 0$), volatilidade comum aos dois ativos. A fração de extremos conjuntos nos <strong>retornos</strong>, comparada aos 5% esperados sob independência, fica...</p>
+      <div class="alts">
+        <button data-op="a">Perto de 5%</button>
+        <button data-op="b" data-certa>Acima de 5%</button>
+        <button data-op="c">Abaixo de 5%</button>
+      </div>
+      <div class="explica" hidden><p>Acima, uns 7%, embora os choques sejam independentes. Nos dias em que a volatilidade comum está alta, os dois retornos tendem a ser grandes ao mesmo tempo, e os extremos coincidem mais do que o acaso explicaria. Nos resíduos, que tiram a volatilidade, a fração volta para perto de 5%. Com volatilidade separada, o efeito praticamente some. Com $\rho &lt; 0$, a volatilidade comum soma-se à dependência dos choques.</p></div>
+    </div>
+    <div class="sim" id="sim-comum">
+      <div class="chips" id="cm-chips">
+        <button data-c="1" class="on">Volatilidade comum</button>
+        <button data-c="0">Separada</button>
+      </div>
+      <label>$\rho$ dos choques <input type="range" id="cm-rho" min="-0.6" max="0" step="0.1" value="0"> <strong id="cm-rv">0,0</strong></label>
+      <svg viewBox="0 0 400 200" id="cm-svg" role="img" aria-label="Fração de extremos conjuntos nos retornos e nos resíduos padronizados"></svg>
+      <button class="btn pequeno" id="cm-nova">Nova amostra</button>
+    </div>
+   </aside>
+  </section>
+
+  <section class="passo" data-titulo="VaR que se adapta">
+   <div class="texto">
+    <h2>O VaR passa a acompanhar a agitação do mercado</h2>
+    <p>Com o GARCH, o VaR de amanhã usa a volatilidade prevista: $q_t = \mu + \sigma_t F_z^{-1}(\alpha)$. O VaR condicional ao dólar segue o mesmo caminho do cap. 6, só que o percentil $u^*$ que resolve a <span class="ref" data-ref="f-cond">condicional pela cópula</span> é levado ao retorno por $\mu_X + \sigma_{X,t} F_z^{-1}(u^*)$.</p>
+    <p>Um VaR fixo erra de forma organizada: é largo demais em períodos calmos e curto demais nos agitados, e por isso as violações vêm <strong>em grupos</strong>. Um VaR que acompanha $\sigma_t$ espalha as violações no tempo. Testes como o de Kupiec só contam violações; a independência delas é outra coisa a verificar.</p>
+    <div class="ideia">Um VaR fixo concentra as violações nos períodos agitados; um VaR com volatilidade prevista as espalha.</div>
+   </div>
+   <aside class="apoio">
+    <div class="prever" data-sim="sim-violacoes">
+      <p>Numa série com volatilidade em ondas, as violações de um VaR de 1% <strong>fixo</strong> aparecem...</p>
+      <div class="alts">
+        <button data-op="a">Espalhadas</button>
+        <button data-op="b" data-certa>Concentradas</button>
+        <button data-op="c">Nenhuma</button>
+      </div>
+      <div class="explica" hidden><p>Concentradas nos períodos agitados: o VaR fixo é calibrado para o período todo, então quase todas as violações caem quando $\sigma_t$ está alta. As violações do VaR com GARCH ficam mais espalhadas. O total pode ser parecido nos dois; o que muda é <em>quando</em> elas acontecem.</p></div>
+    </div>
+    <div class="sim" id="sim-violacoes">
+      <div class="chips" id="vl-chips">
+        <button data-m="fixo" class="on">VaR fixo</button>
+        <button data-m="garch">VaR com GARCH</button>
+      </div>
+      <svg viewBox="0 0 400 230" id="vl-svg" role="img" aria-label="Retornos simulados com a fronteira de VaR e as violações marcadas"></svg>
+      <button class="btn pequeno" id="vl-nova">Nova amostra</button>
+    </div>
+   </aside>
+  </section>
+  </div>
+
+  <!-- ================= SEÇÃO 7.4 ================= -->
+  <div class="secao" data-numero="7.4" data-titulo="O que falta" data-livro="Relatório 4 e 5">
+
+  <section class="passo" data-titulo="O que se espera">
+   <div class="texto">
+    <h2>O que a proposta provavelmente resolveria, e o que é só hipótese</h2>
+    <p><strong>Provável:</strong> como os resíduos padronizados ficam muito mais próximos de independentes, os testes dos caps. 5 e 6 voltariam a ter valores-p confiáveis. E a rejeição de Rosenblatt com 2020 provavelmente sumiria: em março de 2020, o $\sigma_t$ do GARCH já estaria alto depois dos primeiros dias de queda, e a condicional se alargaria a tempo.</p>
+    <p><strong>Hipótese ainda não testada:</strong> que a dependência de cauda entre os choques continue positiva no canto de crise. Pelo que a simulação anterior mostrou, parte do $\lambda = 0{,}159$ dos retornos pode vir da volatilidade comum, e o $\lambda$ dos resíduos tende a ser menor. Também mudaria a leitura dos números: o VaR passaria a depender do dia, e não seria mais um valor único.</p>
+    <p>Nada disso foi calculado nos dados reais: é o próximo passo do trabalho.</p>
+    <div class="ideia">A cópula nos resíduos de um GARCH deve tornar os testes confiáveis e a condicional adaptável; quanto da dependência de cauda sobrevive é uma questão em aberto.</div>
+   </div>
+   <aside class="apoio">
+    <div class="quiz" data-correta="b">
+      <p class="enunciado">Ao passar do modelo do trabalho para uma cópula ajustada aos resíduos padronizados de modelos GARCH, qual mudança de interpretação é correta?</p>
+      <div class="alts">
+        <button data-op="a">(a) Nenhuma: a cópula é invariante a transformações, então a dos resíduos é a mesma dos retornos.</button>
+        <button data-op="b">(b) A cópula passa a descrever a dependência entre os choques do dia, já descontada a volatilidade de cada ativo.</button>
+        <button data-op="c">(c) A cópula passa a descrever a dependência entre as volatilidades dos dois ativos.</button>
+        <button data-op="d">(d) A dependência de cauda dos resíduos tem de ser maior que a dos retornos, porque o ruído da volatilidade sai.</button>
+      </div>
+      <div class="fb" data-op="a">A <span class="ref" data-ref="f-invariancia">invariância</span> vale para uma função crescente fixa de cada variável. Dividir por $\sigma_t$, que muda de dia para dia, não é uma transformação fixa: muda a ordem relativa dos dias, e portanto a cópula.</div>
+      <div class="fb" data-op="b">Isso. É outro modelo, não um refinamento: a cópula das inovações, com as volatilidades tratadas à parte.</div>
+      <div class="fb" data-op="c">A dependência entre volatilidades entra pelos GARCH (por exemplo, se eles reagem aos mesmos choques). A cópula descreve os $z$.</div>
+      <div class="fb" data-op="d">Costuma ser o contrário: volatilidade comum infla os extremos conjuntos dos retornos, e tirá-la tende a reduzir a dependência de cauda.</div>
+    </div>
+   </aside>
+  </section>
+
+  <section class="passo" data-titulo="Marginal do dólar">
+   <div class="texto">
+    <h2>A outra pendência: a marginal do dólar</h2>
+    <p>A <span class="ref" data-ref="f-aic-bic">escolha por AIC e BIC</span> deixou a marginal do dólar como a decisão mais frágil: AIC e BIC escolhem famílias diferentes, e as quatro primeiras por AIC estão a menos de 3 unidades.</p>
+    <p>A escolha não é indiferente: $\hat G$ entra no VaR condicional, ao converter a variação do dólar em percentil, e $\hat G^{-1}$ entra no VaR de carteira, ao gerar os retornos simulados. O complemento natural é uma <strong>análise de sensibilidade</strong>: refazer os dois VaR com cada uma das quatro marginais (Johnson SU, t de Student, t assimétrica e logística) e ver quanto eles mudam.</p>
+    <p>O que <strong>não</strong> está em jogo: a escolha da cópula foi feita sobre postos, que não dependem de marginal nenhuma, e a construção paramétrica apontou a mesma família. A conclusão sobre a estrutura de dependência não depende dessa escolha.</p>
+    <div class="ideia">A marginal do dólar afeta os dois VaR que usam o dólar; a escolha da cópula, feita sobre postos, não depende dela.</div>
+   </div>
+   <aside class="apoio">
+    <div class="quiz" data-correta="a">
+      <p class="enunciado">Se a marginal do dólar fosse trocada da Johnson SU para a logística, qual resultado do trabalho <strong>não</strong> mudaria?</p>
+      <div class="alts">
+        <button data-op="a">(a) A família de cópula selecionada sobre os postos.</button>
+        <button data-op="b">(b) O VaR do Ibovespa condicional a uma alta de 2% do dólar.</button>
+        <button data-op="c">(c) O VaR da carteira 50/50 por Monte Carlo.</button>
+        <button data-op="d">(d) A probabilidade de queda do Ibovespa dado o dólar em alta de 2%.</button>
+      </div>
+      <div class="fb" data-op="a">Isso. Os postos não usam marginal nenhuma, então a seleção da cópula fica igual.</div>
+      <div class="fb" data-op="b">O condicional usa $\hat G(y_0)$ para achar o percentil do dólar: muda com a marginal.</div>
+      <div class="fb" data-op="c">O Monte Carlo usa $\hat G^{-1}$ para gerar o retorno do dólar: muda com a marginal.</div>
+      <div class="fb" data-op="d">Também condiciona em $v = \hat G(y)$: muda com a marginal.</div>
+    </div>
+   </aside>
+  </section>
+  </div>
+
+  <div class="nav">
+    <button id="anterior">Anterior</button>
+    <button id="proximo" class="primario">Próximo</button>
+  </div>
+</div>
+
+<!-- ============ RESUMO ============ -->
+<div id="resumo" hidden>
+  <h2>Resumo</h2>
+  <div class="revisao" id="revisao">
+    <h3>Antes de reler, teste-se</h3>
+    <p class="rev-info"></p>
+    <div id="rev-palco"></div>
+    <div class="rev-acoes">
+      <button class="btn primario" id="rev-iniciar">Começar</button>
+      <button class="btn" id="rev-proxima" hidden>Próxima</button>
+    </div>
+  </div>
+  <div class="resumo-grid">
+  <div>
+  <h3>Ideias centrais</h3>
+  <ul class="resumo-lista">
+    <li>Ljung-Box rejeita independência nos quadrados das duas séries: volatilidade em ondas.</li>
+    <li>Consequências: valores-p otimistas e mesma condicional para dias calmos e de crise.</li>
+    <li>GARCH(1,1): $\sigma_t^2 = \omega + \alpha(r_{t-1} - \mu)^2 + \beta\sigma_{t-1}^2$.</li>
+    <li>$\alpha$ é a reação ao choque; $\alpha + \beta$ é a persistência.</li>
+    <li>Proposta: GARCH em cada série, cópula nos resíduos padronizados.</li>
+    <li>A cópula passa a descrever choques, não retornos: é outro modelo.</li>
+    <li>Volatilidade comum cria extremos conjuntos nos retornos mesmo com choques independentes.</li>
+    <li>VaR fixo concentra violações nos períodos agitados; com GARCH, elas se espalham.</li>
+    <li>Não implementado: é o próximo passo, assim como a sensibilidade à marginal do dólar.</li>
+  </ul>
+  <h3>Fórmulas</h3>
+  <p>Ljung-Box: $Q(h) = n(n + 2)\sum_{k=1}^{h} \hat\rho_k^2/(n - k) \approx \chi^2_h$.</p>
+  <p>GARCH(1,1): $r_t = \mu + \sigma_t z_t$; variância de longo prazo $\omega/(1 - \alpha - \beta)$; meia-vida $\ln 0{,}5/\ln(\alpha + \beta)$.</p>
+  <p>Cópula-GARCH: $H_t(x, y) = C(F_z(a_t), G_z(b_t))$, com $a_t = (x - \mu_X)/\sigma_{X,t}$ e $b_t = (y - \mu_Y)/\sigma_{Y,t}$.</p>
+  </div>
+  <div>
+  <h3>Quando usar e quando não usar</h3>
+  <div class="lado">
+    <div><strong>Cópula nos resíduos</strong><ul class="resumo-lista"><li>quando os quadrados dos retornos são autocorrelacionados;</li><li>quando o risco tem de reagir ao que aconteceu nos últimos dias.</li></ul></div>
+    <div><strong>Cópula nos retornos</strong><ul class="resumo-lista"><li>quando interessa a dependência incondicional dos retornos;</li><li>com cuidado: valores-p otimistas se houver ondas de volatilidade.</li></ul></div>
+  </div>
+  <h3>Armadilhas</h3>
+  <ul class="resumo-lista">
+    <li>Tomar autocorrelação nula dos retornos como independência.</li>
+    <li>Achar que dividir por $\sigma_t$ não muda a cópula (não é uma transformação fixa).</li>
+    <li>Ler toda a dependência de cauda dos retornos como dependência entre choques.</li>
+    <li>Contar violações sem olhar se elas vêm agrupadas.</li>
+    <li>Apresentar a melhoria como resultado: ela é proposta, não foi estimada nos dados.</li>
+  </ul>
+  </div>
+  </div>
+</div>
+
+<div id="painel" hidden>
+  <button class="btn pequeno" id="painel-voltar">← Voltar</button>
+  <h2 id="painel-titulo" style="margin-top:1rem"></h2>
+  <div id="painel-corpo"></div>
+</div>
+
+</div>
+
+<div class="balao" id="balao" role="dialog" aria-live="polite" hidden></div>
+<div class="gaveta" id="gaveta" role="dialog" aria-modal="false" hidden>
+  <div class="gaveta-interno">
+    <div class="gaveta-topo"><strong id="gaveta-titulo"></strong><button class="btn pequeno" id="gaveta-fechar" aria-label="Fechar">✕</button></div>
+    <div id="gaveta-corpo"></div>
+  </div>
+</div>
+
+<script src="../assets/site.js"></script>
+<script src="../assets/refs.js"></script>
+<script src="../assets/estudo.js"></script>
+<script src="../assets/dados-ic.js"></script>
+<script src="../assets/copulas-lib.js"></script>
+<script>
+/* Simulações do cap. 7. Utilitários: svgEl, corVar, fmt, tipografar (estudo.js) e CL (copulas-lib.js). */
+var D = window.DADOS_IC;
+function ligarChips(id, aoMudar) {
+  var box = document.getElementById(id);
+  box.querySelectorAll('button').forEach(function (b) {
+    b.addEventListener('click', function () {
+      box.querySelectorAll('button').forEach(function (x) { x.classList.remove('on'); });
+      b.classList.add('on');
+      aoMudar(b);
+    });
+  });
+}
+function escolhido(id, attr) { return document.querySelector('#' + id + ' button.on').getAttribute(attr); }
+// GARCH(1,1) com variância de longo prazo 1; choques z dados (ou sorteados)
+function garch(z, a, b, choqueComum) {
+  var n = z.length, w = 1 - a - b, s2 = 1, r = new Array(n), sig = new Array(n);
+  for (var t = 0; t < n; t++) {
+    if (t > 0) s2 = w + a * (choqueComum ? choqueComum[t - 1] : r[t - 1] * r[t - 1]) + b * s2;
+    sig[t] = Math.sqrt(s2); r[t] = sig[t] * z[t];
+  }
+  return { r: r, s: sig };
+}
+
+/* ===== Ondas de volatilidade nos dados reais ===== */
+(function () {
+  var svg = document.getElementById('on-svg');
+  if (!svg) return;
+  function desenhar() {
+    var serie = escolhido('on-chips', 'data-s'), x = D[serie], n = D.n, lim = serie === 'x' ? 16 : 7;
+    CL.limpar(svg);
+    var e = CL.eixos(svg, { x: 52, y: 10, w: 333, h: 170, xmin: 0, xmax: n, ymin: -lim, ymax: lim,
+      xticks: D.anos.map(function (a) { return a[0]; }), yticks: serie === 'x' ? [-15, -10, -5, 0, 5, 10, 15] : [-6, -3, 0, 3, 6],
+      xfmt: function (v) { var a = D.anos.filter(function (q) { return q[0] === v; })[0]; return a ? a[1] : ''; },
+      ylab: 'retorno (%)', grade: true });
+    for (var i = 0; i < n; i++) {
+      e.g.appendChild(svgEl('line', { x1: e.sx(i), x2: e.sx(i), y1: e.sy(0), y2: e.sy(x[i]), stroke: corVar('--muted'), 'stroke-opacity': 0.55 }));
+    }
+    var pts = [], pts2 = [];
+    for (i = 20; i < n; i++) {
+      var m = 0, s = 0, k;
+      for (k = i - 20; k <= i; k++) m += x[k];
+      m /= 21;
+      for (k = i - 20; k <= i; k++) s += (x[k] - m) * (x[k] - m);
+      s = 2 * Math.sqrt(s / 20);
+      pts.push([e.sx(i), e.sy(s)]); pts2.push([e.sx(i), e.sy(-s)]);
+    }
+    e.g.appendChild(svgEl('path', { d: CL.caminho(pts), stroke: corVar('--s1'), 'stroke-width': 2, fill: 'none' }));
+    e.g.appendChild(svgEl('path', { d: CL.caminho(pts2), stroke: corVar('--s1'), 'stroke-width': 2, fill: 'none' }));
+    svg.appendChild(svgEl('text', { x: 40, y: 214, 'font-size': 11.5, fill: corVar('--s1') }, 'laranja: ± 2 desvios-padrão em janelas de 21 pregões'));
+  }
+  ligarChips('on-chips', desenhar);
+  desenhar();
+})();
+
+/* ===== GARCH: efeito de alfa e beta ===== */
+(function () {
+  var sa = document.getElementById('gc-a'), sb = document.getElementById('gc-b');
+  if (!sa) return;
+  var svg = document.getElementById('gc-svg'), semente = 4, N = 750;
+  function desenhar() {
+    var a = +sa.value, b = +sb.value;
+    if (a + b > 0.99) { b = Math.max(0, 0.99 - a); sb.value = b; }
+    document.getElementById('gc-av').textContent = fmt(a, 2);
+    document.getElementById('gc-bv').textContent = fmt(b, 2);
+    var r = CL.rng(semente), z = [];
+    for (var i = 0; i < N; i++) z.push(CL.rnorm(r));
+    var g = garch(z, a, b);
+    CL.limpar(svg);
+    var e = CL.eixos(svg, { x: 40, y: 10, w: 345, h: 160, xmin: 0, xmax: N, ymin: -8, ymax: 8,
+      xticks: [0, 250, 500, 750], yticks: [-8, -4, 0, 4, 8], xlab: 'dia', grade: true });
+    for (i = 0; i < N; i++) e.g.appendChild(svgEl('line', { x1: e.sx(i), x2: e.sx(i), y1: e.sy(0), y2: e.sy(g.r[i]), stroke: corVar('--muted'), 'stroke-opacity': 0.6 }));
+    e.g.appendChild(svgEl('path', { d: CL.caminho(g.s.map(function (s, i) { return [e.sx(i), e.sy(2 * s)]; })), stroke: corVar('--accent'), 'stroke-width': 2, fill: 'none' }));
+    e.g.appendChild(svgEl('path', { d: CL.caminho(g.s.map(function (s, i) { return [e.sx(i), e.sy(-2 * s)]; })), stroke: corVar('--accent'), 'stroke-width': 2, fill: 'none' }));
+    var p = a + b, mv = p > 0 ? Math.log(0.5) / Math.log(p) : 0;
+    svg.appendChild(svgEl('text', { x: 40, y: 214, 'font-size': 12.5, fill: corVar('--accent'), 'font-weight': 600 }, 'α + β = ' + fmt(p, 2) + ';  meia-vida ≈ ' + (p > 0 ? fmt(mv, 1) + ' dias' : '0')));
+    svg.appendChild(svgEl('text', { x: 40, y: 232, 'font-size': 11, fill: corVar('--muted') }, 'azul: ± 2 σₜ (volatilidade prevista na véspera)'));
+  }
+  sa.addEventListener('input', desenhar);
+  sb.addEventListener('input', desenhar);
+  document.getElementById('gc-nova').addEventListener('click', function () { semente++; desenhar(); });
+  desenhar();
+})();
+
+/* ===== Volatilidade comum e extremos conjuntos ===== */
+(function () {
+  var sr = document.getElementById('cm-rho');
+  if (!sr) return;
+  var svg = document.getElementById('cm-svg'), semente = 9, N = 50000, a = 0.08, b = 0.90, q = 0.05;
+  function fracao(x, y) {
+    var u = CL.postos(x), v = CL.postos(y), nv = 0, c = 0;
+    for (var i = 0; i < u.length; i++) if (v[i] > 1 - q) { nv++; if (u[i] <= q) c++; }
+    return c / nv;
+  }
+  function desenhar() {
+    var rho = +sr.value, comum = escolhido('cm-chips', 'data-c') === '1';
+    document.getElementById('cm-rv').textContent = fmt(rho, 1);
+    var r = CL.rng(semente), z1 = [], z2 = [], sq = Math.sqrt(1 - rho * rho);
+    for (var i = 0; i < N; i++) { var e1 = CL.rnorm(r); z1.push(e1); z2.push(rho * e1 + sq * CL.rnorm(r)); }
+    var g1, g2;
+    if (comum) {
+      // as duas variâncias reagem à média dos dois choques ao quadrado
+      var w = 1 - a - b, s1 = 1, s2 = 1, r1 = [], r2 = [];
+      for (var t = 0; t < N; t++) {
+        if (t > 0) { var ch = 0.5 * (r1[t - 1] * r1[t - 1] + r2[t - 1] * r2[t - 1]); s1 = w + a * ch + b * s1; s2 = w + a * ch + b * s2; }
+        r1.push(Math.sqrt(s1) * z1[t]); r2.push(Math.sqrt(s2) * z2[t]);
+      }
+      g1 = r1; g2 = r2;
+    } else { g1 = garch(z1, a, b).r; g2 = garch(z2, a, b).r; }
+    var fr = fracao(g1, g2), fz = fracao(z1, z2);
+    CL.limpar(svg);
+    var e = CL.eixos(svg, { x: 120, y: 10, w: 265, h: 110, xmin: 0, xmax: 0.3, ymin: 0, ymax: 2,
+      xticks: [0, 0.05, 0.1, 0.15, 0.2, 0.25, 0.3], yticks: [], xfmt: function (v) { return fmt(100 * v, 0) + '%'; },
+      xlab: 'fração de extremos conjuntos (q = 5%)', grade: true });
+    [[fr, 'retornos', '--s1', 1.5], [fz, 'resíduos z', '--accent', 0.5]].forEach(function (d) {
+      e.g.appendChild(svgEl('rect', { x: e.sx(0), y: e.sy(d[3]) - 16, width: Math.max(2, e.sx(Math.min(d[0], 0.3)) - e.sx(0)), height: 32, fill: corVar(d[2]), 'fill-opacity': 0.8 }));
+      svg.appendChild(svgEl('text', { x: 112, y: e.sy(d[3]) + 4, 'font-size': 12, 'text-anchor': 'end', fill: corVar('--text') }, d[1] + ': ' + fmt(100 * d[0], 1) + '%'));
+    });
+    e.g.appendChild(svgEl('line', { x1: e.sx(q), x2: e.sx(q), y1: e.sy(0), y2: e.sy(2), stroke: corVar('--text'), 'stroke-dasharray': '4 3' }));
+    svg.appendChild(svgEl('text', { x: 120, y: 186, 'font-size': 11, fill: corVar('--muted') }, 'tracejada: 5%, o esperado sob independência'));
+  }
+  ligarChips('cm-chips', desenhar);
+  sr.addEventListener('input', desenhar);
+  document.getElementById('cm-nova').addEventListener('click', function () { semente++; desenhar(); });
+  desenhar();
+})();
+
+/* ===== Violações: VaR fixo contra VaR com GARCH ===== */
+(function () {
+  var svg = document.getElementById('vl-svg');
+  if (!svg) return;
+  var semente = 12, N = 1000, a = 0.08, b = 0.90, z01 = CL.qnorm(0.01);
+  function desenhar() {
+    var modo = escolhido('vl-chips', 'data-m');
+    var r = CL.rng(semente), z = [];
+    for (var i = 0; i < N; i++) z.push(CL.rnorm(r));
+    var g = garch(z, a, b);
+    var fixo = CL.quantil(g.r, 0.01);
+    CL.limpar(svg);
+    var e = CL.eixos(svg, { x: 40, y: 10, w: 345, h: 150, xmin: 0, xmax: N, ymin: -8, ymax: 6,
+      xticks: [0, 250, 500, 750, 1000], yticks: [-8, -4, 0, 4], xlab: 'dia', grade: true });
+    for (i = 0; i < N; i++) e.g.appendChild(svgEl('line', { x1: e.sx(i), x2: e.sx(i), y1: e.sy(0), y2: e.sy(g.r[i]), stroke: corVar('--muted'), 'stroke-opacity': 0.5 }));
+    var fronteira = [], viol = [];
+    for (i = 0; i < N; i++) {
+      var lim = modo === 'fixo' ? fixo : g.s[i] * z01;
+      fronteira.push([e.sx(i), e.sy(lim)]);
+      if (g.r[i] < lim) viol.push(i);
+    }
+    e.g.appendChild(svgEl('path', { d: CL.caminho(fronteira), stroke: corVar('--s1'), 'stroke-width': 1.8, fill: 'none' }));
+    viol.forEach(function (k) { svg.appendChild(svgEl('circle', { cx: e.sx(k), cy: 196, r: 3.5, fill: corVar('--err') })); });
+    // dispersão das violações: maior número em qualquer janela de 100 dias
+    var maxJan = 0;
+    for (i = 0; i < viol.length; i++) { var c = 0; for (var j = i; j < viol.length && viol[j] - viol[i] < 100; j++) c++; maxJan = Math.max(maxJan, c); }
+    svg.appendChild(svgEl('text', { x: 40, y: 222, 'font-size': 12, fill: corVar('--text') }, viol.length + ' violações (esperadas 10); até ' + maxJan + ' numa mesma janela de 100 dias'));
+  }
+  ligarChips('vl-chips', desenhar);
+  document.getElementById('vl-nova').addEventListener('click', function () { semente++; desenhar(); });
+  desenhar();
+})();
+</script>
+</body>
+</html>
