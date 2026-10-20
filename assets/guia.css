@@ -1,0 +1,25 @@
+/* Modo guia (padrão neste site): sem exercícios; perguntas viram notas com a resposta aberta.
+   Só vale com <html class="modo-guia">, que o guia.js põe ou tira. */
+.modo-guia .so-estudo { display: none !important; }
+.modo-guia #retomada, .modo-guia #revisao { display: none !important; }
+
+/* Preveja e Pare e tente viram notas neutras: pergunta em negrito, resposta logo abaixo */
+.modo-guia .prever, .modo-guia .pare, .modo-guia .lacunas, .modo-guia .acheerro {
+  background: var(--bg); border: 1px solid var(--border); }
+.modo-guia .prever::before, .modo-guia .pare::before, .modo-guia .lacunas::before, .modo-guia .acheerro::before { color: var(--accent); }
+.modo-guia .prever::before { content: "O que observar"; }
+.modo-guia .prever:not([data-sim])::before { content: "Para pensar"; }
+.modo-guia .pare::before { content: "Pergunta e resposta"; }
+.modo-guia .lacunas::before { content: "Exemplo resolvido"; }
+.modo-guia .acheerro::before { content: "Erro comum"; }
+.modo-guia .prever > p:first-child, .modo-guia .pare > p:first-child { font-weight: 600; }
+.modo-guia .lacunas .resolucao { border-top: 0; padding-top: 0; margin-top: .3rem; }
+.modo-guia .sim.travada { opacity: 1; }
+.modo-guia .acheerro .linhas button { cursor: default; }
+.modo-guia .acheerro .linhas li[data-errada] button { border-color: var(--err); background: var(--err-bg); }
+.modo-guia .acheerro .por-que { margin: .6rem 0 0; font-size: .95rem; }
+
+/* Interruptor guia / estudo */
+.modo-uso { display: flex; flex-wrap: wrap; align-items: center; justify-content: flex-end; gap: .5rem; font-size: .85rem; color: var(--muted); margin: -.6rem 0 1rem; }
+.modo-uso button { font: inherit; font-size: .85rem; padding: .25rem .75rem; border-radius: 999px; border: 1px solid var(--border); background: var(--card); color: var(--accent); cursor: pointer; }
+.site .modo-uso { justify-content: flex-start; margin: 1.5rem 0 0; }
