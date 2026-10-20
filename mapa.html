@@ -1,0 +1,388 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Mapa do trabalho</title>
+<meta name="description" content="Mapa mental da iniciação científica sobre cópulas: o que foi feito em cada etapa e como as partes se ligam.">
+<style>
+  @page { size: 420mm 297mm; margin: 0; }
+  :root {
+    --roxo: #3D235B; --laranja: #C2410C; --texto: #1f1d24; --cinza: #5b5763; --linha: #d9d3e2;
+    --dados: #2F5D8A; --marg: #0F766E; --pseudo: #6B4FA0; --cop: #5B2C83; --conj: #3D235B;
+    --var: #C2410C; --val: #3B6D11; --rob: #6B6476; --lim: #8A5A0B;
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; padding: 0; background: #fff; color: var(--texto);
+    font-family: "Segoe UI", Calibri, Arial, sans-serif; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+  .pagina { position: relative; width: 1587px; height: 1122px; overflow: hidden; page-break-after: always; }
+  .pagina:last-child { page-break-after: auto; }
+  svg.ligacoes { position: absolute; inset: 0; width: 1587px; height: 1122px; pointer-events: none; }
+  .no { position: absolute; background: #fff; border: 2px solid var(--c); border-radius: 14px; padding: 10px 14px 10px; font-size: 13.2px; line-height: 1.38; z-index: 1; }
+  .no h2 { margin: -10px -14px 8px; padding: 7px 14px; background: var(--c); color: #fff; font-size: 16px; letter-spacing: .02em;
+    border-radius: 11px 11px 0 0; display: flex; justify-content: space-between; align-items: baseline; gap: 10px; }
+  .no h2 small { font-weight: 500; font-size: 12.5px; opacity: .9; letter-spacing: 0; white-space: nowrap; }
+  .no ul { margin: 0; padding-left: 16px; }
+  .no li { margin: 0 0 4px; }
+  .no li::marker { color: var(--c); }
+  .no b { color: var(--c); }
+  .num { font-weight: 700; color: var(--laranja); white-space: nowrap; }
+  .duas { display: grid; grid-template-columns: 1fr 1fr; gap: 0 18px; }
+  .sub { font-weight: 700; color: var(--c); font-size: 12.5px; text-transform: uppercase; letter-spacing: .04em; margin: 2px 0 3px; }
+  .centro { position: absolute; background: var(--roxo); color: #fff; border-radius: 18px; padding: 16px 20px; text-align: center; z-index: 1; }
+  .centro .pergunta { font-size: 19px; font-weight: 700; line-height: 1.3; }
+  .centro .formula { font-family: Cambria, "Times New Roman", serif; font-style: italic; font-size: 27px; margin: 10px 0 6px; }
+  .centro .formula .c { color: #FDBA74; font-weight: 700; }
+  .centro .formula .m { color: #D8C8F0; font-weight: 700; }
+  .centro .leg { font-size: 12.5px; opacity: .92; }
+  .bd { display: inline-flex; align-items: center; justify-content: center; width: 18px; height: 18px; border-radius: 999px;
+    background: #fff; border: 1.6px dashed var(--l); color: var(--l); font-size: 11px; font-weight: 700; margin-left: 4px;
+    vertical-align: 1px; font-style: normal; }
+  .selo { position: absolute; transform: translate(-50%, -50%); width: 24px; height: 24px; border-radius: 999px; background: var(--l);
+    color: #fff; font-size: 12.5px; font-weight: 700; display: flex; align-items: center; justify-content: center; z-index: 2;
+    box-shadow: 0 0 0 3px #fff; }
+  .legenda-lig { position: absolute; border: 1.5px solid var(--linha); border-radius: 14px; padding: 10px 14px; font-size: 12.6px; line-height: 1.35; z-index: 1; background: #fff; }
+  .legenda-lig h3 { margin: 0 0 6px; font-size: 13.5px; color: var(--roxo); letter-spacing: .03em; }
+  .legenda-lig .itens { display: grid; grid-template-columns: 1fr 1fr; gap: 4px 18px; }
+  .legenda-lig .item { display: grid; grid-template-columns: 22px 1fr; gap: 6px; align-items: start; }
+  .legenda-lig .item span:first-child { width: 20px; height: 20px; border-radius: 999px; background: var(--l); color: #fff; font-weight: 700;
+    font-size: 11.5px; display: flex; align-items: center; justify-content: center; }
+  .rodape { position: absolute; left: 24px; bottom: 12px; font-size: 12px; color: var(--cinza); display: flex; gap: 22px; align-items: center; }
+  .amostra { display: inline-block; width: 34px; height: 0; vertical-align: middle; margin-right: 6px; }
+  /* página 2 */
+  .p2 { padding: 34px 40px; }
+  .p2 h1 { font-size: 26px; color: var(--roxo); margin: 0 0 4px; }
+  .p2 .sub1 { color: var(--cinza); font-size: 14px; margin: 0 0 20px; }
+  .grade { display: grid; grid-template-columns: 1fr 1fr; gap: 14px 28px; }
+  .lig { border: 1.5px solid var(--linha); border-radius: 12px; padding: 10px 14px; font-size: 14px; line-height: 1.45; display: grid;
+    grid-template-columns: 30px 1fr; gap: 10px; align-items: start; }
+  .lig .n { background: var(--l); color: #fff; border-radius: 999px; width: 28px; height: 28px; display: flex; align-items: center;
+    justify-content: center; font-weight: 700; }
+  .lig strong { color: var(--l); }
+  .perguntas { margin-top: 22px; }
+  .perguntas h2 { font-size: 19px; color: var(--roxo); margin: 0 0 10px; }
+  .q { background: #F4F0F8; border-radius: 12px; padding: 10px 14px; font-size: 14px; line-height: 1.45; margin-bottom: 10px; }
+  .q b { color: var(--roxo); }
+  /* cor de cada ligação */
+  .l1 { --l: #6B4FA0; } .l2 { --l: #6B4FA0; } .l3 { --l: #0F766E; } .l4 { --l: #5B2C83; }
+  .l5 { --l: #5B2C83; } .l6 { --l: #2F5D8A; } .l7 { --l: #2F5D8A; } .l8 { --l: #8A5A0B; }
+
+  /* ---- versão do site ---- */
+  body { background: #fff; }
+  .topo { max-width: 1587px; margin: 0 auto; padding: 18px 24px 8px; display: flex; flex-wrap: wrap; gap: 10px 18px; align-items: center; }
+  .topo h1 { font-size: 22px; color: var(--roxo); margin: 0; flex: 1 1 auto; }
+  .topo a { font-size: 14px; color: var(--roxo); text-decoration: none; border: 1.5px solid var(--linha); border-radius: 999px; padding: 6px 14px; white-space: nowrap; }
+  .topo a.primario { background: var(--roxo); color: #fff; border-color: var(--roxo); }
+  .palco { max-width: 1587px; margin: 0 auto; overflow: hidden; }
+  .palco > .pagina { transform-origin: top left; }
+  .p2 { width: auto; height: auto; max-width: 1240px; margin: 0 auto; overflow: visible; }
+  @media (max-width: 999px) {
+    .palco { overflow: visible; }
+    #p1 { width: auto; height: auto; overflow: visible; display: flex; flex-direction: column; padding: 8px 16px 16px; }
+    #p1 .no, #p1 .centro, #p1 .legenda-lig { position: static !important; width: auto !important; margin: 0 0 14px; }
+    #p1 .centro { order: -1; }
+    #p1 .legenda-lig { order: 10; }
+    #p1 svg.ligacoes, #p1 .selo, #p1 .rodape { display: none; }
+    .duas, .legenda-lig .itens, .grade { grid-template-columns: 1fr !important; }
+    .p2 { padding: 8px 16px 24px; }
+    .centro .formula { font-size: 23px; }
+    .topo { padding: 14px 16px 6px; }
+    .topo h1 { font-size: 20px; flex-basis: 100%; }
+  }
+</style>
+</head>
+<body>
+
+<header class="topo">
+  <h1>Mapa do trabalho: o que foi feito e como as partes se ligam</h1>
+  <a href="index.html">← Início</a>
+  <a class="primario" href="mapa-mental-IC.pdf" download>Baixar em PDF (A3)</a>
+</header>
+<div class="palco" id="palco1">
+<div class="pagina" id="p1">
+  <svg class="ligacoes" id="svg1"></svg>
+
+  <!-- coluna esquerda: 24–380 | corredor 380–452 | meio 452–1136 | corredor 1136–1208 | direita 1208–1563 -->
+  <div class="no" id="dados" style="--c: var(--dados); left: 24px; top: 22px; width: 356px;">
+    <h2>1. DADOS <small>o que entra</small></h2>
+    <ul>
+      <li><span class="num">1205</span> log-retornos diários pareados, Ibovespa e dólar (USD/BRL), 03/01/2020 a 26/06/2025, Yahoo Finance.</li>
+      <li id="li-logret">Log-retorno $r_t = \ln(P_t/P_{t-1})$: soma no tempo, mas <b>não entre ativos</b>.<i class="bd l7">7</i></li>
+      <li>Caudas pesadas no Ibovespa: curtose em excesso <span class="num">20,8</span>, assimetria <span class="num">−1,49</span>.</li>
+      <li>Associação negativa: Kendall <span class="num">τ = −0,185</span>; Pearson −0,277.<i class="bd l4">4</i></li>
+      <li>Duas amostras: completa (n = 1205) e <b>sem 2020</b> (n = 986).<i class="bd l6">6</i></li>
+    </ul>
+  </div>
+
+  <div class="no" id="marg" style="--c: var(--marg); left: 24px; top: 326px; width: 356px;">
+    <h2>2. MARGINAIS <small>F e G: cada ativo</small></h2>
+    <ul>
+      <li>6 famílias, máxima verossimilhança.</li>
+      <li><b>AIC</b> (pedágio 2 por parâmetro) × <b>BIC</b> (ln n ≈ 7,1, mais severo).</li>
+      <li>Ibovespa: <b>t de Student</b>, AIC e BIC concordam. <span class="num">ν = 3,63</span> &lt; 4 → curtose infinita.</li>
+      <li id="li-dolar">Dólar: <b>Johnson SU</b> pelo AIC, logística pelo BIC → <b>escolha frágil</b>.<i class="bd l3">3</i></li>
+      <li>Percentis uniformes: KS p = 0,81 e 0,97.</li>
+    </ul>
+  </div>
+
+  <div class="no" id="pseudo" style="--c: var(--pseudo); left: 24px; top: 600px; width: 356px;">
+    <h2>3. PSEUDO-OBSERVAÇÕES <small>ir ao [0,1]²</small></h2>
+    <ul>
+      <li id="li-postos"><b>Por postos</b>, $u_i = R_i/(n+1)$: não supõe marginal → <b>escolher a cópula</b>.<i class="bd l1">1</i></li>
+      <li id="li-param"><b>Paramétrica</b>, $u_i = \hat F(x_i)$: tem inversa $\hat F^{-1}$ → usada no <b>VaR</b>.<i class="bd l2">2</i></li>
+      <li>As duas escolhem a t: (ρ, ν) = (−0,291; 3,60) e (−0,293; 3,93). A dependência não é artefato da marginal.</li>
+    </ul>
+  </div>
+
+  <div class="no" id="cop" style="--c: var(--cop); left: 452px; top: 22px; width: 684px;">
+    <h2>4. CÓPULA <small>C: só a dependência</small></h2>
+    <div class="duas">
+      <div>
+        <div class="sub">Medir a dependência</div>
+        <ul>
+          <li>τ de Kendall: só olha a ordem, depende só de C.</li>
+          <li><b>λ</b>: fração-limite de extremos juntos. <b>Canto de crise</b> = Ibovespa péssimo e dólar disparando.<i class="bd l5">5</i></li>
+          <li>Normal: λ = 0. t: λ &gt; 0 nos 4 cantos.</li>
+        </ul>
+        <div class="sub">Candidatas (10)</div>
+        <ul>
+          <li>Normal, t, Frank, AMH + Clayton, Gumbel e Joe <b>espelhadas</b> nas 2 orientações (cauda no canto de crise ou no benigno).</li>
+          <li>AMH não alcança τ = −0,185 (mínimo −0,1817).</li>
+        </ul>
+      </div>
+      <div>
+        <div class="sub">Escolher e testar</div>
+        <ul>
+          <li id="li-aic">Pseudo-verossimilhança + AIC: <b>t vence</b> por <span class="num">41,7</span>; AIC e BIC dão a mesma ordem.<i class="bd l1">1</i></li>
+          <li><b>Vuong</b>: orientações empatam (p = 0,91; 0,81) → <b>canto não identificado</b>; t &gt; Gumbel (0,002) e &gt; normal (0,0002).<i class="bd l5">5</i></li>
+          <li><b>Sn</b>: não rejeita a t (p = 0,33); rejeita normal (0,012) e Frank (0,003). Valor-p otimista.<i class="bd l8">8</i></li>
+        </ul>
+        <div class="sub">Modelo final</div>
+        <ul>
+          <li id="li-final">Cópula t, <span class="num">ρ = −0,2935</span>, <span class="num">ν = 4</span> (fixado para calcular a acumulada).<i class="bd l4">4</i></li>
+          <li><span class="num">λ = 0,159</span> no canto de crise; 0,029 na diagonal; τ implicado −0,190.</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+
+  <div class="centro" id="centro" style="left: 560px; top: 374px; width: 468px;">
+    <div class="pergunta">Quanto posso perder no Ibovespa,<br>sabendo o que o dólar fez hoje?</div>
+    <div class="formula">H(x, y) = <span class="c">C</span>( <span class="m">F</span>(x), <span class="m">G</span>(y) )</div>
+    <div class="leg">Teorema de Sklar: conjunta = cópula (dependência) aplicada às marginais (cada ativo).<br>
+      As peças são escolhidas separadamente; a recíproca garante uma conjunta legítima.</div>
+  </div>
+
+  <div class="no" id="var" style="--c: var(--var); left: 452px; top: 600px; width: 684px;">
+    <h2>6. VALUE AT RISK DE 1% <small>três perguntas</small></h2>
+    <div class="duas">
+      <div>
+        <ul>
+          <li><b>Marginal</b> (só F): <span class="num">3,99%</span>, R$ 3.990 em R$ 100 mil.</li>
+          <li id="li-cond"><b>Condicional</b>: $P(X \le x \mid Y = y) = \partial C/\partial v$, por diferença central (ε = 10⁻⁵). Dólar −2% → <span class="num">4,18%</span>; dólar +2% → <span class="num">5,47%</span>.<i class="bd l3">3</i><i class="bd l4">4</i></li>
+          <li>P(Ibovespa cair): 47,9% → 29,3% (dólar −2%) e 67,2% (+2%).</li>
+          <li>Curva em <b>U</b>: na t, dólar mexendo muito em qualquer sentido = dia turbulento.</li>
+        </ul>
+      </div>
+      <div>
+        <ul>
+          <li>Com dólar +2%, o 3,99% é ultrapassado em <span class="num">3,2%</span> dos dias, não em 1%.</li>
+          <li id="li-cart"><b>Carteira 50/50</b>: Monte Carlo 10⁵ dias, volta a retorno simples $e^{r} - 1$: <span class="num">2,06%</span> × 2,32% sob independência.<i class="bd l7">7</i></li>
+          <li>O sinal do erro depende da pergunta: sem o dólar, o condicional é <b>subestimado</b>; sem dependência, a carteira é <b>superestimada</b>.<i class="bd l4">4</i></li>
+          <li id="li-inv">Todo VaR usa $\hat F^{-1}$ para voltar do percentil ao retorno.<i class="bd l2">2</i></li>
+        </ul>
+      </div>
+    </div>
+  </div>
+
+  <div class="no" id="conj" style="--c: var(--conj); left: 1208px; top: 22px; width: 355px;">
+    <h2>5. CONJUNTA <small>recompor por Sklar</small></h2>
+    <ul>
+      <li>$\hat H = \hat C(\hat F, \hat G)$; densidade $h = c \cdot f \cdot g$.</li>
+      <li>Estrutural: $\hat H(x, \infty) = \hat F(x)$, erro ~10⁻⁸.</li>
+      <li>Retângulos, modelo × dados: 0,6516 × 0,6465 e <span class="num">0,0121 × 0,0124</span> (15 dias).</li>
+      <li>16 dias no canto de crise de 5%: t prevê 14,3; Gumbel benigna 6,5.<i class="bd l5">5</i></li>
+    </ul>
+  </div>
+
+  <div class="no" id="val" style="--c: var(--val); left: 1208px; top: 230px; width: 355px;">
+    <h2>7. VALIDAÇÃO <small>fora da amostra</small></h2>
+    <ul>
+      <li>Treino 964 dias / teste 241 (80/20); <b>tudo reestimado</b> no treino; mesmas famílias.</li>
+      <li><b>Kupiec</b>: <span class="num">0</span> violações × 2,41 esperadas, p = 0,185.</li>
+      <li id="li-ros"><b>Rosenblatt</b> (condicional inteira): p = <span class="num">0,020</span>, rejeita.<i class="bd l8">8</i></li>
+      <li><b>× Regressão linear</b>: 0 violações nos dois; VaR médio <span class="num">3,69%</span> × 3,98%: mesma proteção, menos capital.</li>
+    </ul>
+  </div>
+
+  <div class="no" id="rob" style="--c: var(--rob); left: 1208px; top: 458px; width: 355px;">
+    <h2>ROBUSTEZ <small>sem 2020</small></h2>
+    <ul>
+      <li><b>Muda muito</b>: desvio 1,67 → 1,23%; curtose 20,8 → 2,2; VaR marginal 3,99 → <span class="num">3,19%</span>.<i class="bd l6">6</i></li>
+      <li><b>Muda pouco</b>: τ −0,185 → −0,182; família t; <span class="num">λ 0,159 → 0,158</span>.</li>
+      <li><b>Muda de qualidade</b>: Rosenblatt p 0,020 → <span class="num">0,370</span>.</li>
+    </ul>
+  </div>
+
+  <div class="no" id="lim" style="--c: var(--lim); left: 1208px; top: 646px; width: 355px;">
+    <h2>8. LIMITAÇÕES E PRÓXIMO PASSO</h2>
+    <ul>
+      <li id="li-lb"><b>Ljung-Box</b>: quadrados autocorrelacionados → volatilidade em ondas → dias não independentes.<i class="bd l8">8</i></li>
+      <li>Consequência: <b>valores-p otimistas</b>; a condicional não vê o passado.</li>
+      <li>Proposta: <b>GARCH</b> em cada série + cópula nos <b>resíduos padronizados</b> (cópula dos choques: outro modelo).</li>
+      <li>Sensibilidade à marginal do dólar.<i class="bd l3">3</i></li>
+    </ul>
+  </div>
+
+  <div class="legenda-lig" id="legenda" style="left: 24px; top: 916px; width: 1539px;">
+    <h3>LIGAÇÕES (linhas tracejadas e selos numerados; explicadas na página 2)</h3>
+    <div class="itens" style="grid-template-columns: 1fr 1fr 1fr 1fr;">
+      <div class="item l1"><span>1</span><span>Postos não usam marginal → escolha da cópula fica imune a erro de marginal.</span></div>
+      <div class="item l2"><span>2</span><span>Paramétrica tem inversa F̂⁻¹ → é ela que o VaR usa.</span></div>
+      <div class="item l3"><span>3</span><span>Marginal do dólar frágil → mexe no VaR condicional e na carteira.</span></div>
+      <div class="item l4"><span>4</span><span>τ &lt; 0: dólar ↑ → VaR do Ibovespa ↑; na carteira, um protege o outro.</span></div>
+      <div class="item l5"><span>5</span><span>Canto de crise: dados não decidem o canto → t (cauda nos 4 cantos).</span></div>
+      <div class="item l6"><span>6</span><span>Duas amostras → robustez: λ e família ficam; marginais mudam.</span></div>
+      <div class="item l7"><span>7</span><span>Log-retorno não soma entre ativos → carteira volta a eʳ − 1.</span></div>
+      <div class="item l8"><span>8</span><span>Volatilidade em ondas → Rosenblatt rejeita com 2020; valores-p otimistas.</span></div>
+    </div>
+  </div>
+
+  <div class="rodape">
+    <span><span class="amostra" style="border-top: 3px solid var(--roxo);"></span>etapa do trabalho</span>
+    <span><span class="amostra" style="border-top: 2px dashed var(--laranja);"></span>ligação entre partes</span>
+    <span>Números do relatório final. Site: gabelchior.github.io/IC-COPULAS</span>
+  </div>
+</div>
+
+</div>
+<!-- ======================================================= PÁGINA 2: AS LIGAÇÕES -->
+<div class="pagina p2" id="p2">
+  <h1>Como as peças se ligam</h1>
+  <p class="sub1">Cada número corresponde a uma linha tracejada e aos selos do mapa.</p>
+  <div class="grade">
+    <div class="lig l1"><div class="n">1</div><div><strong>Postos → escolha da cópula.</strong> Os postos não supõem família marginal, então um erro na marginal não contamina a escolha da cópula. Por isso a fragilidade da marginal do dólar não ameaça a conclusão sobre a dependência.</div></div>
+    <div class="lig l2"><div class="n">2</div><div><strong>Paramétrica → VaR.</strong> O VaR vai e volta entre retorno e percentil: precisa de F̂⁻¹(0,01), que só existe com a marginal ajustada. Os postos não têm inversa fora dos dias observados.</div></div>
+    <div class="lig l3"><div class="n">3</div><div><strong>Marginal do dólar frágil → VaR.</strong> Ĝ converte a variação do dólar em percentil no VaR condicional, e Ĝ⁻¹ gera os retornos do dólar no Monte Carlo da carteira. Trocar a Johnson SU pela logística mudaria esses dois números (sensibilidade ainda não quantificada).</div></div>
+    <div class="lig l4"><div class="n">4</div><div><strong>Associação negativa (τ &lt; 0) → os dois VaR.</strong> Bolsa e dólar andam em sentidos opostos. Por isso o VaR do Ibovespa sobe quando o dólar <em>sobe</em> (5,47%) e a carteira 50/50 fica protegida (2,06% contra 2,32%). O sinal do erro de ignorar a dependência depende da pergunta.</div></div>
+    <div class="lig l5"><div class="n">5</div><div><strong>Canto de crise → escolha da t.</strong> O Vuong mostrou que os dados não decidem em qual canto Gumbel e Clayton deveriam pôr a cauda; a t tem cauda nos quatro cantos e não impõe um. No VaR com dólar +2% quem pesa é a associação negativa (a normal dá 5,71%); a cauda pesa mais longe: com +3%, t 7,64% contra normal 6,60%.</div></div>
+    <div class="lig l6"><div class="n">6</div><div><strong>Duas amostras → robustez.</strong> A análise inteira foi repetida sem 2020 para separar o que depende da pandemia. λ e a família t não mudam; as marginais e o VaR marginal mudam; Rosenblatt deixa de rejeitar.</div></div>
+    <div class="lig l7"><div class="n">7</div><div><strong>Log-retorno → carteira.</strong> O log-retorno soma no tempo, mas não entre ativos. Na carteira, cada log-retorno sorteado volta a retorno simples, eʳ − 1, antes da média 50/50.</div></div>
+    <div class="lig l8"><div class="n">8</div><div><strong>Volatilidade em ondas → Rosenblatt e valores-p.</strong> Com dias dependentes, há menos informação do que n = 1205 sugere, e todos os valores-p (Vuong, Sn, Kupiec) saem otimistas. A condicional não vê o crash da véspera: Rosenblatt rejeita com 2020 e não sem 2020. É o que o GARCH resolveria.</div></div>
+  </div>
+  <div class="perguntas">
+    <h2>Três respostas para ter na ponta da língua</h2>
+    <div class="q"><b>"O risco no Ibovespa é maior quando o dólar cai?"</b> Não: quando o dólar <em>sobe</em>. Dólar +2%: 3,99% → 5,47%, e a chance de o Ibovespa cair vai de 47,9% para 67,2%. Com o dólar −2% a chance cai para 29,3%, mas o VaR ainda vai a 4,18%, porque na t um movimento grande do dólar em qualquer sentido indica dia turbulento.</div>
+    <div class="q"><b>"Qual a relevância de 3,99% → 5,47%?"</b> Numa posição de R$ 100 mil, R$ 1.476 a mais (37%). Em frequência: num dia de dólar +2%, quem usa 3,99% é ultrapassado em 3,2% dos dias, e não em 1%. O VaR define capital reservado, limites de posição e margens; errar para baixo é ficar desprotegido justamente no dia de estresse.</div>
+    <div class="q"><b>"Onde o canto de crise foi usado?"</b> Na escolha da cópula (λ por canto, Vuong entre orientações, t com cauda nos 4 cantos), na conferência com os dados (16 dias observados contra 14,3 previstos pela t) e na robustez (λ = 0,158 sem 2020). Não diga que o 5,47% vem do λ.</div>
+  </div>
+</div>
+
+<script>
+// fórmulas simples: $...$ sem espaço logo depois do primeiro $ (para não pegar "R$ 100")
+document.querySelectorAll('.no li').forEach(function (el) {
+  el.innerHTML = el.innerHTML.replace(/\$([^\s$](?:[^$]*?[^\s$])?)\$/g, function (m, t) {
+    t = t.replace(/\\ln/g, 'ln').replace(/\\hat ([A-Za-z])/g, '$1̂').replace(/\\le/g, '≤').replace(/\\mid/g, '|')
+         .replace(/\\infty/g, '∞').replace(/\\partial/g, '∂').replace(/\\cdot/g, '·').replace(/\{,\}/g, ',')
+         .replace(/_\{([^}]*)\}/g, '<sub>$1</sub>').replace(/_([A-Za-z0-9])/g, '<sub>$1</sub>')
+         .replace(/\^\{([^}]*)\}/g, '<sup>$1</sup>').replace(/\^([A-Za-z0-9])/g, '<sup>$1</sup>').replace(/[{}]/g, '');
+    return '<span style="font-family: Cambria, serif; font-style: italic;">' + t + '</span>';
+  });
+});
+
+function desenharLigacoes() {
+var pag = document.getElementById('p1'), svg = document.getElementById('svg1');
+function caixa(id) {
+  var r = document.getElementById(id).getBoundingClientRect(), p = pag.getBoundingClientRect();
+  return { x: r.left - p.left, y: r.top - p.top, w: r.width, h: r.height };
+}
+function cor(nome) { return getComputedStyle(document.documentElement).getPropertyValue(nome).trim(); }
+function el(tag, a) { var e = document.createElementNS('http://www.w3.org/2000/svg', tag); for (var k in a) e.setAttribute(k, a[k]); return e; }
+var defs = el('defs', {});
+svg.appendChild(defs);
+function seta(c) {
+  var id = 'seta' + c.replace(/[^a-z0-9]/gi, '');
+  if (!document.getElementById(id)) {
+    var m = el('marker', { id: id, viewBox: '0 0 10 10', refX: 8.5, refY: 5, markerWidth: 6, markerHeight: 6, orient: 'auto-start-reverse' });
+    m.appendChild(el('path', { d: 'M0,0 L10,5 L0,10 z', fill: c }));
+    defs.appendChild(m);
+  }
+  return 'url(#' + id + ')';
+}
+// ---- linhas cheias: do centro a cada etapa
+function ponto(b, lado, f) {
+  f = f === undefined ? 0.5 : f;
+  if (lado === 'l') return { x: b.x, y: b.y + b.h * f, dx: -1, dy: 0 };
+  if (lado === 'r') return { x: b.x + b.w, y: b.y + b.h * f, dx: 1, dy: 0 };
+  if (lado === 't') return { x: b.x + b.w * f, y: b.y, dx: 0, dy: -1 };
+  return { x: b.x + b.w * f, y: b.y + b.h, dx: 0, dy: 1 };
+}
+function etapa(o) {
+  var a = ponto(caixa('centro'), o.ld, o.fd), b = ponto(caixa(o.para), o.lp, o.fp), k = o.curva || 60;
+  svg.appendChild(el('path', { d: 'M' + a.x + ',' + a.y + ' C' + (a.x + a.dx * k) + ',' + (a.y + a.dy * k) + ' ' +
+    (b.x + b.dx * k) + ',' + (b.y + b.dy * k) + ' ' + b.x + ',' + b.y, fill: 'none', stroke: cor(o.cor), 'stroke-width': 4.5,
+    'stroke-linecap': 'round', opacity: 0.85 }));
+}
+[
+  { ld: 'l', fd: 0.15, para: 'dados', lp: 'r', fp: 0.35, cor: '--dados', curva: 90 },
+  { ld: 'l', fd: 0.5, para: 'marg', lp: 'r', fp: 0.3, cor: '--marg', curva: 70 },
+  { ld: 'l', fd: 0.85, para: 'pseudo', lp: 'r', fp: 0.75, cor: '--pseudo', curva: 70 },
+  { ld: 't', fd: 0.5, para: 'cop', lp: 'b', fp: 0.47, cor: '--cop', curva: 20 },
+  { ld: 'b', fd: 0.5, para: 'var', lp: 't', fp: 0.47, cor: '--var', curva: 20 },
+  { ld: 'r', fd: 0.12, para: 'conj', lp: 'l', fp: 0.7, cor: '--conj', curva: 80 },
+  { ld: 'r', fd: 0.38, para: 'val', lp: 'l', fp: 0.7, cor: '--val', curva: 70 },
+  { ld: 'r', fd: 0.64, para: 'rob', lp: 'l', fp: 0.4, cor: '--rob', curva: 70 },
+  { ld: 'r', fd: 0.9, para: 'lim', lp: 'l', fp: 0.25, cor: '--lim', curva: 80 }
+].forEach(etapa);
+
+// ---- ligações: linhas tracejadas ortogonais pelos corredores, saindo da altura do item
+function yItem(id) { var b = caixa(id); return b.y + Math.min(b.h / 2, 11); }
+function selo(n, x, y) {
+  var s = document.createElement('div');
+  s.className = 'selo l' + n; s.textContent = n; s.style.left = x + 'px'; s.style.top = y + 'px';
+  pag.appendChild(s);
+}
+function tracejada(n, pts, seloEm, f) {
+  var c = getComputedStyle(document.querySelector('.l' + n)).getPropertyValue('--l').trim();
+  var d = pts.map(function (p, i) { return (i ? 'L' : 'M') + p[0] + ',' + p[1]; }).join(' ');
+  svg.appendChild(el('path', { d: d, fill: 'none', stroke: c, 'stroke-width': 2.4, 'stroke-dasharray': '7 5',
+    'stroke-linejoin': 'round', 'marker-end': seta(c) }));
+  var i = seloEm || 1, a = pts[i - 1], b = pts[i], t = f === undefined ? 0.5 : f;
+  selo(n, a[0] + (b[0] - a[0]) * t, a[1] + (b[1] - a[1]) * t);
+}
+var D = caixa('dados'), M = caixa('marg'), P = caixa('pseudo'), C = caixa('cop'), V = caixa('var'),
+    Vl = caixa('val'), L = caixa('lim'), Ce = caixa('centro');
+var esq = M.x + M.w, meio = C.x, dirMeio = C.x + C.w, dir = Vl.x;   // bordas dos corredores
+// 1: postos (pseudo) → cópula (escolha), pelo corredor esquerdo
+tracejada(1, [[esq, yItem('li-postos')], [esq + 50, yItem('li-postos')], [esq + 50, yItem('li-aic') + 0], [meio, yItem('li-aic') + 0]].map(function (p, i) { return i === 3 ? [meio, C.y + C.h - 30] : (i === 2 ? [esq + 50, C.y + C.h - 30] : p); }), 2);
+// 2: paramétrica (pseudo) → VaR, reto pelo corredor
+tracejada(2, [[esq, yItem('li-param')], [esq + 36, yItem('li-param')], [esq + 36, V.y + V.h - 40], [meio, V.y + V.h - 40]], 2);
+// 3: dólar frágil (marginais) → VaR condicional
+tracejada(3, [[esq, yItem('li-dolar')], [esq + 22, yItem('li-dolar')], [esq + 22, V.y + 70], [meio, V.y + 70]], 2);
+// 4: associação negativa / modelo final (cópula) → VaR, pelo vão entre o centro e o corredor direito
+tracejada(4, [[dirMeio - 40, C.y + C.h], [dirMeio - 40, V.y]], 1);
+// 7: log-retorno (dados) → carteira (VaR), pelo corredor esquerdo
+tracejada(7, [[esq, yItem('li-logret')], [esq + 8, yItem('li-logret')], [esq + 8, V.y + V.h - 18], [meio, V.y + V.h - 18]], 2);
+// 8: Ljung-Box (limitações) → Rosenblatt (validação), pelo corredor direito
+tracejada(8, [[dir, yItem('li-lb')], [dir - 30, yItem('li-lb')], [dir - 30, yItem('li-ros')], [dir, yItem('li-ros')]], 2, 0.2);
+// 6: duas amostras (dados) → robustez: longe demais para uma linha limpa; fica só nos selos
+}
+var desenhado = false;
+function ajustar() {
+  var palco = document.getElementById('palco1'), p1 = document.getElementById('p1');
+  p1.style.transform = 'none';
+  if (window.innerWidth >= 1000) {
+    if (!desenhado) { desenharLigacoes(); desenhado = true; }
+    var e = Math.min(1, palco.clientWidth / 1587);
+    p1.style.transform = 'scale(' + e + ')';
+    palco.style.height = Math.ceil(1122 * e) + 'px';
+  } else {
+    palco.style.height = 'auto';
+  }
+}
+window.addEventListener('resize', ajustar);
+if (document.fonts && document.fonts.ready) document.fonts.ready.then(ajustar); else ajustar();
+window.mapaPronto = true;
+</script>
+</body>
+</html>
