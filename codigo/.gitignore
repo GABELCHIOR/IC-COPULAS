@@ -1,0 +1,6 @@
+# saídas geradas por R_usado.R
+dados_ic/
+tabelas_relatorio/
+figuras_relatorio/
+.Rhistory
+.RData
